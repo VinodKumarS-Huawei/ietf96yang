@@ -16,6 +16,7 @@
 
 package org.onosproject.yangutils.datamodel;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -70,8 +71,8 @@ import static org.onosproject.yangutils.datamodel.utils.DataModelUtils.detectCol
  */
 public class YangList
         extends YangNode
-        implements YangLeavesHolder, YangCommonInfo, Parsable, CollisionDetector, YangAugmentationHolder,
-        YangMustHolder, YangIfFeatureHolder, YangDataNode {
+        implements YangLeavesHolder, YangCommonInfo, Parsable, CollisionDetector,
+        YangAugmentableNode, YangMustHolder, YangIfFeatureHolder, YangDataNode {
 
     private static final long serialVersionUID = 806201609L;
 
@@ -92,7 +93,7 @@ public class YangList
 
     /**
      * Reference RFC 6020.
-     *
+     * <p>
      * The "key" statement, which MUST be present if the list represents
      * configuration, and MAY be present otherwise, takes as an argument a
      * string that specifies a space-separated list of leaf identifiers of this
@@ -100,19 +101,19 @@ public class YangList
      * such leaf identifier MUST refer to a child leaf of the list. The leafs
      * can be defined directly in sub-statements to the list, or in groupings
      * used in the list.
-     *
+     * <p>
      * The combined values of all the leafs specified in the key are used to
      * uniquely identify a list entry. All key leafs MUST be given values when a
      * list entry is created. Thus, any default values in the key leafs or their
      * types are ignored. It also implies that any mandatory statement in the
      * key leafs are ignored.
-     *
+     * <p>
      * A leaf that is part of the key can be of any built-in or derived type,
      * except it MUST NOT be the built-in type "empty".
-     *
+     * <p>
      * All key leafs in a list MUST have the same value for their "config" as
      * the list itself.
-     *
+     * <p>
      * List of key leaf names.
      */
     private List<String> keyList;
@@ -127,34 +128,36 @@ public class YangList
      */
     private List<YangLeafList> listOfLeafList;
 
+    private List<YangAugmentedInfo> yangAugmentedInfo = new ArrayList<>();
+
     /**
      * Reference RFC 6020.
-     *
+     * <p>
      * The "max-elements" statement, which is optional, takes as an argument a
      * positive integer or the string "unbounded", which puts a constraint on
      * valid list entries. A valid leaf-list or list always has at most
      * max-elements entries.
-     *
+     * <p>
      * If no "max-elements" statement is present, it defaults to "unbounded".
      */
     private int maxElements = Integer.MAX_VALUE;
 
     /**
      * Reference RFC 6020.
-     *
+     * <p>
      * The "min-elements" statement, which is optional, takes as an argument a
      * non-negative integer that puts a constraint on valid list entries. A
      * valid leaf-list or list MUST have at least min-elements entries.
-     *
+     * <p>
      * If no "min-elements" statement is present, it defaults to zero.
-     *
+     * <p>
      * The behavior of the constraint depends on the type of the leaf-list's or
      * list's closest ancestor node in the schema tree that is not a non-
      * presence container:
-     *
+     * <p>
      * o If this ancestor is a case node, the constraint is enforced if any
      * other node from the case exists.
-     *
+     * <p>
      * o Otherwise, it is enforced if the ancestor node exists.
      */
     private int minElements = 0;
@@ -185,10 +188,23 @@ public class YangList
     private List<YangIfFeature> ifFeatureList;
 
     /**
+     * Compiler Annotation.
+     */
+    private transient YangCompilerAnnotation compilerAnnotation;
+
+    /**
      * Creates a YANG list object.
      */
     public YangList() {
         super(YangNodeType.LIST_NODE);
+    }
+
+    public YangCompilerAnnotation getCompilerAnnotation() {
+        return compilerAnnotation;
+    }
+
+    public void setCompilerAnnotation(YangCompilerAnnotation compilerAnnotation) {
+        this.compilerAnnotation = compilerAnnotation;
     }
 
     /**
@@ -498,7 +514,7 @@ public class YangList
      * Sets the config's value to all leaf if leaf's config statement is not
      * specified.
      *
-     * @param leaves list of leaf attributes of YANG list
+     * @param leaves    list of leaf attributes of YANG list
      * @param leafLists list of leaf-list attributes of YANG list
      */
     private void setDefaultConfigValueToChild(List<YangLeaf> leaves, List<YangLeafList> leafLists) {
@@ -531,7 +547,7 @@ public class YangList
     /**
      * Validates config statement of YANG list.
      *
-     * @param leaves list of leaf attributes of YANG list
+     * @param leaves    list of leaf attributes of YANG list
      * @param leafLists list of leaf-list attributes of YANG list
      * @throws DataModelException a violation of data model rules
      */
@@ -564,14 +580,13 @@ public class YangList
     /**
      * Validates key statement of list.
      *
-     * @param leaves list of leaf attributes of list
+     * @param leaves    list of leaf attributes of list
      * @param leafLists list of leaf-list attributes of list
-     * @param keys list of key attributes of list
+     * @param keys      list of key attributes of list
      * @throws DataModelException a violation of data model rules
      */
     private void validateKey(List<YangLeaf> leaves, List<YangLeafList> leafLists, List<String> keys)
-            throws
-            DataModelException {
+            throws DataModelException {
         boolean leafFound = false;
         List<YangLeaf> keyLeaves = new LinkedList<>();
         List<YangLeafList> keyLeafLists = new LinkedList<>();
@@ -626,10 +641,10 @@ public class YangList
             }
         }
 
-         /*
-         * All key leafs in a list MUST have the same value for their "config"
-         * as the list itself.
-         */
+        /*
+        * All key leafs in a list MUST have the same value for their "config"
+        * as the list itself.
+        */
         for (YangLeafList keyLeafList : keyLeafLists) {
             if (isConfig() != keyLeafList.isConfig()) {
                 throw new DataModelException("All key leaf-lists in a list must have the same value for their" +
@@ -712,5 +727,20 @@ public class YangList
             setListOfMust(new LinkedList<>());
         }
         getListOfMust().add(must);
+    }
+
+    @Override
+    public void addAugmentation(YangAugmentedInfo augmentInfo) {
+        yangAugmentedInfo.add(augmentInfo);
+    }
+
+    @Override
+    public void removeAugmentation(YangAugmentedInfo augmentInfo) {
+        yangAugmentedInfo.remove(augmentInfo);
+    }
+
+    @Override
+    public List<YangAugmentedInfo> getAugmentedInfoList() {
+        return yangAugmentedInfo;
     }
 }

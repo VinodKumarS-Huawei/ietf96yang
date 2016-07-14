@@ -17,6 +17,7 @@
 package org.onosproject.yangutils.parser.impl.listeners;
 
 import java.util.Date;
+
 import org.onosproject.yangutils.datamodel.ResolvableType;
 import org.onosproject.yangutils.datamodel.YangModule;
 import org.onosproject.yangutils.datamodel.YangReferenceResolver;
@@ -32,7 +33,9 @@ import static org.onosproject.yangutils.datamodel.utils.GeneratedLanguage.JAVA_G
 import static org.onosproject.yangutils.datamodel.utils.YangConstructType.MODULE_DATA;
 import static org.onosproject.yangutils.parser.impl.parserutils.ListenerErrorLocation.ENTRY;
 import static org.onosproject.yangutils.parser.impl.parserutils.ListenerErrorLocation.EXIT;
-import static org.onosproject.yangutils.parser.impl.parserutils.ListenerErrorMessageConstruction.constructListenerErrorMessage;
+import static org.onosproject.yangutils.parser.impl.parserutils.ListenerErrorMessageConstruction
+        .constructListenerErrorMessage;
+import static org.onosproject.yangutils.parser.impl.parserutils.ListenerErrorType.INVALID_CHILD;
 import static org.onosproject.yangutils.parser.impl.parserutils.ListenerErrorType.INVALID_HOLDER;
 import static org.onosproject.yangutils.parser.impl.parserutils.ListenerErrorType.MISSING_CURRENT_HOLDER;
 import static org.onosproject.yangutils.parser.impl.parserutils.ListenerErrorType.MISSING_HOLDER;
@@ -121,6 +124,14 @@ public final class ModuleListener {
             ((YangModule) tmpNode).setRevision(currentRevision);
         }
 
+        YangModule module = (YangModule) tmpNode;
+        if (module.getUnresolvedResolutionList(ResolvableType.YANG_COMPILER_ANNOTATION) != null
+                && module.getUnresolvedResolutionList(ResolvableType.YANG_COMPILER_ANNOTATION).size() != 0
+                && module.getChild() != null) {
+            throw new ParserException(constructListenerErrorMessage(INVALID_CHILD, MODULE_DATA,
+                    ctx.identifier().getText(), EXIT));
+        }
+
         try {
             ((YangReferenceResolver) listener.getParsedDataStack()
                     .peek()).resolveSelfFileLinking(ResolvableType.YANG_IF_FEATURE);
@@ -128,6 +139,12 @@ public final class ModuleListener {
                     .peek()).resolveSelfFileLinking(ResolvableType.YANG_USES);
             ((YangReferenceResolver) listener.getParsedDataStack()
                     .peek()).resolveSelfFileLinking(ResolvableType.YANG_DERIVED_DATA_TYPE);
+            ((YangReferenceResolver) listener.getParsedDataStack()
+                    .peek()).resolveSelfFileLinking(ResolvableType.YANG_LEAFREF);
+            ((YangReferenceResolver) listener.getParsedDataStack()
+                    .peek()).resolveSelfFileLinking(ResolvableType.YANG_BASE);
+            ((YangReferenceResolver) listener.getParsedDataStack()
+                    .peek()).resolveSelfFileLinking(ResolvableType.YANG_IDENTITYREF);
         } catch (DataModelException e) {
             LinkerException linkerException = new LinkerException(e.getMessage());
             linkerException.setLine(e.getLineNumber());

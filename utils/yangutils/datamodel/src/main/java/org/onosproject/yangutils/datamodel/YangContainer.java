@@ -16,6 +16,7 @@
 
 package org.onosproject.yangutils.datamodel;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -89,8 +90,8 @@ import static org.onosproject.yangutils.datamodel.utils.DataModelUtils.detectCol
  */
 public class YangContainer
         extends YangNode
-        implements YangLeavesHolder, YangCommonInfo, Parsable, CollisionDetector, YangAugmentationHolder,
-        YangMustHolder, YangWhenHolder, YangIfFeatureHolder {
+        implements YangLeavesHolder, YangCommonInfo, Parsable, CollisionDetector,
+        YangAugmentableNode, YangMustHolder, YangWhenHolder, YangIfFeatureHolder {
 
     private static final long serialVersionUID = 806201605L;
 
@@ -129,6 +130,8 @@ public class YangContainer
      * Reference of the module.
      */
     private String reference;
+
+    private List<YangAugmentedInfo> yangAugmentedInfo = new ArrayList<>();
 
     /**
      * Status of the node.
@@ -403,7 +406,7 @@ public class YangContainer
      * Sets the config's value to all leaf if leaf's config statement is not
      * specified.
      *
-     * @param leaves list of leaf attributes of container
+     * @param leaves    list of leaf attributes of container
      * @param leafLists list of leaf-list attributes of container
      */
     private void setDefaultConfigValueToChild(List<YangLeaf> leaves, List<YangLeafList> leafLists) {
@@ -436,7 +439,7 @@ public class YangContainer
     /**
      * Validates config statement of container.
      *
-     * @param leaves list of leaf attributes of container
+     * @param leaves    list of leaf attributes of container
      * @param leafLists list of leaf-list attributes of container
      * @throws DataModelException a violation of data model rules
      */
@@ -518,4 +521,18 @@ public class YangContainer
         getListOfMust().add(must);
     }
 
+    @Override
+    public void addAugmentation(YangAugmentedInfo augmentInfo) {
+        yangAugmentedInfo.add(augmentInfo);
+    }
+
+    @Override
+    public void removeAugmentation(YangAugmentedInfo augmentInfo) {
+        yangAugmentedInfo.remove(augmentInfo);
+    }
+
+    @Override
+    public List<YangAugmentedInfo> getAugmentedInfoList() {
+        return yangAugmentedInfo;
+    }
 }

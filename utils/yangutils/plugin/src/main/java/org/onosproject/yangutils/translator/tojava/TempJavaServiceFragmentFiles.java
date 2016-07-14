@@ -22,12 +22,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.onosproject.yangutils.datamodel.YangNode;
-import org.onosproject.yangutils.datamodel.YangNotification;
 import org.onosproject.yangutils.translator.tojava.javamodel.YangJavaModule;
 import org.onosproject.yangutils.translator.tojava.javamodel.YangJavaSubModule;
+import org.onosproject.yangutils.translator.tojava.utils.JavaExtendsListHolder;
 import org.onosproject.yangutils.utils.io.impl.YangPluginConfig;
 
-import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.GENERATE_EVENT_CLASS;
 import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.GENERATE_EVENT_LISTENER_INTERFACE;
 import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.GENERATE_EVENT_SUBJECT_CLASS;
 import static org.onosproject.yangutils.translator.tojava.GeneratedTempFileType.EVENT_ENUM_MASK;
@@ -39,6 +38,8 @@ import static org.onosproject.yangutils.translator.tojava.GeneratedTempFileType.
 import static org.onosproject.yangutils.translator.tojava.GeneratedTempFileType.RPC_INTERFACE_MASK;
 import static org.onosproject.yangutils.translator.tojava.JavaAttributeInfo.getAttributeInfoForTheData;
 import static org.onosproject.yangutils.translator.tojava.JavaQualifiedTypeInfo.getQualifiedTypeInfoOfCurNode;
+import static org.onosproject.yangutils.translator.tojava.utils.JavaCodeSnippetGen.addAnnotationsImports;
+import static org.onosproject.yangutils.translator.tojava.utils.JavaCodeSnippetGen.addListenersImport;
 import static org.onosproject.yangutils.translator.tojava.utils.JavaCodeSnippetGen.getJavaClassDefClose;
 import static org.onosproject.yangutils.translator.tojava.utils.JavaFileGenerator.generateEventFile;
 import static org.onosproject.yangutils.translator.tojava.utils.JavaFileGenerator.generateEventListenerFile;
@@ -46,17 +47,12 @@ import static org.onosproject.yangutils.translator.tojava.utils.JavaFileGenerato
 import static org.onosproject.yangutils.translator.tojava.utils.JavaFileGenerator.generateManagerClassFile;
 import static org.onosproject.yangutils.translator.tojava.utils.JavaFileGenerator.generateServiceInterfaceFile;
 import static org.onosproject.yangutils.translator.tojava.utils.JavaFileGeneratorUtils.getFileObject;
-import static org.onosproject.yangutils.utils.io.impl.YangIoUtils.getCamelCase;
-import static org.onosproject.yangutils.utils.io.impl.YangIoUtils.getCapitalCase;
+import static org.onosproject.yangutils.translator.tojava.utils.JavaIdentifierSyntax.createPackage;
 import static org.onosproject.yangutils.translator.tojava.utils.JavaIdentifierSyntax.getEnumJavaAttribute;
-import static org.onosproject.yangutils.utils.io.impl.YangIoUtils.getSmallCase;
 import static org.onosproject.yangutils.translator.tojava.utils.MethodsGenerator.getGetterForClass;
 import static org.onosproject.yangutils.translator.tojava.utils.MethodsGenerator.getRpcManagerMethod;
 import static org.onosproject.yangutils.translator.tojava.utils.MethodsGenerator.getRpcServiceMethod;
 import static org.onosproject.yangutils.translator.tojava.utils.MethodsGenerator.getSetterForClass;
-import static org.onosproject.yangutils.translator.tojava.utils.TempJavaCodeFragmentFilesUtils.addAnnotationsImports;
-import static org.onosproject.yangutils.translator.tojava.utils.TempJavaCodeFragmentFilesUtils.addListnersImport;
-import static org.onosproject.yangutils.translator.tojava.utils.TempJavaCodeFragmentFilesUtils.closeFile;
 import static org.onosproject.yangutils.utils.UtilConstants.COMMA;
 import static org.onosproject.yangutils.utils.UtilConstants.EMPTY_STRING;
 import static org.onosproject.yangutils.utils.UtilConstants.EVENT_STRING;
@@ -67,86 +63,73 @@ import static org.onosproject.yangutils.utils.UtilConstants.NEW_LINE;
 import static org.onosproject.yangutils.utils.UtilConstants.RPC_INPUT_VAR_NAME;
 import static org.onosproject.yangutils.utils.UtilConstants.SLASH;
 import static org.onosproject.yangutils.utils.UtilConstants.VOID;
-import static org.onosproject.yangutils.translator.tojava.utils.JavaIdentifierSyntax.createPackage;
-import static org.onosproject.yangutils.utils.io.impl.JavaDocGen.generateJavaDocForRpc;
-import static org.onosproject.yangutils.utils.io.impl.JavaDocGen.getJavaDoc;
+import static org.onosproject.yangutils.utils.io.impl.FileSystemUtil.closeFile;
 import static org.onosproject.yangutils.utils.io.impl.JavaDocGen.JavaDocType.ENUM_ATTRIBUTE;
 import static org.onosproject.yangutils.utils.io.impl.JavaDocGen.JavaDocType.GETTER_METHOD;
 import static org.onosproject.yangutils.utils.io.impl.JavaDocGen.JavaDocType.MANAGER_SETTER_METHOD;
+import static org.onosproject.yangutils.utils.io.impl.JavaDocGen.generateJavaDocForRpc;
+import static org.onosproject.yangutils.utils.io.impl.JavaDocGen.getJavaDoc;
+import static org.onosproject.yangutils.utils.io.impl.YangIoUtils.getAbsolutePackagePath;
+import static org.onosproject.yangutils.utils.io.impl.YangIoUtils.getCamelCase;
+import static org.onosproject.yangutils.utils.io.impl.YangIoUtils.getCapitalCase;
+import static org.onosproject.yangutils.utils.io.impl.YangIoUtils.getSmallCase;
 import static org.onosproject.yangutils.utils.io.impl.YangIoUtils.insertDataIntoJavaFile;
 
 /**
- * Represents implementation of java service code fragments temporary implementations.
- * Maintains the temp files required specific for service and manager java snippet generation.
+ * Represents implementation of java service code fragments temporary implementations. Maintains the temp files required
+ * specific for service and manager java snippet generation.
  */
 public class TempJavaServiceFragmentFiles
         extends TempJavaFragmentFiles {
 
     /**
+     * File name for generated class file for special type like union, typedef suffix.
+     */
+    public static final String EVENT_SUBJECT_NAME_SUFFIX = "EventSubject";
+    /**
      * File name for rpc method.
      */
     private static final String RPC_INTERFACE_FILE_NAME = "Rpc";
-
     /**
      * File name for rpc implementation method.
      */
     private static final String RPC_IMPL_FILE_NAME = "RpcImpl";
-
     /**
      * File name for event enum temp file.
      */
     private static final String EVENT_ENUM_FILE_NAME = "EventEnum";
-
     /**
      * File name for event method temp file.
      */
     private static final String EVENT_METHOD_FILE_NAME = "EventMethod";
-
     /**
      * File name for event subject attribute temp file.
      */
     private static final String EVENT_SUBJECT_ATTRIBUTE_FILE_NAME = "EventSubjectAttribute";
-
     /**
      * File name for event subject getter temp file.
      */
     private static final String EVENT_SUBJECT_GETTER_FILE_NAME = "EventSubjectGetter";
-
     /**
      * File name for event subject setter temp file.
      */
     private static final String EVENT_SUBJECT_SETTER_FILE_NAME = "EventSubjectSetter";
-
     /**
-     * File name for generated class file for service
-     * suffix.
+     * File name for generated class file for service suffix.
      */
     private static final String SERVICE_FILE_NAME_SUFFIX = "Service";
-
     /**
-     * File name for generated class file for manager
-     * suffix.
+     * File name for generated class file for manager suffix.
      */
     private static final String MANAGER_FILE_NAME_SUFFIX = "Manager";
-
     /**
-     * File name for generated class file for special type like union, typedef
-     * suffix.
+     * File name for generated class file for special type like union, typedef suffix.
      */
     private static final String EVENT_FILE_NAME_SUFFIX = "Event";
-
     /**
-     * File name for generated class file for special type like union, typedef
-     * suffix.
+     * File name for generated class file for special type like union, typedef suffix.
      */
     private static final String EVENT_LISTENER_FILE_NAME_SUFFIX = "Listener";
-
-    /**
-     * File name for generated class file for special type like union, typedef
-     * suffix.
-     */
-    public static final String EVENT_SUBJECT_NAME_SUFFIX = "EventSubject";
-
     private static final String JAVA_FILE_EXTENSION = ".java";
 
     /**
@@ -208,6 +191,65 @@ public class TempJavaServiceFragmentFiles
      * Java file handle for event subject setter impl file.
      */
     private File eventSubjectSetterTempFileHandle;
+
+    /**
+     * Creates an instance of temporary java code fragment.
+     *
+     * @param javaFileInfo generated file information
+     * @throws IOException when fails to create new file handle
+     */
+    public TempJavaServiceFragmentFiles(JavaFileInfo javaFileInfo)
+            throws IOException {
+        setJavaExtendsListHolder(new JavaExtendsListHolder());
+        setJavaImportData(new JavaImportData());
+        setJavaFileInfo(javaFileInfo);
+        setAbsoluteDirPath(getAbsolutePackagePath(getJavaFileInfo().getBaseCodeGenPath(),
+                getJavaFileInfo().getPackageFilePath()));
+        addGeneratedTempFile(RPC_INTERFACE_MASK);
+        addGeneratedTempFile(RPC_IMPL_MASK);
+
+        addGeneratedTempFile(EVENT_ENUM_MASK);
+        addGeneratedTempFile(EVENT_METHOD_MASK);
+        addGeneratedTempFile(EVENT_SUBJECT_ATTRIBUTE_MASK);
+        addGeneratedTempFile(EVENT_SUBJECT_GETTER_MASK);
+        addGeneratedTempFile(EVENT_SUBJECT_SETTER_MASK);
+
+        setRpcInterfaceTempFileHandle(getTemporaryFileHandle(RPC_INTERFACE_FILE_NAME));
+        setRpcImplTempFileHandle(getTemporaryFileHandle(RPC_IMPL_FILE_NAME));
+
+        setEventEnumTempFileHandle(getTemporaryFileHandle(EVENT_ENUM_FILE_NAME));
+        setEventMethodTempFileHandle(getTemporaryFileHandle(EVENT_METHOD_FILE_NAME));
+        setEventSubjectAttributeTempFileHandle(getTemporaryFileHandle(EVENT_SUBJECT_ATTRIBUTE_FILE_NAME));
+        setEventSubjectGetterTempFileHandle(getTemporaryFileHandle(EVENT_SUBJECT_GETTER_FILE_NAME));
+        setEventSubjectSetterTempFileHandle(getTemporaryFileHandle(EVENT_SUBJECT_SETTER_FILE_NAME));
+    }
+
+    /*Adds event method contents to event file.*/
+    private static String getEventFileContents(String eventClassname, String classname) {
+        return "\n" +
+                "    /**\n" +
+                "     * Creates " + classname + " event with type and subject.\n" +
+                "     *\n" +
+                "     * @param type event type\n" +
+                "     * @param subject subject " + classname + "\n" +
+                "     */\n" +
+                "    public " + eventClassname + "(Type type, " + getCapitalCase(classname) + " subject) {\n" +
+                "        super(type, subject);\n" +
+                "    }\n" +
+                "\n" +
+                "    /**\n" +
+                "     * Creates " + classname + " event with type, subject and time.\n" +
+                "     *\n" +
+                "     * @param type event type\n" +
+                "     * @param subject subject " + classname + "\n" +
+                "     * @param time time of event\n" +
+                "     */\n" +
+                "    public " + eventClassname + "(Type type, " + getCapitalCase(classname)
+                + " subject, long time) {\n" +
+                "        super(type, subject, time);\n" +
+                "    }\n" +
+                "\n";
+    }
 
     /**
      * Returns rpc method's java file handle.
@@ -336,35 +378,6 @@ public class TempJavaServiceFragmentFiles
     }
 
     /**
-     * Creates an instance of temporary java code fragment.
-     *
-     * @param javaFileInfo generated file information
-     * @throws IOException when fails to create new file handle
-     */
-    public TempJavaServiceFragmentFiles(JavaFileInfo javaFileInfo)
-            throws IOException {
-        super(javaFileInfo);
-
-        addGeneratedTempFile(RPC_INTERFACE_MASK);
-        addGeneratedTempFile(RPC_IMPL_MASK);
-
-        addGeneratedTempFile(EVENT_ENUM_MASK);
-        addGeneratedTempFile(EVENT_METHOD_MASK);
-        addGeneratedTempFile(EVENT_SUBJECT_ATTRIBUTE_MASK);
-        addGeneratedTempFile(EVENT_SUBJECT_GETTER_MASK);
-        addGeneratedTempFile(EVENT_SUBJECT_SETTER_MASK);
-
-        setRpcInterfaceTempFileHandle(getTemporaryFileHandle(RPC_INTERFACE_FILE_NAME));
-        setRpcImplTempFileHandle(getTemporaryFileHandle(RPC_IMPL_FILE_NAME));
-
-        setEventEnumTempFileHandle(getTemporaryFileHandle(EVENT_ENUM_FILE_NAME));
-        setEventMethodTempFileHandle(getTemporaryFileHandle(EVENT_METHOD_FILE_NAME));
-        setEventSubjectAttributeTempFileHandle(getTemporaryFileHandle(EVENT_SUBJECT_ATTRIBUTE_FILE_NAME));
-        setEventSubjectGetterTempFileHandle(getTemporaryFileHandle(EVENT_SUBJECT_GETTER_FILE_NAME));
-        setEventSubjectSetterTempFileHandle(getTemporaryFileHandle(EVENT_SUBJECT_SETTER_FILE_NAME));
-    }
-
-    /**
      * Constructs java code exit.
      *
      * @param fileType generated file type
@@ -374,7 +387,8 @@ public class TempJavaServiceFragmentFiles
     @Override
     public void generateJavaFile(int fileType, YangNode curNode)
             throws IOException {
-        List<String> imports = getJavaImportData().getImports();
+        List<String> imports = ((JavaCodeGeneratorInfo) curNode).getTempJavaCodeFragmentFiles().getServiceTempFiles()
+                .getJavaImportData().getImports();
 
         createPackage(curNode);
 
@@ -390,35 +404,35 @@ public class TempJavaServiceFragmentFiles
         }
 
         if (isNotification) {
-            addListnersImport(curNode, imports, true, LISTENER_SERVICE);
+            addListenersImport(curNode, imports, true, LISTENER_SERVICE);
         }
         /**
          * Creates rpc interface file.
          */
         setServiceInterfaceJavaFileHandle(getJavaFileHandle(getJavaClassName(SERVICE_FILE_NAME_SUFFIX)));
-        generateServiceInterfaceFile(getServiceInterfaceJavaFileHandle(), curNode, imports, isAttributePresent());
+        generateServiceInterfaceFile(getServiceInterfaceJavaFileHandle(), curNode, imports);
 
         if (isNotification) {
-            addListnersImport(curNode, imports, false, LISTENER_SERVICE);
-            addListnersImport(curNode, imports, true, LISTENER_REG);
+            addListenersImport(curNode, imports, false, LISTENER_SERVICE);
+            addListenersImport(curNode, imports, true, LISTENER_REG);
         }
         addAnnotationsImports(imports, true);
         /**
          * Create builder class file.
          */
         setManagerJavaFileHandle(getJavaFileHandle(getJavaClassName(MANAGER_FILE_NAME_SUFFIX)));
-        generateManagerClassFile(getManagerJavaFileHandle(), imports, curNode, isAttributePresent());
+        generateManagerClassFile(getManagerJavaFileHandle(), imports, curNode);
 
         insertDataIntoJavaFile(getManagerJavaFileHandle(), getJavaClassDefClose());
         if (isNotification) {
-            addListnersImport(curNode, imports, false, LISTENER_REG);
+            addListenersImport(curNode, imports, false, LISTENER_REG);
         }
         addAnnotationsImports(imports, false);
 
         if (isNotification) {
-            generateEventJavaFile(GENERATE_EVENT_CLASS, curNode);
+            generateEventJavaFile(curNode);
             generateEventListenerJavaFile(GENERATE_EVENT_LISTENER_INTERFACE, curNode);
-            generateEventSubjectJavaFile(GENERATE_EVENT_SUBJECT_CLASS, curNode);
+            generateEventSubjectJavaFile(curNode);
         }
 
         /**
@@ -469,8 +483,8 @@ public class TempJavaServiceFragmentFiles
      * @throws IOException IO operation fail
      */
     public void addJavaSnippetInfoToApplicableTempFiles(JavaAttributeInfo javaAttributeInfoOfInput,
-            JavaAttributeInfo javaAttributeInfoOfOutput, YangPluginConfig pluginConfig,
-            String rpcName)
+            JavaAttributeInfo javaAttributeInfoOfOutput,
+            YangPluginConfig pluginConfig, String rpcName)
             throws IOException {
         addRpcString(javaAttributeInfoOfInput, javaAttributeInfoOfOutput, pluginConfig, rpcName);
     }
@@ -478,11 +492,10 @@ public class TempJavaServiceFragmentFiles
     /**
      * Constructs java code exit.
      *
-     * @param fileType generated file type
-     * @param curNode  current YANG node
+     * @param curNode current YANG node
      * @throws IOException when fails to generate java files
      */
-    public void generateEventJavaFile(int fileType, YangNode curNode)
+    public void generateEventJavaFile(YangNode curNode)
             throws IOException {
 
         List<String> imports = new ArrayList<>();
@@ -536,11 +549,10 @@ public class TempJavaServiceFragmentFiles
     /**
      * Constructs java code exit.
      *
-     * @param fileType generated file type
-     * @param curNode  current YANG node
+     * @param curNode current YANG node
      * @throws IOException when fails to generate java files
      */
-    public void generateEventSubjectJavaFile(int fileType, YangNode curNode)
+    public void generateEventSubjectJavaFile(YangNode curNode)
             throws IOException {
 
         String curNodeInfo = getCapitalCase(((JavaFileInfoContainer) curNode)
@@ -561,9 +573,8 @@ public class TempJavaServiceFragmentFiles
     /**
      * Removes all temporary file handles.
      *
-     * @param isErrorOccurred when translator fails to generate java files we
-     *                        need to close all open file handles include temporary files
-     *                        and java files.
+     * @param isErrorOccurred when translator fails to generate java files we need to close all open file handles
+     *                        include temporary files and java files.
      * @throws IOException when failed to delete the temporary files
      */
     @Override
@@ -694,9 +705,9 @@ public class TempJavaServiceFragmentFiles
     public void addJavaSnippetOfEvent(YangNode curNode, YangPluginConfig pluginConfig)
             throws IOException {
 
-        String currentInfo = getCapitalCase(getCamelCase(((YangNotification) curNode).getName(),
+        String currentInfo = getCapitalCase(getCamelCase(curNode.getName(),
                 pluginConfig.getConflictResolver()));
-        String notificationName = ((YangNotification) curNode).getName();
+        String notificationName = curNode.getName();
 
         JavaQualifiedTypeInfo qualifiedTypeInfo = getQualifiedTypeInfoOfCurNode(curNode,
                 getCapitalCase(currentInfo));
@@ -715,7 +726,7 @@ public class TempJavaServiceFragmentFiles
     private void addEventEnum(String notificationName, YangPluginConfig pluginConfig)
             throws IOException {
         appendToFile(getEventEnumTempFileHandle(),
-                getJavaDoc(ENUM_ATTRIBUTE, notificationName, false, pluginConfig) + FOUR_SPACE_INDENTATION
+                getJavaDoc(ENUM_ATTRIBUTE, notificationName, false, pluginConfig, null) + FOUR_SPACE_INDENTATION
                         + getEnumJavaAttribute(notificationName).toUpperCase() + COMMA + NEW_LINE);
     }
 
@@ -723,33 +734,6 @@ public class TempJavaServiceFragmentFiles
     private void addEnumMethod(String eventClassname, String className)
             throws IOException {
         appendToFile(getEventMethodTempFileHandle(), getEventFileContents(eventClassname, className));
-    }
-
-    /*Adds event method contents to event file.*/
-    private static String getEventFileContents(String eventClassname, String classname) {
-        return "\n" +
-                "    /**\n" +
-                "     * Creates " + classname + " event with type and subject.\n" +
-                "     *\n" +
-                "     * @param type event type\n" +
-                "     * @param subject subject " + classname + "\n" +
-                "     */\n" +
-                "    public " + eventClassname + "(Type type, " + getCapitalCase(classname) + " subject) {\n" +
-                "        super(type, subject);\n" +
-                "    }\n" +
-                "\n" +
-                "    /**\n" +
-                "     * Creates " + classname + " event with type, subject and time.\n" +
-                "     *\n" +
-                "     * @param type event type\n" +
-                "     * @param subject subject " + classname + "\n" +
-                "     * @param time time of event\n" +
-                "     */\n" +
-                "    public " + eventClassname + "(Type type, " + getCapitalCase(classname)
-                + " subject, long time) {\n" +
-                "        super(type, subject, time);\n" +
-                "    }\n" +
-                "\n";
     }
 
     /*Adds events to event subject file.*/
@@ -763,7 +747,8 @@ public class TempJavaServiceFragmentFiles
     private void addEventSubjectGetter(JavaAttributeInfo attr, YangPluginConfig pluginConfig)
             throws IOException {
         appendToFile(getEventSubjectGetterTempFileHandle(),
-                getJavaDoc(GETTER_METHOD, getCapitalCase(attr.getAttributeName()), false, pluginConfig)
+                getJavaDoc(GETTER_METHOD, getCapitalCase(attr.getAttributeName()), false, pluginConfig,
+                        attr.getCompilerAnnotation())
                         + getGetterForClass(attr, GENERATE_EVENT_SUBJECT_CLASS) + NEW_LINE);
     }
 
@@ -771,14 +756,14 @@ public class TempJavaServiceFragmentFiles
     private void addEventSubjectSetter(JavaAttributeInfo attr, YangPluginConfig pluginConfig, String className)
             throws IOException {
         appendToFile(getEventSubjectSetterTempFileHandle(),
-                getJavaDoc(MANAGER_SETTER_METHOD, getCapitalCase(attr.getAttributeName()), false, pluginConfig)
+                getJavaDoc(MANAGER_SETTER_METHOD, getCapitalCase(attr.getAttributeName()), false, pluginConfig, null)
                         + getSetterForClass(attr, className, GENERATE_EVENT_SUBJECT_CLASS) + NEW_LINE);
     }
 
     /**
      * Returns a temporary file handle for the event's file type.
      *
-     * @param fileName file name
+     * @param name file name
      * @return temporary file handle
      * @throws IOException when fails to create new file handle
      */
@@ -786,9 +771,10 @@ public class TempJavaServiceFragmentFiles
             throws IOException {
 
         JavaFileInfo parentInfo = ((JavaFileInfoContainer) curNode).getJavaFileInfo();
+        JavaFileInfo childInfo = ((JavaFileInfoContainer) curNode.getChild()).getJavaFileInfo();
 
         return getFileObject(getDirPath(parentInfo), name, JAVA_FILE_EXTENSION,
-                parentInfo);
+                childInfo);
     }
 
     /**

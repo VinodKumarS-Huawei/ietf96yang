@@ -32,9 +32,12 @@ import org.onosproject.yangutils.utils.io.impl.YangPluginConfig;
 import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.GENERATE_EVENT_CLASS;
 import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.GENERATE_EVENT_LISTENER_INTERFACE;
 import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.GENERATE_EVENT_SUBJECT_CLASS;
+import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.GENERATE_INTERFACE_WITH_BUILDER;
 import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.GENERATE_SERVICE_AND_MANAGER;
+import static org.onosproject.yangutils.translator.tojava.YangJavaModelUtils.generateCodeOfRootNode;
+import static org.onosproject.yangutils.translator.tojava.YangJavaModelUtils.isManagerCodeGenRequired;
+import static org.onosproject.yangutils.translator.tojava.YangJavaModelUtils.isGenerationOfCodeReq;
 import static org.onosproject.yangutils.translator.tojava.utils.JavaIdentifierSyntax.getRootPackage;
-import static org.onosproject.yangutils.translator.tojava.javamodel.YangJavaModelUtils.generateCodeOfRootNode;
 import static org.onosproject.yangutils.utils.io.impl.YangIoUtils.searchAndDeleteTempDir;
 
 /**
@@ -60,7 +63,7 @@ public class YangJavaModule
     /**
      * List of notifications nodes.
      */
-    private List<YangNode> notificationNodes;
+    private transient List<YangNode> notificationNodes;
 
     /**
      * Creates a YANG node of module type.
@@ -69,7 +72,7 @@ public class YangJavaModule
         super();
         setJavaFileInfo(new JavaFileInfo());
         setNotificationNodes(new ArrayList<>());
-        int gentype = GENERATE_SERVICE_AND_MANAGER;
+        int gentype = GENERATE_SERVICE_AND_MANAGER | GENERATE_INTERFACE_WITH_BUILDER;
         if (isNotificationChildNodePresent(this)) {
             gentype = GENERATE_SERVICE_AND_MANAGER | GENERATE_EVENT_SUBJECT_CLASS | GENERATE_EVENT_CLASS
                     | GENERATE_EVENT_LISTENER_INTERFACE;
@@ -153,9 +156,17 @@ public class YangJavaModule
          *
          * The manager class needs to extend the "ListenerRegistry".
          */
+
         try {
-            getTempJavaCodeFragmentFiles().generateJavaFile(GENERATE_SERVICE_AND_MANAGER, this);
+            if (isManagerCodeGenRequired(this) && isGenerationOfCodeReq(getJavaFileInfo())) {
+                getTempJavaCodeFragmentFiles()
+                        .generateJavaFile(GENERATE_INTERFACE_WITH_BUILDER, this);
+                getTempJavaCodeFragmentFiles()
+                        .generateJavaFile(GENERATE_SERVICE_AND_MANAGER, this);
+            }
             searchAndDeleteTempDir(getJavaFileInfo().getBaseCodeGenPath() +
+                    getJavaFileInfo().getPackageFilePath());
+            searchAndDeleteTempDir(getJavaFileInfo().getPluginConfig().getCodeGenDir() +
                     getJavaFileInfo().getPackageFilePath());
         } catch (IOException e) {
             throw new TranslatorException("Failed to generate code for module node " + getName());

@@ -34,5 +34,30 @@ public enum ResolvableType {
     /**
      * Identifies the if-feature.
      */
-    YANG_IF_FEATURE
+    YANG_IF_FEATURE,
+
+    /**
+     * Identifies the leafref.
+     */
+    YANG_LEAFREF,
+
+    /**
+     * Identifies the base.
+     */
+    YANG_BASE,
+
+    /**
+     * Identifies the identityref.
+     */
+    YANG_IDENTITYREF,
+
+    /**
+     * Identifies the augment.
+     */
+    YANG_AUGMENT,
+
+    /**
+     * Identifies the compiler annotations.
+     */
+    YANG_COMPILER_ANNOTATION
 }

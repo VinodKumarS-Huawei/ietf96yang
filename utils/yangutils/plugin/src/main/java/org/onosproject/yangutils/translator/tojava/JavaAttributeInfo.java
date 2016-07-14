@@ -16,6 +16,7 @@
 
 package org.onosproject.yangutils.translator.tojava;
 
+import org.onosproject.yangutils.datamodel.YangCompilerAnnotation;
 import org.onosproject.yangutils.datamodel.YangType;
 import org.onosproject.yangutils.translator.exception.TranslatorException;
 
@@ -50,6 +51,8 @@ public final class JavaAttributeInfo {
      */
     private JavaQualifiedTypeInfo importInfo;
 
+    private YangCompilerAnnotation compilerAnnotation;
+
     /**
      * Creates a java attribute info object.
      */
@@ -59,9 +62,9 @@ public final class JavaAttributeInfo {
     /**
      * Creates object of java attribute info.
      *
-     * @param attrType YANG type
-     * @param name attribute name
-     * @param isListAttr is list attribute
+     * @param attrType        YANG type
+     * @param name            attribute name
+     * @param isListAttr      is list attribute
      * @param isQualifiedName is qualified name
      */
     public JavaAttributeInfo(YangType<?> attrType, String name, boolean isListAttr, boolean isQualifiedName) {
@@ -149,7 +152,7 @@ public final class JavaAttributeInfo {
      * manner.
      *
      * @param isQualified if the added attribute has to be accessed in a fully
-     * qualified manner
+     *                    qualified manner
      */
     public void setIsQualifiedAccess(boolean isQualified) {
         isQualifiedName = isQualified;
@@ -174,14 +177,23 @@ public final class JavaAttributeInfo {
         this.importInfo = importInfo;
     }
 
+    public YangCompilerAnnotation getCompilerAnnotation() {
+        return compilerAnnotation;
+    }
+
+    public void setCompilerAnnotation(YangCompilerAnnotation compilerAnnotation) {
+        this.compilerAnnotation = compilerAnnotation;
+    }
+
+
     /**
      * Returns java attribute info.
      *
-     * @param importInfo java qualified type info
-     * @param attributeName attribute name
-     * @param attributeType attribute type
+     * @param importInfo        java qualified type info
+     * @param attributeName     attribute name
+     * @param attributeType     attribute type
      * @param isQualifiedAccess is the attribute a qualified access
-     * @param isListAttribute is list attribute
+     * @param isListAttribute   is list attribute
      * @return java attribute info.
      */
     public static JavaAttributeInfo getAttributeInfoForTheData(JavaQualifiedTypeInfo importInfo, String attributeName,
@@ -194,6 +206,27 @@ public final class JavaAttributeInfo {
         newAttr.setAttributeType(attributeType);
         newAttr.setIsQualifiedAccess(isQualifiedAccess);
         newAttr.setListAttr(isListAttribute);
+
+        return newAttr;
+    }
+
+    /**
+     * Returns java attribute info.
+     *
+     * @param importInfo        java qualified type info
+     * @param attributeName     attribute name
+     * @param attributeType     attribute type
+     * @param isQualifiedAccess is the attribute a qualified access
+     * @param isListAttribute   is list attribute
+     * @return java attribute info.
+     */
+    public static JavaAttributeInfo getAttributeInfoForTheData(JavaQualifiedTypeInfo importInfo, String attributeName,
+            YangType<?> attributeType, boolean isQualifiedAccess, boolean isListAttribute,
+            YangCompilerAnnotation compilerAnnotation) {
+        JavaAttributeInfo newAttr = getAttributeInfoForTheData(importInfo, attributeName, attributeType,
+                isQualifiedAccess, isListAttribute);
+
+        newAttr.setCompilerAnnotation(compilerAnnotation);
 
         return newAttr;
     }

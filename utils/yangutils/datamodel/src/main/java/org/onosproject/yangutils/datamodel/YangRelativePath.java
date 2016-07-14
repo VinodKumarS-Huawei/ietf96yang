@@ -29,24 +29,24 @@ public class YangRelativePath implements Serializable {
     private int ancestorNodeCount;
 
     // Absolute path expression.
-    private List<YangAtomicPath> atomicPathList;
+    private List<YangAbsolutePath> absolutePath;
 
     /**
      * Returns the absolute path.
      *
      * @return the absolute path
      */
-    public List<YangAtomicPath> getAtomicPathList() {
-        return atomicPathList;
+    public List<YangAbsolutePath> getAbsolutePath() {
+        return absolutePath;
     }
 
     /**
      * Sets the absolute path.
      *
-     * @param atomicPathList Sets the absolute path
+     * @param absolutePath Sets the absolute path
      */
-    public void setAtomicPathList(List<YangAtomicPath> atomicPathList) {
-        this.atomicPathList = atomicPathList;
+    public void setAbsolutePath(List<YangAbsolutePath> absolutePath) {
+        this.absolutePath = absolutePath;
     }
 
     /**

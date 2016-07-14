@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -87,8 +88,14 @@ public class YangUtilManager
     /**
      * Source directory for generated files.
      */
-    @Parameter(property = "genFilesDir", defaultValue = "src/main/java")
-    private String genFilesDir;
+    @Parameter(property = "classFileDir", defaultValue = "target/generated-sources")
+    private String classFileDir;
+
+    /**
+     * Source directory for manager's generated files.
+     */
+    @Parameter(property = "managerFileDir", defaultValue = "src/main/java")
+    private String managerFileDir;
 
     /**
      * Base directory for project.
@@ -153,11 +160,12 @@ public class YangUtilManager
             /*
              * For deleting the generated code in previous build.
              */
-            deleteDirectory(getDirectory(baseDir, genFilesDir) + DEFAULT_PKG);
+            deleteDirectory(getDirectory(baseDir, classFileDir) + DEFAULT_PKG);
             deleteDirectory(getDirectory(baseDir, outputDirectory));
 
             String searchDir = getDirectory(baseDir, yangFilesDir);
-            String codeGenDir = getDirectory(baseDir, genFilesDir) + SLASH;
+            String codeGenDir = getDirectory(baseDir, classFileDir) + SLASH;
+            String managerCodeGenDir = getDirectory(baseDir, managerFileDir) + SLASH;
 
             // Creates conflict resolver and set values to it.
             YangToJavaNamingConflictUtil conflictResolver = new YangToJavaNamingConflictUtil();
@@ -167,6 +175,7 @@ public class YangUtilManager
             conflictResolver.setPrefixForIdentifier(prefixForIdentifier);
             YangPluginConfig yangPlugin = new YangPluginConfig();
             yangPlugin.setCodeGenDir(codeGenDir);
+            yangPlugin.setManagerCodeGenDir(managerCodeGenDir);
             yangPlugin.setConflictResolver(conflictResolver);
 
             /*
@@ -195,7 +204,8 @@ public class YangUtilManager
             // Serialize data model.
             serializeDataModel(getDirectory(baseDir, outputDirectory), getYangFileInfoSet(), project, true);
 
-            addToCompilationRoot(getDirectory(baseDir, genFilesDir), project, context);
+            addToCompilationRoot(codeGenDir, project, context);
+            addToCompilationRoot(managerCodeGenDir, project, context);
 
             copyYangFilesToTarget(getYangFileInfoSet(), getDirectory(baseDir, outputDirectory), project);
         } catch (IOException | ParserException e) {
@@ -206,7 +216,7 @@ public class YangUtilManager
             }
             try {
                 translatorErrorHandler(getRootNode());
-                deleteDirectory(getDirectory(baseDir, genFilesDir) + DEFAULT_PKG);
+                deleteDirectory(getDirectory(baseDir, classFileDir) + DEFAULT_PKG);
             } catch (IOException ex) {
                 throw new MojoExecutionException(
                         "Error handler failed to delete files for data model node.");
@@ -255,14 +265,12 @@ public class YangUtilManager
     public void resolveDependenciesUsingLinker()
             throws MojoExecutionException {
         createYangNodeSet();
-        for (YangFileInfo yangFileInfo : getYangFileInfoSet()) {
-            setCurYangFileInfo(yangFileInfo);
-            try {
-                yangLinker.resolveDependencies(getYangNodeSet());
-            } catch (LinkerException e) {
-                throw new MojoExecutionException(e.getMessage());
-            }
+        try {
+            yangLinker.resolveDependencies(getYangNodeSet());
+        } catch (LinkerException e) {
+            throw new MojoExecutionException(e.getMessage());
         }
+
     }
 
     /**

@@ -34,9 +34,12 @@ import org.onosproject.yangutils.utils.io.impl.YangPluginConfig;
 import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.GENERATE_EVENT_CLASS;
 import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.GENERATE_EVENT_LISTENER_INTERFACE;
 import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.GENERATE_EVENT_SUBJECT_CLASS;
+import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.GENERATE_INTERFACE_WITH_BUILDER;
 import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.GENERATE_SERVICE_AND_MANAGER;
+import static org.onosproject.yangutils.translator.tojava.YangJavaModelUtils.generateCodeOfRootNode;
+import static org.onosproject.yangutils.translator.tojava.YangJavaModelUtils.isManagerCodeGenRequired;
+import static org.onosproject.yangutils.translator.tojava.YangJavaModelUtils.isGenerationOfCodeReq;
 import static org.onosproject.yangutils.translator.tojava.utils.JavaIdentifierSyntax.getRootPackage;
-import static org.onosproject.yangutils.translator.tojava.javamodel.YangJavaModelUtils.generateCodeOfRootNode;
 import static org.onosproject.yangutils.utils.io.impl.YangIoUtils.searchAndDeleteTempDir;
 
 /**
@@ -62,7 +65,7 @@ public class YangJavaSubModule
     /**
      * List of notifications nodes.
      */
-    private List<YangNode> notificationNodes = new ArrayList<>();
+    private transient List<YangNode> notificationNodes = new ArrayList<>();
 
     /**
      * Creates YANG java sub module object.
@@ -70,7 +73,7 @@ public class YangJavaSubModule
     public YangJavaSubModule() {
         super();
         setJavaFileInfo(new JavaFileInfo());
-        int gentype = GENERATE_SERVICE_AND_MANAGER;
+        int gentype = GENERATE_SERVICE_AND_MANAGER | GENERATE_INTERFACE_WITH_BUILDER;
         if (isNotificationChildNodePresent(this)) {
             gentype = GENERATE_SERVICE_AND_MANAGER | GENERATE_EVENT_SUBJECT_CLASS | GENERATE_EVENT_CLASS
                     | GENERATE_EVENT_LISTENER_INTERFACE;
@@ -124,8 +127,7 @@ public class YangJavaSubModule
     /**
      * Returns the name space of the module to which the sub module belongs to.
      *
-     * @param belongsToInfo Information of the module to which the sub module
-     *                      belongs
+     * @param belongsToInfo Information of the module to which the sub module belongs
      * @return the name space string of the module.
      */
     public String getNameSpaceFromModule(YangBelongsTo belongsToInfo) {
@@ -133,8 +135,7 @@ public class YangJavaSubModule
     }
 
     /**
-     * Prepares the information for java code generation corresponding to YANG
-     * submodule info.
+     * Prepares the information for java code generation corresponding to YANG submodule info.
      *
      * @param yangPlugin YANG plugin config
      * @throws TranslatorException when fails to translate
@@ -167,8 +168,14 @@ public class YangJavaSubModule
          * The manager class needs to extend the "ListenerRegistry".
          */
         try {
-            getTempJavaCodeFragmentFiles().generateJavaFile(GENERATE_SERVICE_AND_MANAGER, this);
+            if (isManagerCodeGenRequired(this) && isGenerationOfCodeReq(getJavaFileInfo())) {
+
+                getTempJavaCodeFragmentFiles().generateJavaFile(GENERATE_INTERFACE_WITH_BUILDER, this);
+                getTempJavaCodeFragmentFiles().generateJavaFile(GENERATE_SERVICE_AND_MANAGER, this);
+            }
             searchAndDeleteTempDir(getJavaFileInfo().getBaseCodeGenPath() +
+                    getJavaFileInfo().getPackageFilePath());
+            searchAndDeleteTempDir(getJavaFileInfo().getPluginConfig().getCodeGenDir() +
                     getJavaFileInfo().getPackageFilePath());
         } catch (IOException e) {
             throw new TranslatorException("Failed to generate code for submodule node " + getName());

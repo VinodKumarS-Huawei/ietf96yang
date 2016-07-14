@@ -15,8 +15,10 @@
  */
 package org.onosproject.yangutils.datamodel;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+
 import org.onosproject.yangutils.datamodel.exceptions.DataModelException;
 import org.onosproject.yangutils.datamodel.utils.Parsable;
 import org.onosproject.yangutils.datamodel.utils.YangConstructType;
@@ -63,8 +65,8 @@ import static org.onosproject.yangutils.datamodel.utils.YangConstructType.CHOICE
  * Represents data model node to maintain information defined in YANG choice.
  */
 public class YangChoice extends YangNode
-        implements YangCommonInfo, Parsable, CollisionDetector, YangAugmentationHolder, YangWhenHolder,
-        YangIfFeatureHolder {
+        implements YangCommonInfo, Parsable, CollisionDetector, YangAugmentableNode,
+        YangWhenHolder, YangIfFeatureHolder {
 
     private static final long serialVersionUID = 806201604L;
 
@@ -80,26 +82,26 @@ public class YangChoice extends YangNode
 
     /**
      * Reference RFC 6020.
-     *
+     * <p>
      * The "default" statement indicates if a case should be considered as the
      * default if no child nodes from any of the choice's cases exist. The
      * argument is the identifier of the "case" statement. If the "default"
      * statement is missing, there is no default case.
-     *
+     * <p>
      * The "default" statement MUST NOT be present on choices where "mandatory"
      * is true.
-     *
+     * <p>
      * The default case is only important when considering the default values of
      * nodes under the cases. The default values for nodes under the default
      * case are used if none of the nodes under any of the cases are present.
-     *
+     * <p>
      * There MUST NOT be any mandatory nodes directly under the default case.
-     *
+     * <p>
      * Default values for child nodes under a case are only used if one of the
      * nodes under that case is present, or if that case is the default case. If
      * none of the nodes under a case are present and the case is not the
      * default case, the default values of the cases' child nodes are ignored.
-     *
+     * <p>
      * the default case to be used if no case members is present.
      */
     private String defaultCase;
@@ -111,21 +113,21 @@ public class YangChoice extends YangNode
 
     /**
      * Reference RFC 6020.
-     *
+     * <p>
      * The "mandatory" statement, which is optional, takes as an argument the
      * string "true" or "false", and puts a constraint on valid data. If
      * "mandatory" is "true", at least one node from exactly one of the choice's
      * case branches MUST exist.
-     *
+     * <p>
      * If not specified, the default is "false".
-     *
+     * <p>
      * The behavior of the constraint depends on the type of the choice's
      * closest ancestor node in the schema tree which is not a non-presence
      * container:
-     *
+     * <p>
      * o If this ancestor is a case node, the constraint is enforced if any
      * other node from the case exists.
-     *
+     * <p>
      * o Otherwise, it is enforced if the ancestor node exists.
      */
     private String mandatory;
@@ -155,6 +157,8 @@ public class YangChoice extends YangNode
      * List of if-feature.
      */
     private List<YangIfFeature> ifFeatureList;
+
+    private List<YangAugmentedInfo> yangAugmentedInfo = new ArrayList<>();
 
     /**
      * Create a choice node.
@@ -418,4 +422,18 @@ public class YangChoice extends YangNode
         this.ifFeatureList = ifFeatureList;
     }
 
+    @Override
+    public void addAugmentation(YangAugmentedInfo augmentInfo) {
+        yangAugmentedInfo.add(augmentInfo);
+    }
+
+    @Override
+    public void removeAugmentation(YangAugmentedInfo augmentInfo) {
+        yangAugmentedInfo.remove(augmentInfo);
+    }
+
+    @Override
+    public List<YangAugmentedInfo> getAugmentedInfoList() {
+        return yangAugmentedInfo;
+    }
 }

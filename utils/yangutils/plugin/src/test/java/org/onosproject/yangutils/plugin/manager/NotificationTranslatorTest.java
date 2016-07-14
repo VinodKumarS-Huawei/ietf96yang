@@ -38,17 +38,19 @@ public final class NotificationTranslatorTest {
      * Checks union translation should not result in any exception.
      */
     @Test
-    public void processUnionTranslator()
+    public void processNotificationTranslator()
             throws IOException, ParserException {
 
         YangNode node = manager.getDataModel("src/test/resources/NotificationTest.yang");
 
         YangPluginConfig yangPluginConfig = new YangPluginConfig();
         yangPluginConfig.setCodeGenDir("target/NotificationTest/");
+        yangPluginConfig.setManagerCodeGenDir("target/NotificationTest1/");
 
         generateJavaCode(node, yangPluginConfig);
 
         deleteDirectory("target/NotificationTest/");
+        deleteDirectory("target/NotificationTest1/");
     }
 
     // TODO enhance the test cases, after having a framework of translator test.

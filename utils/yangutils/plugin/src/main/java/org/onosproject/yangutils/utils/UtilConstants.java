@@ -97,11 +97,6 @@ public final class UtilConstants {
     public static final String JAVA_DOC_RETURN = " * @return ";
 
     /**
-     * JavaDocs's throw annotation.
-     */
-    public static final String JAVA_DOC_THROWS = " * @throws ";
-
-    /**
      * JavaDocs's description for setter method.
      */
     public static final String JAVA_DOC_SETTERS = " * Returns the builder object of ";
@@ -197,6 +192,11 @@ public final class UtilConstants {
     public static final String PARSE_BYTE = "parseByte";
 
     /**
+     * Static attribute for get bytes.
+     */
+    public static final String GET_BYTES = "getBytes";
+
+    /**
      * Static attribute for parse boolean.
      */
     public static final String PARSE_BOOLEAN = "parseBoolean";
@@ -282,6 +282,16 @@ public final class UtilConstants {
     public static final String INPUT = "input";
 
     /**
+     * Static attribute for output string.
+     */
+    public static final String OUTPUT = "output";
+
+    /**
+     * Static attribute for current string.
+     */
+    public static final String CURRENT = "current";
+
+    /**
      * Static attribute for leafref string.
      */
     public static final String LEAFREF = "leafref";
@@ -290,11 +300,6 @@ public final class UtilConstants {
      * Static attribute for identityref string.
      */
     public static final String IDENTITYREF = "identityref";
-
-    /**
-     * Static attribute for instance identifier string.
-     */
-    public static final String INSTANCE_IDENTIFIER = "instance-identifier";
 
     /**
      * Static attribute for output variable of rpc.
@@ -317,16 +322,6 @@ public final class UtilConstants {
     public static final String ADD = "+";
 
     /**
-     * Static attribute for asterisk.
-     */
-    public static final String ASTERISK = "*";
-
-    /**
-     * Static attribute for at.
-     */
-    public static final String AT = "@";
-
-    /**
      * Static attribute for quotes.
      */
     public static final String QUOTES = "\"";
@@ -340,6 +335,56 @@ public final class UtilConstants {
      * Static attribute for comma.
      */
     public static final String COMMA = ",";
+
+    /**
+     * Static attribute for class.
+     */
+    public static final String CLASS_STRING = "Class";
+
+    /**
+     * Static attribute for put.
+     */
+    public static final String PUT = "put";
+
+    /**
+     * Static attribute for get.
+     */
+    public static final String GET = "get";
+
+    /**
+     * Static attribute for slash character.
+     */
+    public static final char CHAR_OF_SLASH = '/';
+
+    /**
+     * Static attribute for open square bracket character.
+     */
+    public static final char CHAR_OF_OPEN_SQUARE_BRACKET = '[';
+
+    /**
+     * Static attribute for close square bracket character.
+     */
+    public static final char CHAR_OF_CLOSE_SQUARE_BRACKET = ']';
+
+    /**
+     * Static attribute for slash string.
+     */
+    public static final String SLASH_FOR_STRING = "/";
+
+    /**
+     * Static attribute for open square bracket.
+     */
+    public static final String OPEN_SQUARE_BRACKET = "[";
+
+    /**
+     * Static attribute for ancestor accessor.
+     */
+    public static final String ANCESTOR_ACCESSOR = "..";
+
+    /**
+     * Static attribute for ancestor accessor along with path.
+     */
+    public static final String ANCESTOR_ACCESSOR_IN_PATH = "../";
 
     /**
      * Static attribute for add syntax.
@@ -382,11 +427,6 @@ public final class UtilConstants {
     public static final String VALUE = "value";
 
     /**
-     * Static attribute for enumValue syntax.
-     */
-    public static final String ENUM_VALUE = "enumValue";
-
-    /**
      * Static attribute for suffix s.
      */
     public static final String SUFFIX_S = "s";
@@ -395,16 +435,6 @@ public final class UtilConstants {
      * Static attribute for if.
      */
     public static final String IF = "if";
-
-    /**
-     * Static attribute for for.
-     */
-    public static final String FOR = "for";
-
-    /**
-     * Static attribute for while.
-     */
-    public static final String WHILE = "while";
 
     /**
      * Static attribute for of.
@@ -482,11 +512,6 @@ public final class UtilConstants {
     public static final String OPEN_PARENTHESIS = "(";
 
     /**
-     * Static attribute for clear syntax.
-     */
-    public static final String CLEAR = "clear";
-
-    /**
      * Static attribute for switch syntax.
      */
     public static final String SWITCH = "switch";
@@ -522,6 +547,11 @@ public final class UtilConstants {
     public static final String CLOSE_CURLY_BRACKET = "}";
 
     /**
+     * Static attribute for square brackets syntax.
+     */
+    public static final String SQUARE_BRACKETS = "[]";
+
+    /**
      * Static attribute for getter method prefix.
      */
     public static final String GET_METHOD_PREFIX = "get";
@@ -537,11 +567,6 @@ public final class UtilConstants {
     public static final String FOUR_SPACE_INDENTATION = "    ";
 
     /**
-     * Static attribute for not syntax.
-     */
-    public static final String NOT = "!";
-
-    /**
      * Static attribute for try syntax.
      */
     public static final String TRY = "try";
@@ -550,6 +575,11 @@ public final class UtilConstants {
      * Static attribute for catch syntax.
      */
     public static final String CATCH = "catch";
+
+    /**
+     * Static attribute for super syntax.
+     */
+    public static final String SUPER = "super";
 
     /**
      * Static attribute for eight space indentation.
@@ -602,9 +632,9 @@ public final class UtilConstants {
     public static final String PUBLIC = "public";
 
     /**
-     * Static attribute for protected modifier.
+     * Static attribute for abstract modifier.
      */
-    public static final String PROTECTED = "protected";
+    public static final String ABSTRACT = "abstract";
 
     /**
      * Void java type.
@@ -637,6 +667,16 @@ public final class UtilConstants {
     public static final String BIG_INTEGER = "BigInteger";
 
     /**
+     * BigDecimal built in java type.
+     */
+    public static final String BIG_DECIMAL = "BigDecimal";
+
+    /**
+     * BitSet built in java type.
+     */
+    public static final String BIT_SET = "BitSet";
+
+    /**
      * Byte java built in type.
      */
     public static final String BYTE = "byte";
@@ -655,11 +695,6 @@ public final class UtilConstants {
      * Long java built in type.
      */
     public static final String LONG = "long";
-
-    /**
-     * Float java built in type.
-     */
-    public static final String FLOAT = "float";
 
     /**
      * Double java built in type.
@@ -692,9 +727,9 @@ public final class UtilConstants {
     public static final String LONG_WRAPPER = "Long";
 
     /**
-     * YangUint64 java built in wrapper type.
+     * Static varibale for question mark.
      */
-    public static final String YANG_UINT64 = "YangUint64";
+    public static final String QUESTION_MARK = "?";
 
     /**
      * List of keywords in java, this is used for checking if the input does not contain these keywords.
@@ -897,9 +932,20 @@ public final class UtilConstants {
     public static final String OVERRIDE = "@Override";
 
     /**
-     * Static attribute for new line.
+     * Static attribute for collections.
      */
     public static final String COLLECTION_IMPORTS = "java.util";
+
+    /**
+     * Static attribute for map.
+     */
+    public static final String MAP = "Map";
+
+    /**
+     * Static attribute for hash map.
+     */
+    public static final String HASH_MAP = "HashMap";
+
 
     /**
      * Static attribute for more object import package.
@@ -927,25 +973,14 @@ public final class UtilConstants {
     public static final String JAVA_UTIL_OBJECTS_IMPORT_CLASS = "Objects;\n";
 
     /**
-     * Static attribute for AugmentationHolder class import package.
-     */
-    public static final String PROVIDED_AUGMENTATION_CLASS_IMPORT_PKG =
-            "org.onosproject.yangutils.utils";
-
-    /**
-     * Static attribute for AugmentationHolder class import class.
-     */
-    public static final String AUGMENTATION_HOLDER_CLASS_IMPORT_CLASS = "AugmentationHolder;\n";
-
-    /**
      * Static attribute for AugmentedInfo class import package.
      */
-    public static final String AUGMENTED_INFO_CLASS_IMPORT_PKG = "org.onosproject.yangutils.utils";
+    public static final String YANG_AUGMENTED_INFO_CLASS_IMPORT_PKG = "org.onosproject.yangutils.datamodel";
 
     /**
      * Static attribute for AugmentedInfo class import class.
      */
-    public static final String AUGMENTED_INFO_CLASS_IMPORT_CLASS = "AugmentedInfo;\n";
+    public static final String YANG_AUGMENTED_INFO_CLASS_IMPORT_CLASS = "YangAugmentedInfo;\n";
 
     /**
      * Static attribute for augmentation class.
@@ -953,19 +988,14 @@ public final class UtilConstants {
     public static final String AUGMENTATION = "Augmentation";
 
     /**
-     * Static attribute for AugmentationHolder class.
-     */
-    public static final String AUGMENTATION_HOLDER = "AugmentationHolder";
-
-    /**
      * Static attribute for AugmentedInfo class.
      */
-    public static final String AUGMENTED_INFO = "AugmentedInfo";
+    public static final String YANG_AUGMENTED_INFO = "YangAugmentedInfo";
 
     /**
-     * Static attribute for augmentable.
+     * Static attribute for augmented.
      */
-    public static final String AUGMENTABLE = "Augmentable";
+    public static final String AUGMENTED = "Augmented";
 
     /**
      * Static attribute for list.
@@ -973,9 +1003,9 @@ public final class UtilConstants {
     public static final String LIST = "List";
 
     /**
-     * Static attribute for array list.
+     * Static attribute for list.
      */
-    public static final String ARRAY_LIST = "ArrayList";
+    public static final String QUEUE = "Queue";
 
     /**
      * Comment to be added for autogenerated impl methods.
@@ -1086,32 +1116,6 @@ public final class UtilConstants {
     public static final String EVENT_LISTENER = "EventListener";
 
     /**
-     * Static attribute for YangBinary class.
-     */
-    public static final String YANG_BINARY_CLASS = "YangBinary";
-
-    /**
-     * Static attribute for YangBinary class.
-     */
-    public static final String YANG_BITS_CLASS = "YangBits";
-
-    /**
-     * Static attribute for YANG types package.
-     */
-    public static final String YANG_TYPES_PKG = "org.onosproject.yangutils.datamodel.utils.builtindatatype";
-
-    /**
-     * Static attribute for MathContext class.
-     */
-    public static final String MATH_CONTEXT = "MathContext";
-
-    /**
-     * Static attribute for DECIMAL64 class.
-     */
-    public static final String YANG_DECIMAL64_CLASS = "YangDecimal64";
-
-
-    /**
      * Static attribute for YANG file error.
      */
     public static final String YANG_FILE_ERROR = "YANG file error : ";
@@ -1140,10 +1144,28 @@ public final class UtilConstants {
             + "grouping for given uses";
 
     /**
-     * Static attribute for grouping linker error information.
+     * Static attribute for if-feature linker error information.
      */
     public static final String FEATURE_LINKER_ERROR = "YANG file error: Unable to find feature "
             + "for given if-feature";
+
+    /**
+     * Static attribute for leafref linker error information.
+     */
+    public static final String LEAFREF_LINKER_ERROR = "YANG file error: Unable to find base "
+            + "leaf/leaf-list for given leafref";
+
+    /**
+     * Static attribute for base linker error information.
+     */
+    public static final String BASE_LINKER_ERROR = "YANG file error: Unable to find base "
+            + "identity for given base";
+
+    /**
+     * Static attribute for identityref linker error information.
+     */
+    public static final String IDENTITYREF_LINKER_ERROR = "YANG file error: Unable to find base "
+            + "identity for given base";
 
     /**
      * Static attribute for reference.

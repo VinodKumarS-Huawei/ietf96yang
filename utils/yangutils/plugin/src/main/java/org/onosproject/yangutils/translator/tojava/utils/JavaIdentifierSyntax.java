@@ -22,6 +22,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
 import org.onosproject.yangutils.datamodel.YangNode;
 import org.onosproject.yangutils.translator.exception.TranslatorException;
 import org.onosproject.yangutils.translator.tojava.JavaFileInfo;
@@ -54,11 +55,8 @@ import static org.onosproject.yangutils.utils.io.impl.YangIoUtils.getPackageDirP
  */
 public final class JavaIdentifierSyntax {
 
-    private static final int MAX_MONTHS = 12;
-    private static final int MAX_DAYS = 31;
     private static final int INDEX_ZERO = 0;
     private static final int INDEX_ONE = 1;
-    private static final int INDEX_TWO = 2;
     private static final int VALUE_CHECK = 10;
     private static final String ZERO = "0";
     private static final String DATE_FORMAT = "yyyy-MM-dd";
@@ -244,4 +242,5 @@ public final class JavaIdentifierSyntax {
         File pkgWithFile = new File(pkgDir + SLASH + "package-info.java");
         return pkgDir.exists() && pkgWithFile.isFile();
     }
+
 }

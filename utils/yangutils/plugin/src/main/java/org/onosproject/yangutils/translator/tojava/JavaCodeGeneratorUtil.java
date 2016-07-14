@@ -17,15 +17,16 @@
 package org.onosproject.yangutils.translator.tojava;
 
 import java.io.IOException;
-
+import org.onosproject.yangutils.datamodel.TraversalType;
 import org.onosproject.yangutils.datamodel.YangNode;
+import org.onosproject.yangutils.translator.exception.InvalidNodeForTranslatorException;
 import org.onosproject.yangutils.translator.exception.TranslatorException;
 import org.onosproject.yangutils.utils.io.impl.YangPluginConfig;
 
-import static org.onosproject.yangutils.translator.tojava.TraversalType.CHILD;
-import static org.onosproject.yangutils.translator.tojava.TraversalType.PARENT;
-import static org.onosproject.yangutils.translator.tojava.TraversalType.ROOT;
-import static org.onosproject.yangutils.translator.tojava.TraversalType.SIBILING;
+import static org.onosproject.yangutils.datamodel.TraversalType.CHILD;
+import static org.onosproject.yangutils.datamodel.TraversalType.PARENT;
+import static org.onosproject.yangutils.datamodel.TraversalType.ROOT;
+import static org.onosproject.yangutils.datamodel.TraversalType.SIBILING;
 
 /**
  * Representation of java code generator based on application schema.
@@ -80,10 +81,18 @@ public final class JavaCodeGeneratorUtil {
                 if (!(codeGenNode instanceof JavaCodeGenerator)) {
                     throw new TranslatorException("Unsupported node to generate code");
                 }
-
                 setCurNode(codeGenNode);
                 try {
                     generateCodeEntry(codeGenNode, yangPlugin);
+                } catch (InvalidNodeForTranslatorException e) {
+                    if (codeGenNode.getNextSibling() != null) {
+                        curTraversal = SIBILING;
+                        codeGenNode = codeGenNode.getNextSibling();
+                    } else {
+                        curTraversal = PARENT;
+                        codeGenNode = codeGenNode.getParent();
+                    }
+                    continue;
                 } catch (Exception e) {
                     throw new TranslatorException(e.getMessage());
                 }

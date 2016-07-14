@@ -124,7 +124,8 @@ package org.onosproject.yangutils.parser.antlrgencode;
                | augmentStatement
                | rpcStatement
                | notificationStatement
-               | deviationStatement)*
+               | deviationStatement
+               | compilerAnnotationStatement)*
                ;
 
     /**
@@ -437,6 +438,13 @@ package org.onosproject.yangutils.parser.antlrgencode;
                     | bitsSpecification | unionSpecification;
 
     /**
+     *    decimal64-specification = ;; these stmts can appear in any order
+     *                               fraction-digits-stmt
+     *                               [range-stmt]
+     */
+     decimal64Specification : fractionDigitStatement rangeStatement?;
+
+    /**
      *  fraction-digits-stmt = fraction-digits-keyword sep
      *                         fraction-digits-arg-str stmtend
      *
@@ -447,7 +455,7 @@ package org.onosproject.yangutils.parser.antlrgencode;
      *                              "5" / "6" / "7" / "8"])
      *                        / "2" / "3" / "4" / "5" / "6" / "7" / "8" / "9"
      */
-    decimal64Specification : FRACTION_DIGITS_KEYWORD fraction STMTEND;
+    fractionDigitStatement : FRACTION_DIGITS_KEYWORD fraction STMTEND;
 
     /**
      *  numerical-restrictions = range-stmt stmtsep
@@ -596,7 +604,7 @@ package org.onosproject.yangutils.parser.antlrgencode;
      *                             require-instance-arg >
      *  require-instance-arg = true-keyword / false-keyword
      */
-    requireInstanceStatement : REQUIRE_INSTANCE_KEYWORD (TRUE_KEYWORD | FALSE_KEYWORD) STMTEND;
+    requireInstanceStatement : REQUIRE_INSTANCE_KEYWORD requireInstance STMTEND;
 
     /**
      *  instance-identifier-specification =
@@ -1233,6 +1241,18 @@ package org.onosproject.yangutils.parser.antlrgencode;
                            defaultStatement? configStatement? mandatoryStatement? minElementsStatement?
                            maxElementsStatement? RIGHT_CURLY_BRACE));
 
+    compilerAnnotationStatement : COMPILER_ANNOTATION string LEFT_CURLY_BRACE
+                                       compilerAnnotationBodyStatement RIGHT_CURLY_BRACE;
+
+    compilerAnnotationBodyStatement : appDataStructureStatement? appExtendedStatement? ;
+
+    appDataStructureStatement : APP_DATA_STRUCTURE appDataStructure (STMTEND | (LEFT_CURLY_BRACE
+                  dataStructureKeyStatement? RIGHT_CURLY_BRACE));
+
+    dataStructureKeyStatement : DATA_STRUCTURE_KEY string STMTEND;
+
+    appExtendedStatement : APP_EXTENDED extendedName STMTEND;
+
     string : STRING (PLUS STRING)*
            | IDENTIFIER
            | INTEGER
@@ -1273,6 +1293,8 @@ package org.onosproject.yangutils.parser.antlrgencode;
 
     refine : string;
 
+    requireInstance : string;
+
     augment : string;
 
     deviation : string;
@@ -1280,6 +1302,10 @@ package org.onosproject.yangutils.parser.antlrgencode;
     value : string;
 
     fraction : string;
+
+    appDataStructure : string;
+
+    extendedName : string;
 
     yangConstruct : ANYXML_KEYWORD | ARGUMENT_KEYWORD | AUGMENT_KEYWORD | BASE_KEYWORD | BELONGS_TO_KEYWORD
                   | BIT_KEYWORD | CASE_KEYWORD | CHOICE_KEYWORD | CONFIG_KEYWORD | CONTACT_KEYWORD | CONTAINER_KEYWORD

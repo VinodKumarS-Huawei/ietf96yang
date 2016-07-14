@@ -95,6 +95,16 @@ public enum YangConstructType {
     BITS_DATA,
 
     /**
+     * Identifies the YANG decimal64 parsed data.
+     */
+    DECIMAL64_DATA,
+
+    /**
+     * Identifies the YANG fraction-digits parsed data.
+     */
+    FRACTION_DIGITS_DATA,
+
+    /**
      * Identifies the YANG enum parsed data.
      */
     ENUM_DATA,
@@ -372,7 +382,13 @@ public enum YangConstructType {
     /**
      * Identifies the YANG anyxml element parsed data.
      */
-    ANYXML_DATA;
+    ANYXML_DATA,
+
+    COMPILER_ANNOTATION_DATA,
+
+    APP_DATA_STRUCTURE;
+
+
 
     /**
      * Returns the YANG construct keyword corresponding to enum values.
@@ -413,6 +429,10 @@ public enum YangConstructType {
                 return "bit";
             case BITS_DATA:
                 return "bits";
+            case DECIMAL64_DATA:
+                return "decimal64";
+            case FRACTION_DIGITS_DATA:
+                return "fraction-digits";
             case ENUM_DATA:
                 return "enum";
             case IMPORT_DATA:
@@ -525,6 +545,10 @@ public enum YangConstructType {
                 return "deviation";
             case ANYXML_DATA:
                 return "anyxml";
+            case COMPILER_ANNOTATION_DATA:
+                return "compiler-annotation";
+            case APP_DATA_STRUCTURE:
+                return "app-data-structure";
             default:
                 return "yang";
         }

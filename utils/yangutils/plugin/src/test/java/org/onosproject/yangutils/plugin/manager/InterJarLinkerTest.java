@@ -41,10 +41,10 @@ import org.onosproject.yangutils.utils.io.impl.YangPluginConfig;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.onosproject.yangutils.datamodel.utils.DataModelUtils.deSerializeDataModel;
+import static org.onosproject.yangutils.datamodel.utils.ResolvableStatus.RESOLVED;
 import static org.onosproject.yangutils.datamodel.utils.builtindatatype.YangDataTypes.DERIVED;
 import static org.onosproject.yangutils.datamodel.utils.builtindatatype.YangDataTypes.STRING;
-import static org.onosproject.yangutils.datamodel.utils.ResolvableStatus.RESOLVED;
-import static org.onosproject.yangutils.plugin.manager.YangPluginUtils.deSerializeDataModel;
 import static org.onosproject.yangutils.plugin.manager.YangPluginUtils.parseJarFile;
 import static org.onosproject.yangutils.plugin.manager.YangPluginUtils.serializeDataModel;
 import static org.onosproject.yangutils.utils.UtilConstants.SLASH;
@@ -189,6 +189,7 @@ public class InterJarLinkerTest {
 
         YangPluginConfig yangPluginConfig = new YangPluginConfig();
         yangPluginConfig.setCodeGenDir(TARGET);
+        yangPluginConfig.setManagerCodeGenDir(TARGET);
 
         utilManager.translateToJava(utilManager.getYangFileInfoSet(), yangPluginConfig);
 

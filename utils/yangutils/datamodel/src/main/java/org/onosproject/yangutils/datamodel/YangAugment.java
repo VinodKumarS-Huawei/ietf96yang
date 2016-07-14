@@ -15,11 +15,14 @@
  */
 package org.onosproject.yangutils.datamodel;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.onosproject.yangutils.datamodel.exceptions.DataModelException;
 import org.onosproject.yangutils.datamodel.utils.Parsable;
+import org.onosproject.yangutils.datamodel.utils.ResolvableStatus;
 import org.onosproject.yangutils.datamodel.utils.YangConstructType;
 
 import static org.onosproject.yangutils.datamodel.utils.DataModelUtils.detectCollidingChildUtil;
@@ -81,7 +84,8 @@ import static org.onosproject.yangutils.datamodel.utils.DataModelUtils.detectCol
  */
 public class YangAugment
         extends YangNode
-        implements YangLeavesHolder, YangCommonInfo, Parsable, CollisionDetector, YangWhenHolder, YangIfFeatureHolder {
+        implements YangLeavesHolder, YangCommonInfo, Parsable, CollisionDetector, YangAugmentedInfo, Resolvable,
+        YangXPathResolver, YangWhenHolder, YangIfFeatureHolder {
 
     private static final long serialVersionUID = 806201602L;
 
@@ -108,7 +112,7 @@ public class YangAugment
     /**
      * List of node identifiers.
      */
-    private List<YangNodeIdentifier> targetNode;
+    private List<YangAbsolutePath> targetNode;
 
     /**
      * Reference of the YANG augment.
@@ -119,6 +123,23 @@ public class YangAugment
      * Status of the node.
      */
     private YangStatusType status;
+
+    /**
+     * Resolved augmented node.
+     */
+    private YangNode augmentedNode;
+
+    /**
+     * All resolved nodes in given xPath.
+     */
+    private Map<YangAbsolutePath, YangNode> resolveNodeInPath;
+
+    /**
+     * Status of resolution. If completely resolved enum value is "RESOLVED", if not enum value is "UNRESOLVED", in case
+     * reference of grouping/typedef is added to uses/type but it's not resolved value of enum should be
+     * "INTRA_FILE_RESOLVED".
+     */
+    private ResolvableStatus resolvableStatus;
 
     /**
      * When data of the node.
@@ -135,6 +156,8 @@ public class YangAugment
      */
     public YangAugment() {
         super(YangNodeType.AUGMENT_NODE);
+        resolveNodeInPath = new HashMap<>();
+        resolvableStatus = ResolvableStatus.UNRESOLVED;
     }
 
     /**
@@ -142,7 +165,7 @@ public class YangAugment
      *
      * @return the augmented node
      */
-    public List<YangNodeIdentifier> getTargetNode() {
+    public List<YangAbsolutePath> getTargetNode() {
         return targetNode;
     }
 
@@ -151,7 +174,7 @@ public class YangAugment
      *
      * @param nodeIdentifiers the augmented node
      */
-    public void setTargetNode(List<YangNodeIdentifier> nodeIdentifiers) {
+    public void setTargetNode(List<YangAbsolutePath> nodeIdentifiers) {
         targetNode = nodeIdentifiers;
     }
 
@@ -371,9 +394,32 @@ public class YangAugment
         this.name = name;
     }
 
+    /**
+     * Returns augmented node.
+     *
+     * @return augmented node
+     */
+    public YangNode getAugmentedNode() {
+        return augmentedNode;
+    }
+
+    /**
+     * Sets augmented node.
+     *
+     * @param augmentedNode augmented node
+     */
+    public void setAugmentedNode(YangNode augmentedNode) {
+        this.augmentedNode = augmentedNode;
+    }
+
     @Override
     public List<YangIfFeature> getIfFeatureList() {
         return ifFeatureList;
+    }
+
+    @Override
+    public void setIfFeatureList(List<YangIfFeature> ifFeatureList) {
+        this.ifFeatureList = ifFeatureList;
     }
 
     @Override
@@ -385,7 +431,36 @@ public class YangAugment
     }
 
     @Override
-    public void setIfFeatureList(List<YangIfFeature> ifFeatureList) {
-        this.ifFeatureList = ifFeatureList;
+    public ResolvableStatus getResolvableStatus() {
+        return resolvableStatus;
+    }
+
+    @Override
+    public void setResolvableStatus(ResolvableStatus resolvableStatus) {
+        this.resolvableStatus = resolvableStatus;
+
+    }
+
+    @Override
+    public void resolve() throws DataModelException {
+        // Resolving of target node is being done in XPathLinker.
+    }
+
+    /**
+     * Returns all resolved node in path.
+     *
+     * @return all resolved node in path
+     */
+    public Map<YangAbsolutePath, YangNode> getResolveNodeInPath() {
+        return resolveNodeInPath;
+    }
+
+    /**
+     * Sets all resolved node in path.
+     *
+     * @param resolveNodeInPath all resolved node in path
+     */
+    public void setResolveNodeInPath(Map<YangAbsolutePath, YangNode> resolveNodeInPath) {
+        this.resolveNodeInPath = resolveNodeInPath;
     }
 }
