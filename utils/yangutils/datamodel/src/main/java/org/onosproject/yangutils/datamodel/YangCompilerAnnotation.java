@@ -13,15 +13,10 @@ import org.onosproject.yangutils.datamodel.utils.YangConstructType;
 public class YangCompilerAnnotation
         implements Parsable, YangXPathResolver, Resolvable, Serializable {
     private static final long serialVersionUID = 806201602L;
-
+    List<YangAtomicPath> atomicPathList = new LinkedList<>();
     private YangAppDataStructure yangAppDataStructure;
-
     private String prefix;
-
     private String path;
-
-    List<YangAbsolutePath> atomicPathList = new LinkedList<>();
-
     private ResolvableStatus resolvableStatus;
 
     public YangAppDataStructure getYangAppDataStructure() {
@@ -48,11 +43,11 @@ public class YangCompilerAnnotation
         this.path = path;
     }
 
-    public List<YangAbsolutePath> getAtomicPathList() {
+    public List<YangAtomicPath> getAtomicPathList() {
         return atomicPathList;
     }
 
-    public void setAtomicPathList(List<YangAbsolutePath> atomicPathList) {
+    public void setAtomicPathList(List<YangAtomicPath> atomicPathList) {
         this.atomicPathList = atomicPathList;
     }
 
@@ -86,8 +81,8 @@ public class YangCompilerAnnotation
     }
 
     @Override
-    public void resolve()
+    public Object resolve()
             throws DataModelException {
-
+        return null;
     }
 }

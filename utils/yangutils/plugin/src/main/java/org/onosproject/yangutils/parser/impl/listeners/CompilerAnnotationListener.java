@@ -18,7 +18,7 @@ package org.onosproject.yangutils.parser.impl.listeners;
 
 import java.util.List;
 
-import org.onosproject.yangutils.datamodel.YangAbsolutePath;
+import org.onosproject.yangutils.datamodel.YangAtomicPath;
 import org.onosproject.yangutils.datamodel.YangCompilerAnnotation;
 import org.onosproject.yangutils.datamodel.YangNode;
 import org.onosproject.yangutils.datamodel.exceptions.DataModelException;
@@ -102,7 +102,7 @@ public final class CompilerAnnotationListener {
         compilerAnnotation.setPath(ctx.string().getText());
 
         // Validate augment argument string
-        List<YangAbsolutePath> targetNodes = getValidAbsoluteSchemaNodeId(ctx.string().getText(),
+        List<YangAtomicPath> targetNodes = getValidAbsoluteSchemaNodeId(ctx.string().getText(),
                 COMPILER_ANNOTATION_DATA, ctx);
 
         compilerAnnotation.setAtomicPathList(targetNodes);

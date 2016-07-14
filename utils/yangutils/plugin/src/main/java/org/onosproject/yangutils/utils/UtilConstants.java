@@ -47,6 +47,11 @@ public final class UtilConstants {
     public static final String EVENT_JAVA_DOC = " * Represents event implementation of ";
 
     /**
+     * JavaDocs for op param class.
+     */
+    public static final String OP_PARAM_JAVA_DOC = " * Represents operation parameter implementation of ";
+
+    /**
      * JavaDocs for event listener.
      */
     public static final String EVENT_LISTENER_JAVA_DOC = " * Abstraction for event listener of ";
@@ -122,6 +127,16 @@ public final class UtilConstants {
     public static final String JAVA_DOC_GETTERS = " * Returns the attribute ";
 
     /**
+     * JavaDocs's description for getter method.
+     */
+    public static final String JAVA_DOC_FOR_VALIDATOR = " * Validates if value is in given range.";
+
+    /**
+     * JavaDocs's description for getter method.
+     */
+    public static final String JAVA_DOC_FOR_VALIDATOR_RETURN = " * @return true if value is in range";
+
+    /**
      * JavaDocs's description for constructor.
      */
     public static final String JAVA_DOC_CONSTRUCTOR = " * Creates an instance of ";
@@ -165,6 +180,21 @@ public final class UtilConstants {
      * Static attribute for default.
      */
     public static final String DEFAULT = "default";
+
+    /**
+     * Static attribute for op param class.
+     */
+    public static final String OPERATION = "OpParam";
+
+    /**
+     * Static attribute for operation type.
+     */
+    public static final String OPERATION_ENUM = "OperationType";
+
+    /**
+     * Static attribute for java code generation for sbi.
+     */
+    public static final String SBI = "sbi";
 
     /**
      * Static attribute for multiple new line.
@@ -217,6 +247,31 @@ public final class UtilConstants {
     public static final String PARSE_LONG = "parseLong";
 
     /**
+     * Static attribute for base64.
+     */
+    public static final String BASE64 = "Base64";
+
+    /**
+     * Static attribute for getEncoder.
+     */
+    public static final String GET_ENCODER = "getEncoder";
+
+    /**
+     * Static attribute for encodeToString.
+     */
+    public static final String ENCODE_TO_STRING = "encodeToString";
+
+    /**
+     * Static attribute for getDecoder.
+     */
+    public static final String GET_DECODER = "getDecoder";
+
+    /**
+     * Static attribute for decode.
+     */
+    public static final String DECODE = "decode";
+
+    /**
      * Static attribute for omit null value.
      */
     public static final String OMIT_NULL_VALUE_STRING = "omitNullValues()";
@@ -245,6 +300,108 @@ public final class UtilConstants {
      * Static attribute for space.
      */
     public static final String SPACE = " ";
+
+    /**
+     * Static attribute for validateRange.
+     */
+    public static final String VALIDATE_RANGE = "validateRange";
+
+    /**
+     * Static attribute for minRange.
+     */
+    public static final String MIN_RANGE = "minRange";
+
+    /**
+     * Static attribute for maxRange.
+     */
+    public static final String MAX_RANGE = "maxRange";
+
+    /**
+     * Static attribute for minRange.
+     */
+    public static final String INT_MIN_RANGE_ATTR = "static final int INT32_MIN_RANGE = -2147483648;\n";
+
+    /**
+     * Static attribute for minRange.
+     */
+    public static final String INT_MIN_RANGE = "INT32_MIN_RANGE";
+
+    /**
+     * Static attribute for minRange.
+     */
+    public static final String INT_MAX_RANGE = "INT32_MAX_RANGE";
+
+    /**
+     * Static attribute for maxRange.
+     */
+    public static final String INT_MAX_RANGE_ATTR = "static final int INT32_MAX_RANGE = 2147483647;";
+
+
+    /**
+     * Static attribute for minRange.
+     */
+    public static final String UINT_MIN_RANGE_ATTR = "static final int UINT16_MIN_RANGE = 0;\n";
+
+    /**
+     * Static attribute for maxRange.
+     */
+    public static final String UINT_MAX_RANGE_ATTR = "static final int UINT16_MAX_RANGE = 2147483647;";
+
+
+    /**
+     * Static attribute for minRange.
+     */
+    public static final String UINT_MIN_RANGE = "UINT16_MIN_RANGE";
+
+    /**
+     * Static attribute for maxRange.
+     */
+    public static final String UINT_MAX_RANGE = "UINT16_MAX_RANGE";
+
+    /**
+     * Static attribute for minRange.
+     */
+    public static final String LONG_MIN_RANGE_ATTR = "static final BigInteger INT64_MIN_RANGE =" +
+            " new BigInteger(\"-9223372036854775808\");\n";
+
+    /**
+     * Static attribute for maxRange.
+     */
+    public static final String LONG_MAX_RANGE_ATTR = "static final BigInteger INT64_MAX_RANGE =" +
+            " new BigInteger(\"9223372036854775807\");";
+
+    /**
+     * Static attribute for minRange.
+     */
+    public static final String LONG_MIN_RANGE = "INT64_MIN_RANGE";
+
+    /**
+     * Static attribute for maxRange.
+     */
+    public static final String LONG_MAX_RANGE = "INT64_MAX_RANGE";
+
+    /**
+     * Static attribute for minRange.
+     */
+    public static final String ULONG_MIN_RANGE_ATTR = "static final BigInteger UINT32_MIN_RANGE =" +
+            " new BigInteger(\"0\");\n";
+
+    /**
+     * Static attribute for maxRange.
+     */
+    public static final String ULONG_MAX_RANGE_ATTR = "static final BigInteger UINT32_MAX_RANGE =" +
+            " new BigInteger(\"9223372036854775807\");";
+
+
+    /**
+     * Static attribute for minRange.
+     */
+    public static final String ULONG_MIN_RANGE = "UINT32_MIN_RANGE";
+
+    /**
+     * Static attribute for maxRange.
+     */
+    public static final String ULONG_MAX_RANGE = "UINT32_MAX_RANGE";
 
     /**
      * Static attribute for subject.
@@ -322,9 +479,19 @@ public final class UtilConstants {
     public static final String ADD = "+";
 
     /**
+     * Static attribute for single quote.
+     */
+    public static final String SINGLE_QUOTE = "\'";
+
+    /**
      * Static attribute for quotes.
      */
     public static final String QUOTES = "\"";
+
+    /**
+     * Static attribute for zero.
+     */
+    public static final String ZERO = "0";
 
     /**
      * Static attribute for ampersand.
@@ -390,6 +557,21 @@ public final class UtilConstants {
      * Static attribute for add syntax.
      */
     public static final String ADD_STRING = "add";
+
+    /**
+     * Static attribute for string replace syntax.
+     */
+    public static final String REPLACE_STRING = "replace";
+
+    /**
+     * Static attribute for string trim syntax.
+     */
+    public static final String TRIM_STRING = "trim";
+
+    /**
+     * Static attribute for string split syntax.
+     */
+    public static final String SPLIT_STRING = "split";
 
     /**
      * Static attribute for from syntax.
@@ -512,6 +694,11 @@ public final class UtilConstants {
     public static final String OPEN_PARENTHESIS = "(";
 
     /**
+     * Static attribute for received syntax.
+     */
+    public static final String RECEIVED_OBJECT = "recv";
+
+    /**
      * Static attribute for switch syntax.
      */
     public static final String SWITCH = "switch";
@@ -525,6 +712,11 @@ public final class UtilConstants {
      * Static attribute for temp val syntax.
      */
     public static final String TMP_VAL = "tmpVal";
+
+    /**
+     * Static attribute for close curly bracket syntax.
+     */
+    public static final String ELSE = "else";
 
     /**
      * From string parameter name.
@@ -562,9 +754,74 @@ public final class UtilConstants {
     public static final String SET_METHOD_PREFIX = "set";
 
     /**
+     * Static attribute for get filter leaf flags.
+     */
+    public static final String GET_FILTER_LEAF = "getFilterLeafFlags";
+
+    /**
+     * Static attribute for get filter leaf list flags.
+     */
+    public static final String GET_FILTER_LEAF_LIST = "getFilterLeafListFlags";
+
+    /**
+     * Static attribute for filter leaf flags.
+     */
+    public static final String FILTER_LEAF = "filterLeafFlags";
+
+    /**
+     * Static attribute for filter leaf list flags.
+     */
+    public static final String FILTER_LEAF_LIST = "filterLeafListFlags";
+
+    /**
+     * Static attribute for get select leaf flags.
+     */
+    public static final String GET_SELECT_LEAF = "getSelectLeafFlags";
+
+    /**
+     * Static attribute for get select leaf list flags.
+     */
+    public static final String GET_SELECT_LEAF_LIST = "getSelectLeafListFlags";
+
+    /**
+     * Static attribute for get operation type.
+     */
+    public static final String GET_OPERATION_TYPE = "getOpertionType";
+
+    /**
+     * Static attribute for set operation type.
+     */
+    public static final String SET_OPERATION_TYPE = "setOpertionType";
+
+    /**
+     * Static attribute for select leaf flags.
+     */
+    public static final String SELECT_LEAF = "selectLeafFlags";
+
+    /**
+     * Static attribute for select leaf list flags.
+     */
+    public static final String SELECT_LEAF_LIST = "selectLeafListFlags";
+
+    /**
+     * Static attribute for op param type.
+     */
+    public static final String OP_PARAM_TYPE = "opParamType";
+
+    /**
+     * Static attribute for is filter content match method prefix.
+     */
+    public static final String FILTER_CONTENT_MATCH = "isFilterContentMatch";
+
+    /**
      * Static attribute for four space indentation.
      */
     public static final String FOUR_SPACE_INDENTATION = "    ";
+
+    /**
+     * Static attribute for not syntax.
+     */
+    public static final String NOT = "!";
 
     /**
      * Static attribute for try syntax.
@@ -580,6 +837,31 @@ public final class UtilConstants {
      * Static attribute for super syntax.
      */
     public static final String SUPER = "super";
+
+    /**
+     * Static attribute for merge syntax.
+     */
+    public static final String MERGE = "MERGE,";
+
+    /**
+     * Static attribute for replace syntax.
+     */
+    public static final String REPLACE = "REPLACE,";
+
+    /**
+     * Static attribute for create syntax.
+     */
+    public static final String CREATE = "CREATE,";
+
+    /**
+     * Static attribute for delete syntax.
+     */
+    public static final String DELETE = "DELETE,";
+
+    /**
+     * Static attribute for remove syntax.
+     */
+    public static final String REMOVE = "REMOVE";
 
     /**
      * Static attribute for eight space indentation.
@@ -635,6 +917,11 @@ public final class UtilConstants {
      * Static attribute for abstract modifier.
      */
     public static final String ABSTRACT = "abstract";
+
+    /**
+     * Static attribute for protected modifier.
+     */
+    public static final String PROTECTED = "protected";
 
     /**
      * Void java type.
@@ -927,6 +1214,11 @@ public final class UtilConstants {
     public static final String OBJECT = "Object";
 
     /**
+     * Static attribute for app instance.
+     */
+    public static final String APP_INSTANCE = "appInstance";
+
+    /**
      * Static attribute for override annotation.
      */
     public static final String OVERRIDE = "@Override";
@@ -968,9 +1260,19 @@ public final class UtilConstants {
     public static final String JAVA_UTIL_OBJECTS_IMPORT_PKG = "java.util";
 
     /**
+     * Static attribute for bitset.
+     */
+    public static final String BITSET = "BitSet";
+
+    /**
      * Static attribute for java utilities objects import class.
      */
     public static final String JAVA_UTIL_OBJECTS_IMPORT_CLASS = "Objects;\n";
+
+    /**
+     * Static attribute for java utilities import base64 class.
+     */
+    public static final String JAVA_UTIL_IMPORT_BASE64_CLASS = "Base64;\n";
 
     /**
      * Static attribute for AugmentedInfo class import package.
@@ -985,7 +1287,7 @@ public final class UtilConstants {
     /**
      * Static attribute for augmentation class.
      */
-    public static final String AUGMENTATION = "Augmentation";
+    public static final String AUGMENTED_INFO = "AugmentedInfo";
 
     /**
      * Static attribute for AugmentedInfo class.
@@ -1116,6 +1418,11 @@ public final class UtilConstants {
     public static final String EVENT_LISTENER = "EventListener";
 
     /**
+     * Static attribute for or operator.
+     */
+    public static final String OR_OPERATION = "||";
+
+    /**
      * Static attribute for YANG file error.
      */
     public static final String YANG_FILE_ERROR = "YANG file error : ";
@@ -1181,6 +1488,43 @@ public final class UtilConstants {
      * Static attribute for jar.
      */
     public static final String JAR = "jar";
+
+    /**
+     * Static attribute for for.
+     */
+    public static final String FOR = "for";
+
+    /**
+     * Static attribute for YangAugmentedOpParamInfo.
+     */
+    public static final String YANG_AUGMENTED_OP_PARAM_INFO = "YangAugmentedOpParamInfo";
+
+    /**
+     * Static attribute for YangAugmentedOpParamInfo.
+     */
+    public static final String YANG_AUGMENTED_OP_PARAM_INFO_CLASS = "YangAugmentedOpParamInfo;\n";
+
+    /**
+     * Static attribute for IllegalArgumentException.
+     */
+    public static final String ILLEGAL_ARGUMENT_EXCEPTION = "IllegalArgumentException";
+
+    /**
+     * Static attribute for IllegalArgumentException.
+     */
+    public static final String ILLEGAL_ARGUMENT_EXCEPTION_MSG = "\"provided augmented info is invalid for content " +
+            "match.\"";
+
+    /**
+     * Static attribute for throw.
+     */
+    public static final String THROW = "throw";
+
+    /**
+     * Static attribute for baseClass().
+     */
+    public static final String BASE_CLASS = "BaseClass()";
+
 
     /**
      * Creates an instance of util constants.

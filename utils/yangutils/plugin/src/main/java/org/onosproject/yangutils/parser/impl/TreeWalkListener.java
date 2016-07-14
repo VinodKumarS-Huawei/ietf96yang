@@ -44,6 +44,8 @@ import org.onosproject.yangutils.parser.impl.listeners.DefaultListener;
 import org.onosproject.yangutils.parser.impl.listeners.DescriptionListener;
 import org.onosproject.yangutils.parser.impl.listeners.EnumListener;
 import org.onosproject.yangutils.parser.impl.listeners.EnumerationListener;
+import org.onosproject.yangutils.parser.impl.listeners.ErrorAppTagListener;
+import org.onosproject.yangutils.parser.impl.listeners.ErrorMessageListener;
 import org.onosproject.yangutils.parser.impl.listeners.FeatureListener;
 import org.onosproject.yangutils.parser.impl.listeners.FractionDigitsListener;
 import org.onosproject.yangutils.parser.impl.listeners.GroupingListener;
@@ -85,6 +87,7 @@ import org.onosproject.yangutils.parser.impl.listeners.SubModuleListener;
 import org.onosproject.yangutils.parser.impl.listeners.TypeDefListener;
 import org.onosproject.yangutils.parser.impl.listeners.TypeListener;
 import org.onosproject.yangutils.parser.impl.listeners.UnionListener;
+import org.onosproject.yangutils.parser.impl.listeners.UniqueListener;
 import org.onosproject.yangutils.parser.impl.listeners.UnitsListener;
 import org.onosproject.yangutils.parser.impl.listeners.UsesListener;
 import org.onosproject.yangutils.parser.impl.listeners.ValueListener;
@@ -108,6 +111,34 @@ public class TreeWalkListener implements GeneratedYangListener {
 
     // Parse tree root node
     private YangNode rootNode;
+
+    /**
+     * Parent depth of grouping count for any node.
+     */
+    private int groupingDepth;
+
+    /**
+     * Returns number of grouping parents, by a node, at any level.
+     *
+     * @return depth of grouping
+     */
+    public int getGroupingDepth() {
+        return groupingDepth;
+    }
+
+    /**
+     * Sets number of grouping parents by a node at any level.
+     */
+    public void increaseGroupingDepth() {
+        groupingDepth++;
+    }
+
+    /**
+     * Sets number of grouping parents by a node at any level.
+     */
+    public void decreaseGroupingDepth() {
+        groupingDepth--;
+    }
 
     /**
      * Returns stack of parsable data.
@@ -847,7 +878,7 @@ public class TreeWalkListener implements GeneratedYangListener {
 
     @Override
     public void enterErrorMessageStatement(GeneratedYangParser.ErrorMessageStatementContext ctx) {
-        handleUnsupportedYangConstruct(YangConstructType.ERROR_MESSAGE_DATA, ctx, CURRENTLY_UNSUPPORTED);
+        ErrorMessageListener.processErrorMessageEntry(this, ctx);
     }
 
     @Override
@@ -857,7 +888,7 @@ public class TreeWalkListener implements GeneratedYangListener {
 
     @Override
     public void enterErrorAppTagStatement(GeneratedYangParser.ErrorAppTagStatementContext ctx) {
-        handleUnsupportedYangConstruct(YangConstructType.ERROR_APP_TAG_DATA, ctx, CURRENTLY_UNSUPPORTED);
+        ErrorAppTagListener.processErrorAppTagMessageEntry(this, ctx);
     }
 
     @Override
@@ -957,7 +988,7 @@ public class TreeWalkListener implements GeneratedYangListener {
 
     @Override
     public void enterUniqueStatement(GeneratedYangParser.UniqueStatementContext ctx) {
-        handleUnsupportedYangConstruct(YangConstructType.UNIQUE_DATA, ctx, CURRENTLY_UNSUPPORTED);
+        UniqueListener.processUniqueEntry(this, ctx);
     }
 
     @Override

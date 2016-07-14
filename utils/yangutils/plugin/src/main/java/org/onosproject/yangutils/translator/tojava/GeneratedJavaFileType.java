@@ -44,8 +44,7 @@ public final class GeneratedJavaFileType {
     /**
      * Interface and class file.
      */
-    public static final int GENERATE_INTERFACE_WITH_BUILDER = INTERFACE_MASK
-            | BUILDER_INTERFACE_MASK | BUILDER_CLASS_MASK | IMPL_CLASS_MASK;
+    public static final int GENERATE_INTERFACE_WITH_BUILDER = 8207;
 
     /**
      * Java interface corresponding to rpc.
@@ -89,9 +88,25 @@ public final class GeneratedJavaFileType {
     public static final int GENERATE_EVENT_SUBJECT_CLASS = 1024;
 
     /**
+     * Java classes for events.
+     */
+    public static final int GENERATE_ALL_EVENT_CLASS_MASK = GENERATE_EVENT_CLASS | GENERATE_EVENT_LISTENER_INTERFACE
+            | GENERATE_EVENT_SUBJECT_CLASS;
+
+    /**
      * Identity listener class.
      */
     public static final int GENERATE_IDENTITY_CLASS = 2048;
+
+    /**
+     * Operation class file.
+     */
+    public static final int OPERATION_CLASS_MASK = 4096;
+
+    /**
+     * Operation class builder file.
+     */
+    public static final int OPERATION_BUILDER_CLASS_MASK = 8192;
 
     /**
      * Creates an instance of generate java file type.

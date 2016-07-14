@@ -28,25 +28,32 @@ import org.onosproject.yangutils.translator.exception.TranslatorException;
 import org.onosproject.yangutils.translator.tojava.javamodel.YangJavaType;
 import org.onosproject.yangutils.utils.io.impl.YangPluginConfig;
 
+import static org.onosproject.yangutils.datamodel.utils.builtindatatype.YangDataTypes.INT32;
+import static org.onosproject.yangutils.datamodel.utils.builtindatatype.YangDataTypes.INT64;
+import static org.onosproject.yangutils.datamodel.utils.builtindatatype.YangDataTypes.UINT16;
+import static org.onosproject.yangutils.datamodel.utils.builtindatatype.YangDataTypes.UINT32;
 import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.GENERATE_TYPEDEF_CLASS;
 import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.GENERATE_UNION_CLASS;
 import static org.onosproject.yangutils.translator.tojava.GeneratedTempFileType.CONSTRUCTOR_FOR_TYPE_MASK;
 import static org.onosproject.yangutils.translator.tojava.GeneratedTempFileType.FROM_STRING_IMPL_MASK;
 import static org.onosproject.yangutils.translator.tojava.GeneratedTempFileType.OF_STRING_IMPL_MASK;
 import static org.onosproject.yangutils.translator.tojava.JavaAttributeInfo.getAttributeInfoForTheData;
+import static org.onosproject.yangutils.translator.tojava.JavaQualifiedTypeInfo.getQualifiedInfoOfFromString;
 import static org.onosproject.yangutils.translator.tojava.utils.JavaFileGenerator.generateTypeDefClassFile;
 import static org.onosproject.yangutils.translator.tojava.utils.JavaFileGenerator.generateUnionClassFile;
-import static org.onosproject.yangutils.utils.io.impl.YangIoUtils.getCamelCase;
+import static org.onosproject.yangutils.translator.tojava.utils.JavaIdentifierSyntax.createPackage;
 import static org.onosproject.yangutils.translator.tojava.utils.MethodsGenerator.getOfMethodStringAndJavaDoc;
 import static org.onosproject.yangutils.translator.tojava.utils.MethodsGenerator.getTypeConstructorStringAndJavaDoc;
-import static org.onosproject.yangutils.utils.io.impl.FileSystemUtil.closeFile;
+import static org.onosproject.yangutils.translator.tojava.utils.ValidatorTypeForUnionTypes.INT_TYPE_CONFLICT;
+import static org.onosproject.yangutils.translator.tojava.utils.ValidatorTypeForUnionTypes.LONG_TYPE_CONFLICT;
 import static org.onosproject.yangutils.utils.UtilConstants.EMPTY_STRING;
 import static org.onosproject.yangutils.utils.UtilConstants.NEW_LINE;
-import static org.onosproject.yangutils.translator.tojava.utils.JavaIdentifierSyntax.createPackage;
+import static org.onosproject.yangutils.utils.io.impl.FileSystemUtil.closeFile;
+import static org.onosproject.yangutils.utils.io.impl.YangIoUtils.getCamelCase;
 
 /**
- * Represents implementation of java data type code fragments temporary implementations.
- * Maintains the temp files required specific for user defined data type java snippet generation.
+ * Represents implementation of java data type code fragments temporary implementations. Maintains the temp files
+ * required specific for user defined data type java snippet generation.
  */
 public class TempJavaTypeFragmentFiles
         extends TempJavaFragmentFiles {
@@ -67,10 +74,29 @@ public class TempJavaTypeFragmentFiles
     private static final String TYPEDEF_CLASS_FILE_NAME_SUFFIX = EMPTY_STRING;
 
     /**
-     * File name for generated class file for special type like union, typedef
-     * suffix.
+     * File name for generated class file for special type like union, typedef suffix.
      */
     private static final String UNION_TYPE_CLASS_FILE_NAME_SUFFIX = EMPTY_STRING;
+
+    /**
+     * Integer index in type list.
+     */
+    private int intIndex = 0;
+
+    /**
+     * UInt index in type list.
+     */
+    private int uintIndex = 0;
+
+    /**
+     * long index in type list.
+     */
+    private int longIndex = 0;
+
+    /**
+     * Ulong index in type list.
+     */
+    private int uLongIndex = 0;
 
     /**
      * Temporary file handle for of string method of class.
@@ -91,6 +117,26 @@ public class TempJavaTypeFragmentFiles
      * Java file handle for type class like union, typedef file.
      */
     private File typeClassJavaFileHandle;
+
+    /**
+     * Java attribute for int.
+     */
+    private JavaAttributeInfo intAttribute;
+
+    /**
+     * Java attribute for long.
+     */
+    private JavaAttributeInfo longAttribute;
+
+    /**
+     * Java attribute for uInt.
+     */
+    private JavaAttributeInfo uIntAttribute;
+
+    /**
+     * Java attribute for uLong.
+     */
+    private JavaAttributeInfo uLongAttribute;
 
     /**
      * Creates an instance of temporary java code fragment.
@@ -129,8 +175,7 @@ public class TempJavaTypeFragmentFiles
     /**
      * Sets type class constructor method's temporary file handle.
      *
-     * @param constructorForTypeTempFileHandle type class constructor method's
-     * temporary file handle
+     * @param constructorForTypeTempFileHandle type class constructor method's temporary file handle
      */
     private void setConstructorForTypeTempFileHandle(File constructorForTypeTempFileHandle) {
         this.constructorForTypeTempFileHandle = constructorForTypeTempFileHandle;
@@ -141,7 +186,7 @@ public class TempJavaTypeFragmentFiles
      *
      * @return java file handle for typedef class file
      */
-    File getTypedefClassJavaFileHandle() {
+    private File getTypedefClassJavaFileHandle() {
         return typedefClassJavaFileHandle;
     }
 
@@ -159,7 +204,7 @@ public class TempJavaTypeFragmentFiles
      *
      * @return java file handle for type class file
      */
-    File getTypeClassJavaFileHandle() {
+    private File getTypeClassJavaFileHandle() {
         return typeClassJavaFileHandle;
     }
 
@@ -185,23 +230,20 @@ public class TempJavaTypeFragmentFiles
     /**
      * Set of string method's temporary file handle.
      *
-     * @param ofStringImplTempFileHandle of string method's temporary file
-     * handle
+     * @param ofStringImplTempFileHandle of string method's temporary file handle
      */
     private void setOfStringImplTempFileHandle(File ofStringImplTempFileHandle) {
         this.ofStringImplTempFileHandle = ofStringImplTempFileHandle;
     }
 
     /**
-     * Adds all the type in the current data model node as part of the generated
-     * temporary file.
+     * Adds all the type in the current data model node as part of the generated temporary file.
      *
-     * @param yangTypeHolder YANG java data model node which has type info, eg union /
-     * typedef
-     * @param pluginConfig plugin configurations for naming conventions
+     * @param yangTypeHolder YANG java data model node which has type info, eg union / typedef
+     * @param pluginConfig   plugin configurations for naming conventions
      * @throws IOException IO operation fail
      */
-    public void addTypeInfoToTempFiles(YangTypeHolder yangTypeHolder, YangPluginConfig pluginConfig)
+    void addTypeInfoToTempFiles(YangTypeHolder yangTypeHolder, YangPluginConfig pluginConfig)
             throws IOException {
 
         List<YangType<?>> typeList = yangTypeHolder.getTypeList();
@@ -210,49 +252,130 @@ public class TempJavaTypeFragmentFiles
                 if (!(yangType instanceof YangJavaType)) {
                     throw new TranslatorException("Type does not have Java info");
                 }
-                YangJavaType<?> javaType = (YangJavaType<?>) yangType;
-                javaType.updateJavaQualifiedInfo(pluginConfig.getConflictResolver());
-                String typeName = javaType.getDataTypeName();
-                typeName = getCamelCase(typeName, pluginConfig.getConflictResolver());
-                JavaAttributeInfo javaAttributeInfo = getAttributeInfoForTheData(
-                        javaType.getJavaQualifiedInfo(),
-                        typeName, javaType,
-                        getIsQualifiedAccessOrAddToImportList(javaType.getJavaQualifiedInfo()),
-                        false);
-                addJavaSnippetInfoToApplicableTempFiles((YangNode) yangTypeHolder, javaAttributeInfo,
-                        pluginConfig);
+                JavaAttributeInfo javaAttributeInfo = getAttributeForType(yangType, pluginConfig);
+                addJavaSnippetInfoToApplicableTempFiles(javaAttributeInfo,
+                        pluginConfig, typeList);
+            }
+            addTypeConstructor(pluginConfig);
+            addMethodsInConflictCase(pluginConfig);
+        }
+    }
+
+    /**
+     * Returns java attribute.
+     *
+     * @param yangType     YANG type
+     * @param pluginConfig plugin configurations
+     * @return java attribute
+     */
+    private JavaAttributeInfo getAttributeForType(YangType yangType, YangPluginConfig pluginConfig) {
+        YangJavaType<?> javaType = (YangJavaType<?>) yangType;
+        javaType.updateJavaQualifiedInfo(pluginConfig.getConflictResolver());
+        String typeName = javaType.getDataTypeName();
+        typeName = getCamelCase(typeName, pluginConfig.getConflictResolver());
+        return getAttributeInfoForTheData(
+                javaType.getJavaQualifiedInfo(),
+                typeName, javaType,
+                getIsQualifiedAccessOrAddToImportList(javaType.getJavaQualifiedInfo()),
+                false);
+    }
+
+    /**
+     * Adds the new attribute info to the target generated temporary files for union class.
+     *
+     * @param javaAttributeInfo the attribute info that needs to be added to temporary files
+     * @param pluginConfig      plugin configurations
+     * @param typeList          type list
+     * @throws IOException IO operation fail
+     */
+    private void addJavaSnippetInfoToApplicableTempFiles(JavaAttributeInfo javaAttributeInfo,
+                                                         YangPluginConfig pluginConfig, List<YangType<?>> typeList)
+            throws IOException {
+
+        setIntConflict(validateForConflictingIntTypes(typeList));
+        setLongConflict(validateForConflictingLongypes(typeList));
+        updateAttributeCondition(javaAttributeInfo);
+        super.addJavaSnippetInfoToApplicableTempFiles(javaAttributeInfo, pluginConfig);
+
+        if (!isIntConflict() && !isLongConflict()) {
+            if ((getGeneratedTempFiles() & OF_STRING_IMPL_MASK) != 0) {
+                addOfStringMethod(javaAttributeInfo, pluginConfig);
+            }
+
+            if ((getGeneratedTempFiles() & CONSTRUCTOR_FOR_TYPE_MASK) != 0) {
+                addTypeConstructor(javaAttributeInfo, pluginConfig);
             }
         }
     }
 
     /**
-     * Adds the new attribute info to the target generated temporary files for
-     * union class.
+     * Adds of, getter and from string method in conflict cases.
      *
-     * @param hasType the node for which the type is being added as an attribute
-     * @param javaAttributeInfo the attribute info that needs to be added to
-     * temporary files
      * @param pluginConfig plugin configurations
-     * @throws IOException IO operation fail
+     * @throws IOException when fails to do IO operations
      */
-    private void addJavaSnippetInfoToApplicableTempFiles(YangNode hasType, JavaAttributeInfo javaAttributeInfo,
-            YangPluginConfig pluginConfig)
-            throws IOException {
-
-        super.addJavaSnippetInfoToApplicableTempFiles(javaAttributeInfo, pluginConfig);
-
-        if ((getGeneratedTempFiles() & OF_STRING_IMPL_MASK) != 0) {
-            addOfStringMethod(javaAttributeInfo, pluginConfig);
+    private void addMethodsInConflictCase(YangPluginConfig pluginConfig) throws IOException {
+        if (isIntConflict()) {
+            if (getIntIndex() < getUintIndex()) {
+                appendToFile(getOfStringImplTempFileHandle(), getOfMethodStringAndJavaDoc(getIntAttribute(),
+                        getGeneratedJavaClassName(), pluginConfig)
+                        + NEW_LINE);
+                addGetterImpl(getIntAttribute(), pluginConfig);
+                addFromStringMethod(getIntAttribute(), pluginConfig);
+            } else {
+                appendToFile(getOfStringImplTempFileHandle(), getOfMethodStringAndJavaDoc(getuIntAttribute(),
+                        getGeneratedJavaClassName(), pluginConfig)
+                        + NEW_LINE);
+                addGetterImpl(getuIntAttribute(), pluginConfig);
+                addFromStringMethod(getuIntAttribute(), pluginConfig);
+            }
         }
-        if ((getGeneratedTempFiles() & CONSTRUCTOR_FOR_TYPE_MASK) != 0) {
-            addTypeConstructor(javaAttributeInfo, pluginConfig);
+        if (isLongConflict()) {
+            if (getLongIndex() < getuLongIndex()) {
+                appendToFile(getOfStringImplTempFileHandle(), getOfMethodStringAndJavaDoc(getLongAttribute(),
+                        getGeneratedJavaClassName(), pluginConfig)
+                        + NEW_LINE);
+                addGetterImpl(getLongAttribute(), pluginConfig);
+                addFromStringMethod(getLongAttribute(), pluginConfig);
+            } else {
+                appendToFile(getOfStringImplTempFileHandle(), getOfMethodStringAndJavaDoc(getuLongAttribute(),
+                        getGeneratedJavaClassName(), pluginConfig)
+                        + NEW_LINE);
+                addGetterImpl(getuLongAttribute(), pluginConfig);
+                addFromStringMethod(getuLongAttribute(), pluginConfig);
+            }
         }
+
+
+    }
+
+    /**
+     * Adds from string method for conflict case.
+     *
+     * @param newAttrInfo  new attribute
+     * @param pluginConfig plugin configurations
+     * @throws IOException when fails to do IO operations
+     */
+    private void addFromStringMethod(JavaAttributeInfo newAttrInfo, YangPluginConfig pluginConfig) throws IOException {
+
+        JavaQualifiedTypeInfo qualifiedInfoOfFromString = getQualifiedInfoOfFromString(newAttrInfo,
+                pluginConfig.getConflictResolver());
+            /*
+             * Create a new java attribute info with qualified information of
+             * wrapper classes.
+             */
+        JavaAttributeInfo fromStringAttributeInfo = getAttributeInfoForTheData(qualifiedInfoOfFromString,
+                newAttrInfo.getAttributeName(),
+                newAttrInfo.getAttributeType(),
+                getIsQualifiedAccessOrAddToImportList(qualifiedInfoOfFromString), false);
+
+        addFromStringMethod(newAttrInfo, fromStringAttributeInfo);
     }
 
     /**
      * Adds type constructor.
      *
-     * @param attr attribute info
+     * @param attr         attribute info
      * @param pluginConfig plugin configurations
      * @throws IOException when fails to append to temporary file
      */
@@ -263,9 +386,29 @@ public class TempJavaTypeFragmentFiles
     }
 
     /**
+     * Adds type constructor.
+     *
+     * @param pluginConfig plugin configurations
+     * @throws IOException when fails to append to temporary file
+     */
+    private void addTypeConstructor(YangPluginConfig pluginConfig)
+            throws IOException {
+        if (isIntConflict()) {
+            appendToFile(getConstructorForTypeTempFileHandle(), getTypeConstructorStringAndJavaDoc(getIntAttribute(),
+                    getuIntAttribute(), getGeneratedJavaClassName(), pluginConfig, INT_TYPE_CONFLICT, getIntIndex()
+                            < getUintIndex()) + NEW_LINE);
+        }
+        if (isLongConflict()) {
+            appendToFile(getConstructorForTypeTempFileHandle(), getTypeConstructorStringAndJavaDoc(getLongAttribute(),
+                    getuLongAttribute(), getGeneratedJavaClassName(), pluginConfig, LONG_TYPE_CONFLICT, getLongIndex()
+                            < getuLongIndex()) + NEW_LINE);
+        }
+    }
+
+    /**
      * Adds of string for type.
      *
-     * @param attr attribute info
+     * @param attr         attribute info
      * @param pluginConfig plugin configurations
      * @throws IOException when fails to append to temporary file
      */
@@ -279,22 +422,20 @@ public class TempJavaTypeFragmentFiles
     /**
      * Removes all temporary file handles.
      *
-     * @param isErrorOccurred when translator fails to generate java files we
-     * need to close all open file handles include temporary files
-     * and java files.
+     * @param isErrorOccurred when translator fails to generate java files we need to close all open file handles
+     *                        include temporary files and java files.
      * @throws IOException when failed to delete the temporary files
      */
     @Override
     public void freeTemporaryResources(boolean isErrorOccurred)
             throws IOException {
-        boolean isError = isErrorOccurred;
 
         if ((getGeneratedJavaFiles() & GENERATE_TYPEDEF_CLASS) != 0) {
-            closeFile(getTypedefClassJavaFileHandle(), isError);
+            closeFile(getTypedefClassJavaFileHandle(), isErrorOccurred);
         }
 
         if ((getGeneratedJavaFiles() & GENERATE_UNION_CLASS) != 0) {
-            closeFile(getTypeClassJavaFileHandle(), isError);
+            closeFile(getTypeClassJavaFileHandle(), isErrorOccurred);
         }
 
         if ((getGeneratedTempFiles() & CONSTRUCTOR_FOR_TYPE_MASK) != 0) {
@@ -315,7 +456,7 @@ public class TempJavaTypeFragmentFiles
      * Constructs java code exit.
      *
      * @param fileType generated file type
-     * @param curNode current YANG node
+     * @param curNode  current YANG node
      * @throws IOException when fails to generate java files
      */
     @Override
@@ -332,7 +473,7 @@ public class TempJavaTypeFragmentFiles
          * Creates type def class file.
          */
         if ((fileType & GENERATE_TYPEDEF_CLASS) != 0) {
-            addImportsToStringAndHasCodeMethods(imports);
+            addImportsToStringAndHasCodeMethods(imports, true);
             setTypedefClassJavaFileHandle(getJavaFileHandle(getJavaClassName(TYPEDEF_CLASS_FILE_NAME_SUFFIX)));
             generateTypeDefClassFile(getTypedefClassJavaFileHandle(), curNode, imports);
         }
@@ -340,7 +481,7 @@ public class TempJavaTypeFragmentFiles
          * Creates type class file.
          */
         if ((fileType & GENERATE_UNION_CLASS) != 0) {
-            addImportsToStringAndHasCodeMethods(imports);
+            addImportsToStringAndHasCodeMethods(imports, true);
             setTypeClassJavaFileHandle(getJavaFileHandle(getJavaClassName(UNION_TYPE_CLASS_FILE_NAME_SUFFIX)));
             generateUnionClassFile(getTypeClassJavaFileHandle(), curNode, imports);
         }
@@ -349,5 +490,220 @@ public class TempJavaTypeFragmentFiles
          * Close all the file handles.
          */
         freeTemporaryResources(false);
+    }
+
+    /**
+     * Returns int type index from type list.
+     *
+     * @return int type index from type list
+     */
+    public int getIntIndex() {
+        return intIndex;
+    }
+
+    /**
+     * Sets int type index from type list.
+     *
+     * @param intIndex int type index from type list.
+     */
+    private void setIntIndex(int intIndex) {
+        this.intIndex = intIndex;
+    }
+
+    /**
+     * Returns uint type index from type list.
+     *
+     * @return uint type index from type list
+     */
+    public int getUintIndex() {
+        return uintIndex;
+    }
+
+    /**
+     * Sets uint type index from type list.
+     *
+     * @param uintIndex uint type index from type list.
+     */
+    private void setUintIndex(int uintIndex) {
+        this.uintIndex = uintIndex;
+    }
+
+    /**
+     * Returns long type index from type list.
+     *
+     * @return long type index from type list
+     */
+    public int getLongIndex() {
+        return longIndex;
+    }
+
+    /**
+     * Sets long type index from type list.
+     *
+     * @param longIndex long type index from type list.
+     */
+    private void setLongIndex(int longIndex) {
+        this.longIndex = longIndex;
+    }
+
+    /**
+     * Returns ulong type index from type list.
+     *
+     * @return ulong type index from type list
+     */
+    public int getuLongIndex() {
+        return uLongIndex;
+    }
+
+    /**
+     * Sets ulong type index from type list.
+     *
+     * @param uLongIndex ulong type index from type list.
+     */
+    private void setuLongIndex(int uLongIndex) {
+        this.uLongIndex = uLongIndex;
+    }
+
+    /**
+     * Validates conflict for int and uint.
+     *
+     * @param typeList type list
+     * @return true if conflict is there
+     */
+    private boolean validateForConflictingIntTypes(List<YangType<?>> typeList) {
+        boolean isIntPresent = false;
+        boolean isUintPresent = false;
+        for (YangType type : typeList) {
+            if (type.getDataType().equals(INT32)) {
+                setIntIndex(typeList.indexOf(type));
+                isIntPresent = true;
+            }
+            if (type.getDataType().equals(UINT16)) {
+                setUintIndex(typeList.indexOf(type));
+                isUintPresent = true;
+            }
+        }
+
+        return isIntPresent && isUintPresent;
+    }
+
+    /**
+     * Validates conflict for long and ulong.
+     *
+     * @param typeList type list
+     * @return true if conflict is there
+     */
+    private boolean validateForConflictingLongypes(List<YangType<?>> typeList) {
+        boolean islongPresent = false;
+        boolean isUlongPresent = false;
+        for (YangType type : typeList) {
+            if (type.getDataType().equals(INT64)) {
+                setLongIndex(typeList.indexOf(type));
+                islongPresent = true;
+            }
+            if (type.getDataType().equals(UINT32)) {
+                setuLongIndex(typeList.indexOf(type));
+                isUlongPresent = true;
+            }
+        }
+
+        return islongPresent && isUlongPresent;
+    }
+
+    /**
+     * Updates attribute info in case of conflicts.
+     *
+     * @param javaAttributeInfo java attribute info
+     */
+    private void updateAttributeCondition(JavaAttributeInfo javaAttributeInfo) {
+
+        if (isIntConflict()) {
+            if (javaAttributeInfo.getAttributeType().getDataType() == UINT16) {
+                setuIntAttribute(javaAttributeInfo);
+            } else if (javaAttributeInfo.getAttributeType().getDataType() == INT32) {
+                setIntAttribute(javaAttributeInfo);
+            }
+
+        }
+        if (isLongConflict()) {
+            if (javaAttributeInfo.getAttributeType().getDataType() == UINT32) {
+                setuLongAttribute(javaAttributeInfo);
+            } else if (javaAttributeInfo.getAttributeType().getDataType() == INT64) {
+                setLongAttribute(javaAttributeInfo);
+            }
+
+        }
+    }
+
+    /**
+     * Returns attribute for int.
+     *
+     * @return attribute for int
+     */
+    private JavaAttributeInfo getIntAttribute() {
+        return intAttribute;
+    }
+
+    /**
+     * Sets attribute for int.
+     *
+     * @param intAttribute attribute for int
+     */
+    private void setIntAttribute(JavaAttributeInfo intAttribute) {
+        this.intAttribute = intAttribute;
+    }
+
+    /**
+     * Returns attribute for long.
+     *
+     * @return attribute for long
+     */
+    private JavaAttributeInfo getLongAttribute() {
+        return longAttribute;
+    }
+
+    /**
+     * Sets attribute for long.
+     *
+     * @param longAttribute attribute for long
+     */
+    private void setLongAttribute(JavaAttributeInfo longAttribute) {
+        this.longAttribute = longAttribute;
+    }
+
+    /**
+     * Returns attribute for uInt.
+     *
+     * @return attribute for uInt
+     */
+    private JavaAttributeInfo getuIntAttribute() {
+        return uIntAttribute;
+    }
+
+    /**
+     * Sets attribute for uInt.
+     *
+     * @param uIntAttribute attribute for uInt
+     */
+    private void setuIntAttribute(JavaAttributeInfo uIntAttribute) {
+        this.uIntAttribute = uIntAttribute;
+    }
+
+    /**
+     * Returns attribute for uLong.
+     *
+     * @return attribute for uLong
+     */
+    private JavaAttributeInfo getuLongAttribute() {
+        return uLongAttribute;
+    }
+
+    /**
+     * Sets attribute for uLong.
+     *
+     * @param uLongAttribute attribute for uLong
+     */
+    private void setuLongAttribute(JavaAttributeInfo uLongAttribute) {
+        this.uLongAttribute = uLongAttribute;
     }
 }

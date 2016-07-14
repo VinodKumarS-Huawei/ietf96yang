@@ -16,14 +16,14 @@
 
 package org.onosproject.yangutils.datamodel;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-
 import org.onosproject.yangutils.datamodel.exceptions.DataModelException;
 import org.onosproject.yangutils.datamodel.utils.Parsable;
 import org.onosproject.yangutils.datamodel.utils.YangConstructType;
 import org.onosproject.yangutils.datamodel.utils.builtindatatype.YangDataTypes;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 import static org.onosproject.yangutils.datamodel.utils.DataModelUtils.detectCollidingChildUtil;
 
@@ -93,7 +93,7 @@ public class YangList
 
     /**
      * Reference RFC 6020.
-     * <p>
+     *
      * The "key" statement, which MUST be present if the list represents
      * configuration, and MAY be present otherwise, takes as an argument a
      * string that specifies a space-separated list of leaf identifiers of this
@@ -101,22 +101,42 @@ public class YangList
      * such leaf identifier MUST refer to a child leaf of the list. The leafs
      * can be defined directly in sub-statements to the list, or in groupings
      * used in the list.
-     * <p>
+     *
      * The combined values of all the leafs specified in the key are used to
      * uniquely identify a list entry. All key leafs MUST be given values when a
      * list entry is created. Thus, any default values in the key leafs or their
      * types are ignored. It also implies that any mandatory statement in the
      * key leafs are ignored.
-     * <p>
+     *
      * A leaf that is part of the key can be of any built-in or derived type,
      * except it MUST NOT be the built-in type "empty".
-     * <p>
+     *
      * All key leafs in a list MUST have the same value for their "config" as
      * the list itself.
-     * <p>
+     *
      * List of key leaf names.
      */
     private List<String> keyList;
+
+    /**
+     * Reference RFC 6020.
+     *
+     * The "unique" statement is used to put constraints on valid list
+     * entries.  It takes as an argument a string that contains a space-
+     * separated list of schema node identifiers, which MUST be given in the
+     * descendant form.  Each such schema node identifier MUST refer to a leaf.
+     *
+     * If one of the referenced leafs represents configuration data, then
+     * all of the referenced leafs MUST represent configuration data.
+     *
+     * The "unique" constraint specifies that the combined values of all the
+     * leaf instances specified in the argument string, including leafs with
+     * default values, MUST be unique within all list entry instances in
+     * which all referenced leafs exist.
+     *
+     * List of unique leaf/leaf-list names
+     */
+    private List<String> uniqueList;
 
     /**
      * List of leaves.
@@ -132,35 +152,35 @@ public class YangList
 
     /**
      * Reference RFC 6020.
-     * <p>
+     *
      * The "max-elements" statement, which is optional, takes as an argument a
      * positive integer or the string "unbounded", which puts a constraint on
      * valid list entries. A valid leaf-list or list always has at most
      * max-elements entries.
-     * <p>
+     *
      * If no "max-elements" statement is present, it defaults to "unbounded".
      */
-    private int maxElements = Integer.MAX_VALUE;
+    private YangMaxElement maxElements;
 
     /**
      * Reference RFC 6020.
-     * <p>
+     *
      * The "min-elements" statement, which is optional, takes as an argument a
      * non-negative integer that puts a constraint on valid list entries. A
      * valid leaf-list or list MUST have at least min-elements entries.
-     * <p>
+     *
      * If no "min-elements" statement is present, it defaults to zero.
-     * <p>
+     *
      * The behavior of the constraint depends on the type of the leaf-list's or
      * list's closest ancestor node in the schema tree that is not a non-
      * presence container:
-     * <p>
+     *
      * o If this ancestor is a case node, the constraint is enforced if any
      * other node from the case exists.
-     * <p>
+     *
      * o Otherwise, it is enforced if the ancestor node exists.
      */
-    private int minElements = 0;
+    private YangMinElement minElements;
 
     /**
      * reference.
@@ -284,6 +304,24 @@ public class YangList
     }
 
     /**
+     * Returns the list of unique field names.
+     *
+     * @return the list of unique field names
+     */
+    public List<String> getUniqueList() {
+        return uniqueList;
+    }
+
+    /**
+     * Sets the list of unique field names.
+     *
+     * @param uniqueList the list of unique field names
+     */
+    private void setUniqueList(List<String> uniqueList) {
+        this.uniqueList = uniqueList;
+    }
+
+    /**
      * Returns the list of key field names.
      *
      * @return the list of key field names
@@ -319,6 +357,24 @@ public class YangList
         }
 
         getKeyList().add(key);
+    }
+
+    /**
+     * Adds a unique field name.
+     *
+     * @param unique unique field name.
+     * @throws DataModelException a violation of data model rules
+     */
+    public void addUnique(String unique)
+            throws DataModelException {
+        if (getUniqueList() == null) {
+            setUniqueList(new LinkedList<>());
+        }
+        if (getUniqueList().contains(unique)) {
+            throw new DataModelException("A leaf identifier must not appear more than once in the\n" +
+                    "   unique");
+        }
+        getUniqueList().add(unique);
     }
 
     /**
@@ -394,7 +450,7 @@ public class YangList
      *
      * @return the max elements
      */
-    public int getMaxElements() {
+    public YangMaxElement getMaxElements() {
         return maxElements;
     }
 
@@ -403,8 +459,8 @@ public class YangList
      *
      * @param max the max elements
      */
-    public void setMaxElements(int max) {
-        maxElements = max;
+    public void setMaxElements(YangMaxElement max) {
+        this.maxElements = max;
     }
 
     /**
@@ -412,7 +468,7 @@ public class YangList
      *
      * @return the minimum elements
      */
-    public int getMinElements() {
+    public YangMinElement getMinElements() {
         return minElements;
     }
 
@@ -421,7 +477,7 @@ public class YangList
      *
      * @param minElements the minimum elements
      */
-    public void setMinElements(int minElements) {
+    public void setMinElements(YangMinElement minElements) {
         this.minElements = minElements;
     }
 

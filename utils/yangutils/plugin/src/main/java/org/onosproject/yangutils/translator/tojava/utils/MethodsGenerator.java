@@ -19,34 +19,58 @@ package org.onosproject.yangutils.translator.tojava.utils;
 import java.util.List;
 import java.util.Map;
 
-import org.onosproject.yangutils.datamodel.YangAbsolutePath;
-import org.onosproject.yangutils.datamodel.YangAugment;
+import org.onosproject.yangutils.datamodel.YangAtomicPath;
+import org.onosproject.yangutils.datamodel.YangAugmentableNode;
+import org.onosproject.yangutils.datamodel.YangLeaf;
 import org.onosproject.yangutils.datamodel.YangCompilerAnnotation;
+import org.onosproject.yangutils.datamodel.YangLeafList;
+import org.onosproject.yangutils.datamodel.YangLeafRef;
+import org.onosproject.yangutils.datamodel.YangLeavesHolder;
 import org.onosproject.yangutils.datamodel.YangNode;
 import org.onosproject.yangutils.datamodel.YangType;
 import org.onosproject.yangutils.datamodel.utils.builtindatatype.YangDataTypes;
 import org.onosproject.yangutils.translator.exception.TranslatorException;
 import org.onosproject.yangutils.translator.tojava.JavaAttributeInfo;
+import org.onosproject.yangutils.translator.tojava.JavaCodeGeneratorInfo;
 import org.onosproject.yangutils.translator.tojava.JavaFileInfoContainer;
+import org.onosproject.yangutils.translator.tojava.TempJavaBeanFragmentFiles;
 import org.onosproject.yangutils.utils.io.impl.JavaDocGen;
 import org.onosproject.yangutils.utils.io.impl.YangPluginConfig;
 
 import static org.onosproject.yangutils.datamodel.utils.builtindatatype.YangDataTypes.BINARY;
+import static org.onosproject.yangutils.datamodel.utils.builtindatatype.YangDataTypes.BITS;
+import static org.onosproject.yangutils.datamodel.utils.builtindatatype.YangDataTypes.BOOLEAN;
+import static org.onosproject.yangutils.datamodel.utils.builtindatatype.YangDataTypes.DECIMAL64;
+import static org.onosproject.yangutils.datamodel.utils.builtindatatype.YangDataTypes.EMPTY;
+import static org.onosproject.yangutils.datamodel.utils.builtindatatype.YangDataTypes.INT16;
+import static org.onosproject.yangutils.datamodel.utils.builtindatatype.YangDataTypes.INT32;
+import static org.onosproject.yangutils.datamodel.utils.builtindatatype.YangDataTypes.INT64;
+import static org.onosproject.yangutils.datamodel.utils.builtindatatype.YangDataTypes.INT8;
+import static org.onosproject.yangutils.datamodel.utils.builtindatatype.YangDataTypes.LEAFREF;
+import static org.onosproject.yangutils.datamodel.utils.builtindatatype.YangDataTypes.UINT16;
+import static org.onosproject.yangutils.datamodel.utils.builtindatatype.YangDataTypes.UINT32;
+import static org.onosproject.yangutils.datamodel.utils.builtindatatype.YangDataTypes.UINT64;
+import static org.onosproject.yangutils.datamodel.utils.builtindatatype.YangDataTypes.UINT8;
 import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.GENERATE_EVENT_SUBJECT_CLASS;
 import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.GENERATE_SERVICE_AND_MANAGER;
-import static org.onosproject.yangutils.translator.tojava.utils.JavaFileGeneratorUtils
-        .getAugmentedClassNameForDataMethods;
+import static org.onosproject.yangutils.translator.tojava.TempJavaFragmentFiles.getJavaAttributeOfLeaf;
+import static org.onosproject.yangutils.translator.tojava.TempJavaFragmentFiles.getJavaAttributeOfLeafList;
+import static org.onosproject.yangutils.translator.tojava.utils.JavaFileGeneratorUtils.getAugmentedClassNameForDataMethods;
 import static org.onosproject.yangutils.translator.tojava.utils.JavaFileGeneratorUtils.getParentNodeNameForDataMethods;
-import static org.onosproject.yangutils.translator.tojava.utils.JavaFileGeneratorUtils.getResolvedAugmentsForManager;
 import static org.onosproject.yangutils.translator.tojava.utils.JavaFileGeneratorUtils.getSetOfNodeIdentifiers;
+import static org.onosproject.yangutils.translator.tojava.utils.ValidatorTypeForUnionTypes.INT_TYPE_CONFLICT;
 import static org.onosproject.yangutils.utils.UtilConstants.ACTIVATE;
 import static org.onosproject.yangutils.utils.UtilConstants.ACTIVATE_ANNOTATION;
 import static org.onosproject.yangutils.utils.UtilConstants.ADD_STRING;
 import static org.onosproject.yangutils.utils.UtilConstants.AND;
-import static org.onosproject.yangutils.utils.UtilConstants.AUGMENTATION;
+import static org.onosproject.yangutils.utils.UtilConstants.APP_INSTANCE;
 import static org.onosproject.yangutils.utils.UtilConstants.AUGMENTED;
+import static org.onosproject.yangutils.utils.UtilConstants.AUGMENTED_INFO;
+import static org.onosproject.yangutils.utils.UtilConstants.BASE64;
+import static org.onosproject.yangutils.utils.UtilConstants.BASE_CLASS;
 import static org.onosproject.yangutils.utils.UtilConstants.BIG_DECIMAL;
 import static org.onosproject.yangutils.utils.UtilConstants.BIG_INTEGER;
+import static org.onosproject.yangutils.utils.UtilConstants.BITSET;
 import static org.onosproject.yangutils.utils.UtilConstants.BOOLEAN_DATA_TYPE;
 import static org.onosproject.yangutils.utils.UtilConstants.BOOLEAN_WRAPPER;
 import static org.onosproject.yangutils.utils.UtilConstants.BUILD;
@@ -61,39 +85,60 @@ import static org.onosproject.yangutils.utils.UtilConstants.CLASS_STRING;
 import static org.onosproject.yangutils.utils.UtilConstants.CLOSE_CURLY_BRACKET;
 import static org.onosproject.yangutils.utils.UtilConstants.CLOSE_PARENTHESIS;
 import static org.onosproject.yangutils.utils.UtilConstants.COLAN;
+import static org.onosproject.yangutils.utils.UtilConstants.COLON;
 import static org.onosproject.yangutils.utils.UtilConstants.COMMA;
 import static org.onosproject.yangutils.utils.UtilConstants.DEACTIVATE;
 import static org.onosproject.yangutils.utils.UtilConstants.DEACTIVATE_ANNOTATION;
+import static org.onosproject.yangutils.utils.UtilConstants.DECODE;
 import static org.onosproject.yangutils.utils.UtilConstants.DEFAULT;
 import static org.onosproject.yangutils.utils.UtilConstants.DIAMOND_CLOSE_BRACKET;
 import static org.onosproject.yangutils.utils.UtilConstants.DIAMOND_OPEN_BRACKET;
 import static org.onosproject.yangutils.utils.UtilConstants.DOUBLE;
 import static org.onosproject.yangutils.utils.UtilConstants.EIGHT_SPACE_INDENTATION;
+import static org.onosproject.yangutils.utils.UtilConstants.ELSE;
 import static org.onosproject.yangutils.utils.UtilConstants.EMPTY_STRING;
 import static org.onosproject.yangutils.utils.UtilConstants.EQUAL;
 import static org.onosproject.yangutils.utils.UtilConstants.EQUALS_STRING;
 import static org.onosproject.yangutils.utils.UtilConstants.EXCEPTION;
 import static org.onosproject.yangutils.utils.UtilConstants.EXCEPTION_VAR;
 import static org.onosproject.yangutils.utils.UtilConstants.FALSE;
+import static org.onosproject.yangutils.utils.UtilConstants.FILTER_CONTENT_MATCH;
+import static org.onosproject.yangutils.utils.UtilConstants.FILTER_LEAF;
+import static org.onosproject.yangutils.utils.UtilConstants.FILTER_LEAF_LIST;
+import static org.onosproject.yangutils.utils.UtilConstants.FOR;
 import static org.onosproject.yangutils.utils.UtilConstants.FOUR_SPACE_INDENTATION;
 import static org.onosproject.yangutils.utils.UtilConstants.FROM_STRING_METHOD_NAME;
 import static org.onosproject.yangutils.utils.UtilConstants.FROM_STRING_PARAM_NAME;
 import static org.onosproject.yangutils.utils.UtilConstants.GET;
-import static org.onosproject.yangutils.utils.UtilConstants.GET_BYTES;
+import static org.onosproject.yangutils.utils.UtilConstants.GET_DECODER;
+import static org.onosproject.yangutils.utils.UtilConstants.GET_FILTER_LEAF;
+import static org.onosproject.yangutils.utils.UtilConstants.GET_FILTER_LEAF_LIST;
 import static org.onosproject.yangutils.utils.UtilConstants.GET_METHOD_PREFIX;
+import static org.onosproject.yangutils.utils.UtilConstants.GET_OPERATION_TYPE;
+import static org.onosproject.yangutils.utils.UtilConstants.GET_SELECT_LEAF;
+import static org.onosproject.yangutils.utils.UtilConstants.GET_SELECT_LEAF_LIST;
 import static org.onosproject.yangutils.utils.UtilConstants.GOOGLE_MORE_OBJECT_METHOD_STRING;
 import static org.onosproject.yangutils.utils.UtilConstants.HASH;
 import static org.onosproject.yangutils.utils.UtilConstants.HASH_CODE_STRING;
 import static org.onosproject.yangutils.utils.UtilConstants.IF;
+import static org.onosproject.yangutils.utils.UtilConstants.ILLEGAL_ARGUMENT_EXCEPTION;
+import static org.onosproject.yangutils.utils.UtilConstants.ILLEGAL_ARGUMENT_EXCEPTION_MSG;
 import static org.onosproject.yangutils.utils.UtilConstants.INSTANCE_OF;
 import static org.onosproject.yangutils.utils.UtilConstants.INT;
 import static org.onosproject.yangutils.utils.UtilConstants.INTEGER_WRAPPER;
+import static org.onosproject.yangutils.utils.UtilConstants.INT_MAX_RANGE;
+import static org.onosproject.yangutils.utils.UtilConstants.INT_MIN_RANGE;
 import static org.onosproject.yangutils.utils.UtilConstants.LIST;
 import static org.onosproject.yangutils.utils.UtilConstants.LONG;
+import static org.onosproject.yangutils.utils.UtilConstants.LONG_MAX_RANGE;
+import static org.onosproject.yangutils.utils.UtilConstants.LONG_MIN_RANGE;
 import static org.onosproject.yangutils.utils.UtilConstants.LONG_WRAPPER;
 import static org.onosproject.yangutils.utils.UtilConstants.MAP;
+import static org.onosproject.yangutils.utils.UtilConstants.MAX_RANGE;
+import static org.onosproject.yangutils.utils.UtilConstants.MIN_RANGE;
 import static org.onosproject.yangutils.utils.UtilConstants.NEW;
 import static org.onosproject.yangutils.utils.UtilConstants.NEW_LINE;
+import static org.onosproject.yangutils.utils.UtilConstants.NOT;
 import static org.onosproject.yangutils.utils.UtilConstants.NULL;
 import static org.onosproject.yangutils.utils.UtilConstants.OBJ;
 import static org.onosproject.yangutils.utils.UtilConstants.OBJECT;
@@ -102,6 +147,10 @@ import static org.onosproject.yangutils.utils.UtilConstants.OF;
 import static org.onosproject.yangutils.utils.UtilConstants.OMIT_NULL_VALUE_STRING;
 import static org.onosproject.yangutils.utils.UtilConstants.OPEN_CURLY_BRACKET;
 import static org.onosproject.yangutils.utils.UtilConstants.OPEN_PARENTHESIS;
+import static org.onosproject.yangutils.utils.UtilConstants.OPERATION;
+import static org.onosproject.yangutils.utils.UtilConstants.OPERATION_ENUM;
+import static org.onosproject.yangutils.utils.UtilConstants.OP_PARAM_TYPE;
+import static org.onosproject.yangutils.utils.UtilConstants.OR_OPERATION;
 import static org.onosproject.yangutils.utils.UtilConstants.OTHER;
 import static org.onosproject.yangutils.utils.UtilConstants.OVERRIDE;
 import static org.onosproject.yangutils.utils.UtilConstants.PARSE_BOOLEAN;
@@ -110,18 +159,28 @@ import static org.onosproject.yangutils.utils.UtilConstants.PARSE_INT;
 import static org.onosproject.yangutils.utils.UtilConstants.PARSE_LONG;
 import static org.onosproject.yangutils.utils.UtilConstants.PARSE_SHORT;
 import static org.onosproject.yangutils.utils.UtilConstants.PERIOD;
+import static org.onosproject.yangutils.utils.UtilConstants.PRIVATE;
 import static org.onosproject.yangutils.utils.UtilConstants.PUBLIC;
 import static org.onosproject.yangutils.utils.UtilConstants.PUT;
+import static org.onosproject.yangutils.utils.UtilConstants.QUESTION_MARK;
 import static org.onosproject.yangutils.utils.UtilConstants.QUEUE;
 import static org.onosproject.yangutils.utils.UtilConstants.QUOTES;
+import static org.onosproject.yangutils.utils.UtilConstants.RECEIVED_OBJECT;
+import static org.onosproject.yangutils.utils.UtilConstants.REPLACE_STRING;
 import static org.onosproject.yangutils.utils.UtilConstants.RETURN;
 import static org.onosproject.yangutils.utils.UtilConstants.RPC_INPUT_VAR_NAME;
+import static org.onosproject.yangutils.utils.UtilConstants.SELECT_LEAF;
+import static org.onosproject.yangutils.utils.UtilConstants.SELECT_LEAF_LIST;
 import static org.onosproject.yangutils.utils.UtilConstants.SEMI_COLAN;
 import static org.onosproject.yangutils.utils.UtilConstants.SET_METHOD_PREFIX;
+import static org.onosproject.yangutils.utils.UtilConstants.SET_OPERATION_TYPE;
 import static org.onosproject.yangutils.utils.UtilConstants.SHORT;
 import static org.onosproject.yangutils.utils.UtilConstants.SHORT_WRAPPER;
+import static org.onosproject.yangutils.utils.UtilConstants.SINGLE_QUOTE;
 import static org.onosproject.yangutils.utils.UtilConstants.SIXTEEN_SPACE_INDENTATION;
 import static org.onosproject.yangutils.utils.UtilConstants.SPACE;
+import static org.onosproject.yangutils.utils.UtilConstants.SPLIT_STRING;
+import static org.onosproject.yangutils.utils.UtilConstants.SQUARE_BRACKETS;
 import static org.onosproject.yangutils.utils.UtilConstants.STARTED_LOG_INFO;
 import static org.onosproject.yangutils.utils.UtilConstants.STATIC;
 import static org.onosproject.yangutils.utils.UtilConstants.STOPPED_LOG_INFO;
@@ -129,15 +188,24 @@ import static org.onosproject.yangutils.utils.UtilConstants.STRING_DATA_TYPE;
 import static org.onosproject.yangutils.utils.UtilConstants.SUFFIX_S;
 import static org.onosproject.yangutils.utils.UtilConstants.SWITCH;
 import static org.onosproject.yangutils.utils.UtilConstants.THIS;
+import static org.onosproject.yangutils.utils.UtilConstants.THROW;
 import static org.onosproject.yangutils.utils.UtilConstants.TMP_VAL;
 import static org.onosproject.yangutils.utils.UtilConstants.TO;
+import static org.onosproject.yangutils.utils.UtilConstants.TRIM_STRING;
 import static org.onosproject.yangutils.utils.UtilConstants.TRUE;
 import static org.onosproject.yangutils.utils.UtilConstants.TRY;
 import static org.onosproject.yangutils.utils.UtilConstants.TWELVE_SPACE_INDENTATION;
+import static org.onosproject.yangutils.utils.UtilConstants.UINT_MAX_RANGE;
+import static org.onosproject.yangutils.utils.UtilConstants.UINT_MIN_RANGE;
+import static org.onosproject.yangutils.utils.UtilConstants.ULONG_MAX_RANGE;
+import static org.onosproject.yangutils.utils.UtilConstants.ULONG_MIN_RANGE;
+import static org.onosproject.yangutils.utils.UtilConstants.VALIDATE_RANGE;
 import static org.onosproject.yangutils.utils.UtilConstants.VALUE;
 import static org.onosproject.yangutils.utils.UtilConstants.VOID;
 import static org.onosproject.yangutils.utils.UtilConstants.YANG_AUGMENTED_INFO;
+import static org.onosproject.yangutils.utils.UtilConstants.YANG_AUGMENTED_OP_PARAM_INFO;
 import static org.onosproject.yangutils.utils.UtilConstants.YANG_UTILS_TODO;
+import static org.onosproject.yangutils.utils.UtilConstants.ZERO;
 import static org.onosproject.yangutils.utils.io.impl.JavaDocGen.JavaDocType.BUILD_METHOD;
 import static org.onosproject.yangutils.utils.io.impl.JavaDocGen.JavaDocType.CONSTRUCTOR;
 import static org.onosproject.yangutils.utils.io.impl.JavaDocGen.JavaDocType.DEFAULT_CONSTRUCTOR;
@@ -149,7 +217,7 @@ import static org.onosproject.yangutils.utils.io.impl.JavaDocGen.JavaDocType.SET
 import static org.onosproject.yangutils.utils.io.impl.JavaDocGen.JavaDocType.TYPE_CONSTRUCTOR;
 import static org.onosproject.yangutils.utils.io.impl.JavaDocGen.generateForAddAugmentation;
 import static org.onosproject.yangutils.utils.io.impl.JavaDocGen.generateForGetAugmentation;
-import static org.onosproject.yangutils.utils.io.impl.JavaDocGen.generateForTypeConstructor;
+import static org.onosproject.yangutils.utils.io.impl.JavaDocGen.generateForValidatorMethod;
 import static org.onosproject.yangutils.utils.io.impl.JavaDocGen.getJavaDoc;
 import static org.onosproject.yangutils.utils.io.impl.YangIoUtils.getCamelCase;
 import static org.onosproject.yangutils.utils.io.impl.YangIoUtils.getCapitalCase;
@@ -160,6 +228,8 @@ import static org.onosproject.yangutils.utils.io.impl.YangIoUtils.trimAtLast;
  * Represents generator for methods of generated files based on the file type.
  */
 public final class MethodsGenerator {
+    private static final String BITS_STRING_ARRAY_VAR = "bitsTemp";
+    private static final String BIT_TEMP_VAR = "bitTemp";
 
     /**
      * Creates an instance of method generator.
@@ -187,7 +257,7 @@ public final class MethodsGenerator {
      * @return getter string
      */
     public static String getGetterString(JavaAttributeInfo attr, int generatedJavaFiles,
-            YangPluginConfig pluginConfig) {
+                                         YangPluginConfig pluginConfig) {
 
         String returnType = getReturnType(attr);
         String attributeName = attr.getAttributeName();
@@ -207,12 +277,12 @@ public final class MethodsGenerator {
      * @return setter string
      */
     public static String getSetterString(JavaAttributeInfo attr, String className, int generatedJavaFiles,
-            YangPluginConfig pluginConfig) {
+                                         YangPluginConfig pluginConfig) {
 
         String attrType = getReturnType(attr);
         String attributeName = attr.getAttributeName();
         JavaDocGen.JavaDocType type;
-        if ((generatedJavaFiles & GENERATE_SERVICE_AND_MANAGER) != 0) {
+        if (generatedJavaFiles == GENERATE_SERVICE_AND_MANAGER) {
             type = MANAGER_SETTER_METHOD;
         } else {
             type = SETTER_METHOD;
@@ -243,7 +313,7 @@ public final class MethodsGenerator {
      * @return default constructor string
      */
     public static String getDefaultConstructorString(String name, String modifierType,
-            YangPluginConfig pluginConfig) {
+                                                     YangPluginConfig pluginConfig) {
         return getJavaDoc(DEFAULT_CONSTRUCTOR, name, false, pluginConfig, null)
                 + getDefaultConstructor(name, modifierType)
                 + NEW_LINE;
@@ -316,7 +386,7 @@ public final class MethodsGenerator {
      */
     public static String getGetter(String type, String name, int generatedJavaFiles) {
         String ret = parseTypeForReturnValue(type);
-        if ((generatedJavaFiles & GENERATE_SERVICE_AND_MANAGER) != 0) {
+        if (generatedJavaFiles == GENERATE_SERVICE_AND_MANAGER) {
             return FOUR_SPACE_INDENTATION + PUBLIC + SPACE + type + SPACE + GET_METHOD_PREFIX + getCapitalCase(name)
                     + OPEN_PARENTHESIS + CLOSE_PARENTHESIS + SPACE + OPEN_CURLY_BRACKET + NEW_LINE +
                     EIGHT_SPACE_INDENTATION + YANG_UTILS_TODO + NEW_LINE + EIGHT_SPACE_INDENTATION +
@@ -391,7 +461,7 @@ public final class MethodsGenerator {
      * @return setter for attribute
      */
     private static String getSetter(String className, String name, String type, int generatedJavaFiles) {
-        if ((generatedJavaFiles & GENERATE_SERVICE_AND_MANAGER) != 0) {
+        if (generatedJavaFiles == GENERATE_SERVICE_AND_MANAGER) {
             return FOUR_SPACE_INDENTATION + PUBLIC + SPACE + VOID + SPACE + SET_METHOD_PREFIX
                     + getCapitalCase(name) + OPEN_PARENTHESIS + type + SPACE + name + CLOSE_PARENTHESIS + SPACE +
                     OPEN_CURLY_BRACKET + NEW_LINE + EIGHT_SPACE_INDENTATION + YANG_UTILS_TODO +
@@ -457,7 +527,7 @@ public final class MethodsGenerator {
      * @return getter method for interface
      */
     public static String getGetterForInterface(String yangName, String returnType, boolean isList,
-            int generatedJavaFiles, YangCompilerAnnotation compilerAnnotation) {
+                                               int generatedJavaFiles, YangCompilerAnnotation compilerAnnotation) {
 
         if (!isList) {
             return getGetterInterfaceString(returnType, yangName, generatedJavaFiles);
@@ -487,8 +557,8 @@ public final class MethodsGenerator {
      * @return getter for interface
      */
     private static String getGetterInterfaceString(String returnType, String yangName,
-            int generatedJavaFiles) {
-        if ((generatedJavaFiles & GENERATE_SERVICE_AND_MANAGER) != 0) {
+                                                   int generatedJavaFiles) {
+        if (generatedJavaFiles == GENERATE_SERVICE_AND_MANAGER) {
             return FOUR_SPACE_INDENTATION + returnType + SPACE + GET_METHOD_PREFIX + getCapitalCase(yangName)
                     + OPEN_PARENTHESIS + CLOSE_PARENTHESIS + SEMI_COLAN;
         } else {
@@ -509,7 +579,7 @@ public final class MethodsGenerator {
      * @return setter method for interface
      */
     public static String getSetterForInterface(String attrName, String attrType, String className,
-            boolean isList, int generatedJavaFiles, YangCompilerAnnotation compilerAnnotation) {
+                                               boolean isList, int generatedJavaFiles, YangCompilerAnnotation compilerAnnotation) {
 
         if (!isList) {
             return getSetterInterfaceString(className, attrName, attrType, generatedJavaFiles);
@@ -545,8 +615,8 @@ public final class MethodsGenerator {
      * @return setter string
      */
     private static String getSetterInterfaceString(String className, String attrName, String attrType,
-            int generatedJavaFiles) {
-        if ((generatedJavaFiles & GENERATE_SERVICE_AND_MANAGER) != 0) {
+                                                   int generatedJavaFiles) {
+        if (generatedJavaFiles == GENERATE_SERVICE_AND_MANAGER) {
 
             return FOUR_SPACE_INDENTATION + VOID + SPACE + SET_METHOD_PREFIX + getCapitalCase(attrName)
                     + OPEN_PARENTHESIS + attrType + SPACE + attrName + CLOSE_PARENTHESIS + SEMI_COLAN;
@@ -609,6 +679,22 @@ public final class MethodsGenerator {
     }
 
     /**
+     * Returns constructor string for op param class.
+     *
+     * @param yangName     class name
+     * @param pluginConfig plugin configurations
+     * @return constructor string
+     */
+    public static String getOpParamConstructorStart(String yangName, YangPluginConfig pluginConfig) {
+
+        String javadoc = getConstructorString(yangName, pluginConfig);
+        String constructor = FOUR_SPACE_INDENTATION + PUBLIC + SPACE + yangName + OPERATION +
+                OPEN_PARENTHESIS + yangName + OPERATION + BUILDER + SPACE + BUILDER.toLowerCase() + OBJECT
+                + CLOSE_PARENTHESIS + SPACE + OPEN_CURLY_BRACKET + NEW_LINE;
+        return javadoc + constructor;
+    }
+
+    /**
      * Returns the constructor strings for class file.
      *
      * @param attr               attribute info
@@ -617,12 +703,12 @@ public final class MethodsGenerator {
      * @return constructor for class
      */
     public static String getConstructor(JavaAttributeInfo attr, int generatedJavaFiles,
-            YangPluginConfig pluginConfig) {
+                                        YangPluginConfig pluginConfig) {
 
         String attributeName = attr.getAttributeName();
         String constructor;
 
-        if ((generatedJavaFiles & GENERATE_SERVICE_AND_MANAGER) != 0) {
+        if (generatedJavaFiles == GENERATE_SERVICE_AND_MANAGER) {
             constructor = EIGHT_SPACE_INDENTATION + THIS + PERIOD
                     + getCamelCase(attributeName, pluginConfig.getConflictResolver()) + SPACE + EQUAL
                     + SPACE + BUILDER.toLowerCase() + OBJECT + PERIOD + GET_METHOD_PREFIX
@@ -648,7 +734,7 @@ public final class MethodsGenerator {
      * @return rpc method string
      */
     public static String getRpcServiceMethod(String rpcName, String inputName, String outputName,
-            YangPluginConfig pluginConfig) {
+                                             YangPluginConfig pluginConfig) {
 
         rpcName = getCamelCase(rpcName, pluginConfig.getConflictResolver());
         if (!inputName.equals(EMPTY_STRING)) {
@@ -668,7 +754,7 @@ public final class MethodsGenerator {
      * @return rpc method string
      */
     public static String getRpcManagerMethod(String rpcName, String inputName, String outputName,
-            YangPluginConfig pluginConfig) {
+                                             YangPluginConfig pluginConfig) {
 
         rpcName = getCamelCase(rpcName, pluginConfig.getConflictResolver());
         if (!inputName.equals(EMPTY_STRING)) {
@@ -724,7 +810,344 @@ public final class MethodsGenerator {
     }
 
     /**
-     * Returns omit null value string.
+     * Returns to string leaf for get method.
+     *
+     * @return string leaf for get method
+     */
+    public static String getToStringLeafgetter() {
+        return NEW_LINE + NEW_LINE + FOUR_SPACE_INDENTATION + PUBLIC + SPACE + BITSET + SPACE + GET_FILTER_LEAF
+                + OPEN_PARENTHESIS + CLOSE_PARENTHESIS + SPACE + OPEN_CURLY_BRACKET + NEW_LINE
+                + EIGHT_SPACE_INDENTATION + RETURN + SPACE + FILTER_LEAF + SEMI_COLAN + NEW_LINE
+                + FOUR_SPACE_INDENTATION + CLOSE_CURLY_BRACKET;
+    }
+
+    /**
+     * Returns to string select leaf for get method.
+     *
+     * @return select leaf string for get method
+     */
+    public static String getToStringSelectLeafgetter() {
+        return NEW_LINE + NEW_LINE + FOUR_SPACE_INDENTATION + PUBLIC + SPACE + BITSET + SPACE + GET_SELECT_LEAF
+                + OPEN_PARENTHESIS + CLOSE_PARENTHESIS + SPACE + OPEN_CURLY_BRACKET + NEW_LINE
+                + EIGHT_SPACE_INDENTATION + RETURN + SPACE + SELECT_LEAF + SEMI_COLAN + NEW_LINE
+                + FOUR_SPACE_INDENTATION + CLOSE_CURLY_BRACKET;
+    }
+
+    /**
+     * Returns to string leaf list for get method.
+     *
+     * @return string leaf list for get method
+     */
+    public static String getToStringLeafListgetter() {
+        return NEW_LINE + NEW_LINE + FOUR_SPACE_INDENTATION + PUBLIC + SPACE + BITSET + SPACE + GET_FILTER_LEAF_LIST
+                + OPEN_PARENTHESIS + CLOSE_PARENTHESIS + SPACE + OPEN_CURLY_BRACKET + NEW_LINE
+                + EIGHT_SPACE_INDENTATION + RETURN + SPACE + FILTER_LEAF_LIST + SEMI_COLAN + NEW_LINE
+                + FOUR_SPACE_INDENTATION + CLOSE_CURLY_BRACKET;
+    }
+
+    /**
+     * Returns to string select leaf list for get.
+     *
+     * @return select leaf list list for get
+     */
+    public static String getToStringSelectLeafListgetter() {
+        return NEW_LINE + NEW_LINE + FOUR_SPACE_INDENTATION + PUBLIC + SPACE + BITSET + SPACE + GET_SELECT_LEAF_LIST
+                + OPEN_PARENTHESIS + CLOSE_PARENTHESIS + SPACE + OPEN_CURLY_BRACKET + NEW_LINE
+                + EIGHT_SPACE_INDENTATION + RETURN + SPACE + SELECT_LEAF_LIST + SEMI_COLAN + NEW_LINE
+                + FOUR_SPACE_INDENTATION + CLOSE_CURLY_BRACKET;
+    }
+
+    /**
+     * Returns to string operation type for get method.
+     *
+     * @return operation type for get method
+     */
+    public static String getOperationTypegetter() {
+        return NEW_LINE + NEW_LINE + FOUR_SPACE_INDENTATION + PUBLIC + SPACE + OPERATION_ENUM
+                + SPACE + GET_OPERATION_TYPE + OPEN_PARENTHESIS + CLOSE_PARENTHESIS + SPACE
+                + OPEN_CURLY_BRACKET + NEW_LINE + EIGHT_SPACE_INDENTATION + RETURN + SPACE
+                + OP_PARAM_TYPE + SEMI_COLAN + NEW_LINE + FOUR_SPACE_INDENTATION + CLOSE_CURLY_BRACKET;
+    }
+
+    /**
+     * Returns to string operation type for set.
+     *
+     * @return operation type set method
+     */
+    public static String getOperationTypeSetter() {
+        return NEW_LINE + NEW_LINE + FOUR_SPACE_INDENTATION + PUBLIC + SPACE + VOID + SPACE + SET_OPERATION_TYPE
+                + OPEN_PARENTHESIS + OPERATION_ENUM + SPACE + getSmallCase(OPERATION_ENUM) + CLOSE_PARENTHESIS
+                + SPACE + OPEN_CURLY_BRACKET + NEW_LINE + EIGHT_SPACE_INDENTATION + THIS + PERIOD
+                + OP_PARAM_TYPE + SPACE + EQUAL + SPACE + getSmallCase(OPERATION_ENUM) + SEMI_COLAN + NEW_LINE
+                + FOUR_SPACE_INDENTATION + CLOSE_CURLY_BRACKET + NEW_LINE;
+    }
+
+    /**
+     * Returns string for leaf set method.
+     *
+     * @param className    class name
+     * @param curnode      current YANG node
+     * @param pluginConfig plugin configurations
+     * @return string for leaf set method
+     */
+    public static String getSetterForLeaf(String className, YangNode curnode, YangPluginConfig pluginConfig) {
+
+        int numleaf = 1;
+        String filterMethod = "";
+        TempJavaBeanFragmentFiles tempFragmentFiles = ((JavaCodeGeneratorInfo) curnode)
+                .getTempJavaCodeFragmentFiles().getBeanTempFiles();
+        if (curnode instanceof YangLeavesHolder) {
+            YangLeavesHolder leavesHolder = (YangLeavesHolder) curnode;
+            List<YangLeaf> leaves = leavesHolder.getListOfLeaf();
+            if (leaves != null && !leaves.isEmpty()) {
+                for (YangLeaf leaf : leaves) {
+                    JavaAttributeInfo javaAttributeInfo = getJavaAttributeOfLeaf(tempFragmentFiles, leaf, pluginConfig);
+                    String attrQuaifiedType = getReturnType(javaAttributeInfo);
+                    String attributeName = javaAttributeInfo.getAttributeName();
+
+                    filterMethod = filterMethod + NEW_LINE + FOUR_SPACE_INDENTATION + OVERRIDE + NEW_LINE
+                            + FOUR_SPACE_INDENTATION + PUBLIC + SPACE + className + BUILDER + SPACE
+                            + attributeName + OPEN_PARENTHESIS + attrQuaifiedType
+                            + SPACE + RECEIVED_OBJECT + attributeName + CLOSE_PARENTHESIS + SPACE + OPEN_CURLY_BRACKET
+                            + NEW_LINE + EIGHT_SPACE_INDENTATION + attributeName + SPACE + EQUAL + SPACE
+                            + RECEIVED_OBJECT + attributeName + SEMI_COLAN + NEW_LINE + EIGHT_SPACE_INDENTATION
+                            + GET_FILTER_LEAF + OPEN_PARENTHESIS + CLOSE_PARENTHESIS + PERIOD + SET_METHOD_PREFIX
+                            + OPEN_PARENTHESIS + String.valueOf(numleaf) + CLOSE_PARENTHESIS + SEMI_COLAN + NEW_LINE
+                            + EIGHT_SPACE_INDENTATION + RETURN + SPACE + THIS + SEMI_COLAN + NEW_LINE
+                            + FOUR_SPACE_INDENTATION + CLOSE_CURLY_BRACKET;
+                    numleaf++;
+                }
+            }
+        }
+        return filterMethod;
+    }
+
+    /**
+     * Returns string for leaf list set method.
+     *
+     * @param className    class name
+     * @param curnode      current YANG node
+     * @param pluginConfig plugin configurations
+     * @return string for leaf list set method
+     */
+    public static String getSetterForLeafList(String className, YangNode curnode, YangPluginConfig pluginConfig) {
+
+        int numleaf = 1;
+        String filterMethod = "";
+        TempJavaBeanFragmentFiles tempFragmentFiles = ((JavaCodeGeneratorInfo) curnode)
+                .getTempJavaCodeFragmentFiles().getBeanTempFiles();
+        if (curnode instanceof YangLeavesHolder) {
+            YangLeavesHolder leavesHolder = (YangLeavesHolder) curnode;
+            List<YangLeafList> listOfLeafList = leavesHolder.getListOfLeafList();
+
+            if (listOfLeafList != null && !listOfLeafList.isEmpty()) {
+                for (YangLeafList leafList : listOfLeafList) {
+                    JavaAttributeInfo javaAttributeInfo = getJavaAttributeOfLeafList(tempFragmentFiles, leafList,
+                            pluginConfig);
+                    String attributeName = javaAttributeInfo.getAttributeName();
+                    String attrQuaifiedType = getReturnType(javaAttributeInfo);
+                    if (javaAttributeInfo.isListAttr()) {
+                        attrQuaifiedType = getListString() + attrQuaifiedType + DIAMOND_CLOSE_BRACKET;
+                    }
+                    filterMethod = filterMethod + NEW_LINE + FOUR_SPACE_INDENTATION + OVERRIDE + NEW_LINE
+                            + FOUR_SPACE_INDENTATION + PUBLIC + SPACE + className + BUILDER + SPACE
+                            + attributeName + OPEN_PARENTHESIS + attrQuaifiedType
+                            + SPACE + RECEIVED_OBJECT + attributeName + CLOSE_PARENTHESIS + SPACE + OPEN_CURLY_BRACKET
+                            + NEW_LINE + EIGHT_SPACE_INDENTATION + attributeName + SPACE + EQUAL + SPACE
+                            + RECEIVED_OBJECT + attributeName + SEMI_COLAN + NEW_LINE + EIGHT_SPACE_INDENTATION
+                            + GET_FILTER_LEAF_LIST + OPEN_PARENTHESIS + CLOSE_PARENTHESIS + PERIOD + SET_METHOD_PREFIX
+                            + OPEN_PARENTHESIS + String.valueOf(numleaf) + CLOSE_PARENTHESIS + SEMI_COLAN + NEW_LINE
+                            + EIGHT_SPACE_INDENTATION + RETURN + SPACE + THIS + SEMI_COLAN + NEW_LINE
+                            + FOUR_SPACE_INDENTATION + CLOSE_CURLY_BRACKET;
+                    numleaf++;
+                }
+            }
+        }
+        return filterMethod;
+    }
+
+    /**
+     * Returns whether the data type is of primitive data type.
+     *
+     * @param dataType data type to be checked
+     * @return true, if data type can have primitive data type, false otherwise
+     */
+    private static boolean isPrimitiveDataType(YangDataTypes dataType) {
+        return dataType == INT8
+                || dataType == INT16
+                || dataType == INT32
+                || dataType == INT64
+                || dataType == UINT8
+                || dataType == UINT16
+                || dataType == UINT32
+                || dataType == UINT64
+                || dataType == DECIMAL64
+                || dataType == BOOLEAN
+                || dataType == EMPTY;
+
+    }
+
+    private static String getAttrTypeForFilterContentMatchWhenPrimitiveDataType(String attributeName) {
+        return APP_INSTANCE + PERIOD + attributeName + OPEN_PARENTHESIS + CLOSE_PARENTHESIS
+                + SPACE + NOT + EQUAL + SPACE + attributeName + OPEN_PARENTHESIS
+                + CLOSE_PARENTHESIS;
+    }
+
+    private static String getAttrTypeForFilterContentMatchWhenNonPremitiveDatatype(String attributeName) {
+        return APP_INSTANCE + PERIOD + attributeName + OPEN_PARENTHESIS + CLOSE_PARENTHESIS
+                + SPACE + EQUAL + EQUAL + SPACE + NULL + SPACE + OR_OPERATION + SPACE
+                + NOT + OPEN_PARENTHESIS + attributeName + OPEN_PARENTHESIS + CLOSE_PARENTHESIS
+                + PERIOD + EQUALS_STRING + OPEN_PARENTHESIS + APP_INSTANCE + PERIOD
+                + attributeName + OPEN_PARENTHESIS + CLOSE_PARENTHESIS
+                + CLOSE_PARENTHESIS + CLOSE_PARENTHESIS;
+    }
+
+    private static String getIfFilterContentMatchMethodImpl(String attributeName,
+                                                            String filterMethod, int numleaf, YangType dataType) {
+        String attrQualifiedType;
+
+        if (isPrimitiveDataType(dataType.getDataType())) {
+            attrQualifiedType = getAttrTypeForFilterContentMatchWhenPrimitiveDataType(attributeName);
+        } else if (dataType.getDataType() == LEAFREF) {
+            YangType type = ((YangLeafRef) dataType.getDataTypeExtendedInfo()).getEffectiveDataType();
+            if (isPrimitiveDataType(type.getDataType())) {
+                attrQualifiedType = getAttrTypeForFilterContentMatchWhenPrimitiveDataType(attributeName);
+            } else {
+                attrQualifiedType = getAttrTypeForFilterContentMatchWhenNonPremitiveDatatype(attributeName);
+            }
+        } else {
+            attrQualifiedType = getAttrTypeForFilterContentMatchWhenNonPremitiveDatatype(attributeName);
+        }
+
+        return attrQualifiedType;
+    }
+
+    /**
+     * Returns string for is filter content match method.
+     *
+     * @param className    class name
+     * @param curNode      current YANG node
+     * @param pluginConfig plugin configurations
+     * @return string for is filter content match method
+     */
+    public static String getIsFilterContentMatch(String className, YangNode curNode, YangPluginConfig pluginConfig) {
+
+        int numLeaf = 1;
+        String filterMethod = "";
+        TempJavaBeanFragmentFiles tempFragmentFiles = ((JavaCodeGeneratorInfo) curNode)
+                .getTempJavaCodeFragmentFiles().getBeanTempFiles();
+        if (curNode instanceof YangLeavesHolder) {
+            filterMethod = NEW_LINE + NEW_LINE + FOUR_SPACE_INDENTATION + PUBLIC + SPACE + BOOLEAN_DATA_TYPE
+                    + SPACE + FILTER_CONTENT_MATCH + OPEN_PARENTHESIS + getCapitalCase(OBJECT)
+                    + SPACE + OBJ +
+                    CLOSE_PARENTHESIS + SPACE
+                    + OPEN_CURLY_BRACKET + NEW_LINE;
+            filterMethod = filterMethod + EIGHT_SPACE_INDENTATION + getCapitalCase(DEFAULT)
+                    + getCapitalCase(className) + SPACE + APP_INSTANCE + SPACE + EQUAL + SPACE + OPEN_PARENTHESIS +
+                    getCapitalCase(DEFAULT) + getCapitalCase(className) + CLOSE_PARENTHESIS + OBJ +
+                    SEMI_COLAN + NEW_LINE;
+            if (curNode instanceof YangAugmentableNode) {
+                filterMethod = filterMethod + getAugmentableOpParamSyntax();
+            }
+
+            YangLeavesHolder leavesHolder = (YangLeavesHolder) curNode;
+            List<YangLeaf> leaves = leavesHolder.getListOfLeaf();
+            List<YangLeafList> listOfLeafList = leavesHolder.getListOfLeafList();
+            String attrQualifiedType;
+            if (leaves != null) {
+                for (YangLeaf leaf : leaves) {
+                    JavaAttributeInfo javaAttributeInfo = getJavaAttributeOfLeaf(tempFragmentFiles, leaf,
+                            pluginConfig);
+                    String attributeName = javaAttributeInfo.getAttributeName();
+                    attrQualifiedType = getIfFilterContentMatchMethodImpl(attributeName,
+                            filterMethod, numLeaf, leaf.getDataType());
+                    filterMethod = filterMethod + EIGHT_SPACE_INDENTATION + IF + SPACE + OPEN_PARENTHESIS
+                            + GET_FILTER_LEAF + OPEN_PARENTHESIS + CLOSE_PARENTHESIS + PERIOD + GET_METHOD_PREFIX
+                            + OPEN_PARENTHESIS + String.valueOf(numLeaf) + CLOSE_PARENTHESIS + CLOSE_PARENTHESIS
+                            + SPACE + OPEN_CURLY_BRACKET + NEW_LINE + TWELVE_SPACE_INDENTATION + IF + SPACE
+                            + OPEN_PARENTHESIS + attrQualifiedType + CLOSE_PARENTHESIS + SPACE
+                            + OPEN_CURLY_BRACKET + NEW_LINE + SIXTEEN_SPACE_INDENTATION + RETURN + SPACE + FALSE
+                            + SEMI_COLAN + NEW_LINE + TWELVE_SPACE_INDENTATION + CLOSE_CURLY_BRACKET + NEW_LINE
+                            + EIGHT_SPACE_INDENTATION + CLOSE_CURLY_BRACKET + NEW_LINE;
+
+                    numLeaf++;
+                }
+            }
+
+            if (listOfLeafList != null) {
+                numLeaf = 1;
+                for (YangLeafList leafList : listOfLeafList) {
+                    JavaAttributeInfo javaAttributeInfo = getJavaAttributeOfLeafList(tempFragmentFiles, leafList,
+                            pluginConfig);
+                    String attributeName = javaAttributeInfo.getAttributeName();
+                    attrQualifiedType = getIfFilterContentMatchMethodImpl(
+                            attributeName, filterMethod, numLeaf, leafList.getDataType());
+                    filterMethod = filterMethod + EIGHT_SPACE_INDENTATION + IF + SPACE + OPEN_PARENTHESIS
+                            + GET_FILTER_LEAF_LIST + OPEN_PARENTHESIS + CLOSE_PARENTHESIS + PERIOD + GET_METHOD_PREFIX
+                            + OPEN_PARENTHESIS + String.valueOf(numLeaf) + CLOSE_PARENTHESIS + CLOSE_PARENTHESIS
+                            + SPACE + OPEN_CURLY_BRACKET + NEW_LINE + TWELVE_SPACE_INDENTATION + IF + SPACE
+                            + OPEN_PARENTHESIS + attrQualifiedType + CLOSE_PARENTHESIS + SPACE
+                            + OPEN_CURLY_BRACKET + NEW_LINE + SIXTEEN_SPACE_INDENTATION + RETURN + SPACE + FALSE
+                            + SEMI_COLAN + NEW_LINE + TWELVE_SPACE_INDENTATION + CLOSE_CURLY_BRACKET + NEW_LINE
+                            + EIGHT_SPACE_INDENTATION + CLOSE_CURLY_BRACKET + NEW_LINE;
+                    numLeaf++;
+                }
+            }
+
+            filterMethod = filterMethod + EIGHT_SPACE_INDENTATION + RETURN + SPACE + TRUE + SEMI_COLAN +
+                    NEW_LINE + FOUR_SPACE_INDENTATION + CLOSE_CURLY_BRACKET + NEW_LINE;
+
+        }
+        return filterMethod;
+    }
+
+    /*Returns method string for op parms augmented syntax*/
+    private static String getAugmentableOpParamSyntax() {
+        return EIGHT_SPACE_INDENTATION + FOR + SPACE + OPEN_PARENTHESIS + YANG_AUGMENTED_INFO + SPACE +
+                getSmallCase(YANG_AUGMENTED_INFO) + SPACE + COLAN + SPACE + THIS +
+                PERIOD + GET_METHOD_PREFIX + YANG_AUGMENTED_INFO + MAP + OPEN_PARENTHESIS + CLOSE_PARENTHESIS + PERIOD
+                + VALUE + "s" + OPEN_PARENTHESIS + CLOSE_PARENTHESIS + CLOSE_PARENTHESIS + SPACE + OPEN_CURLY_BRACKET +
+                NEW_LINE + TWELVE_SPACE_INDENTATION + IF + SPACE + OPEN_PARENTHESIS + NOT + OPEN_PARENTHESIS +
+                getSmallCase(YANG_AUGMENTED_INFO) + SPACE + INSTANCE_OF + SPACE + YANG_AUGMENTED_OP_PARAM_INFO +
+                CLOSE_PARENTHESIS + CLOSE_PARENTHESIS + SPACE + OPEN_CURLY_BRACKET + NEW_LINE +
+                SIXTEEN_SPACE_INDENTATION + THROW + SPACE + NEW + SPACE + ILLEGAL_ARGUMENT_EXCEPTION +
+                OPEN_PARENTHESIS +
+                ILLEGAL_ARGUMENT_EXCEPTION_MSG + CLOSE_PARENTHESIS + SEMI_COLAN + NEW_LINE + TWELVE_SPACE_INDENTATION +
+                CLOSE_CURLY_BRACKET + NEW_LINE + NEW_LINE + TWELVE_SPACE_INDENTATION + YANG_AUGMENTED_INFO + SPACE +
+                getSmallCase(YANG_AUGMENTED_OP_PARAM_INFO) + SPACE + EQUAL + SPACE + APP_INSTANCE + PERIOD +
+                GET_METHOD_PREFIX + AUGMENTED_INFO + OPEN_PARENTHESIS + OPEN_PARENTHESIS + OPEN_PARENTHESIS +
+                YANG_AUGMENTED_OP_PARAM_INFO + CLOSE_PARENTHESIS + SPACE + getSmallCase(YANG_AUGMENTED_INFO) +
+                CLOSE_PARENTHESIS + PERIOD + GET_METHOD_PREFIX + BASE_CLASS + CLOSE_PARENTHESIS + SEMI_COLAN +
+                NEW_LINE + TWELVE_SPACE_INDENTATION + IF + OPEN_PARENTHESIS + NOT +
+                OPEN_PARENTHESIS + OPEN_PARENTHESIS + YANG_AUGMENTED_OP_PARAM_INFO + CLOSE_PARENTHESIS + SPACE +
+                getSmallCase(YANG_AUGMENTED_INFO) + CLOSE_PARENTHESIS
+                + PERIOD + "isFilterContentMatch" + OPEN_PARENTHESIS +
+                getSmallCase(YANG_AUGMENTED_OP_PARAM_INFO) + CLOSE_PARENTHESIS +
+                CLOSE_PARENTHESIS +
+                SPACE + OPEN_CURLY_BRACKET + NEW_LINE + SIXTEEN_SPACE_INDENTATION + RETURN + SPACE + FALSE +
+                SEMI_COLAN + NEW_LINE + TWELVE_SPACE_INDENTATION
+                + CLOSE_CURLY_BRACKET + NEW_LINE + EIGHT_SPACE_INDENTATION + CLOSE_CURLY_BRACKET + NEW_LINE;
+    }
+
+    /**
+     * Returns implementation of get base class method for op param files.
+     *
+     * @param baseClassName base class name
+     * @return implementation of get base class method for op param files
+     */
+    public static String getBaseClassMethodImpl(String baseClassName) {
+        return NEW_LINE + getOverRideString() + FOUR_SPACE_INDENTATION + PUBLIC + SPACE + CLASS_STRING +
+                DIAMOND_OPEN_BRACKET +
+                QUESTION_MARK +
+                DIAMOND_CLOSE_BRACKET + SPACE + GET_METHOD_PREFIX + BASE_CLASS + SPACE + OPEN_CURLY_BRACKET + NEW_LINE +
+                EIGHT_SPACE_INDENTATION + RETURN + SPACE + baseClassName + PERIOD + CLASS + SEMI_COLAN + NEW_LINE +
+                FOUR_SPACE_INDENTATION +
+                CLOSE_CURLY_BRACKET;
+
+    }
+
+    /*
+     * Retruns omit null value string.
      *
      * @return omit null value string
      */
@@ -787,7 +1210,7 @@ public final class MethodsGenerator {
      * @return from string method's body string
      */
     public static String getFromStringMethod(JavaAttributeInfo attr,
-            JavaAttributeInfo fromStringAttributeInfo) {
+                                             JavaAttributeInfo fromStringAttributeInfo) {
 
         return EIGHT_SPACE_INDENTATION + getTrySubString() + NEW_LINE + TWELVE_SPACE_INDENTATION
                 + getParsedSubString(attr, fromStringAttributeInfo) + SEMI_COLAN + NEW_LINE + TWELVE_SPACE_INDENTATION
@@ -830,17 +1253,42 @@ public final class MethodsGenerator {
      * @return sub string with parsed statement for union's from string method
      */
     private static String getParsedSubString(JavaAttributeInfo attr,
-            JavaAttributeInfo fromStringAttributeInfo) {
+                                             JavaAttributeInfo fromStringAttributeInfo) {
 
         String targetDataType = getReturnType(attr);
-        if (fromStringAttributeInfo.getAttributeType().getDataType() == BINARY) {
-            return targetDataType + SPACE + TMP_VAL + SPACE + EQUAL + SPACE + FROM_STRING_PARAM_NAME
-                    + PERIOD + GET_BYTES + OPEN_PARENTHESIS + CLOSE_PARENTHESIS;
+        if (fromStringAttributeInfo.getAttributeType().getDataType() == BITS) {
+            String lines = targetDataType + SPACE + TMP_VAL + SPACE + EQUAL + SPACE + NEW + SPACE + targetDataType
+                    + OPEN_PARENTHESIS + CLOSE_PARENTHESIS + SEMI_COLAN + NEW_LINE;
+            lines += TWELVE_SPACE_INDENTATION + FROM_STRING_PARAM_NAME + SPACE + EQUAL + SPACE + FROM_STRING_PARAM_NAME
+                    + PERIOD + REPLACE_STRING + OPEN_PARENTHESIS + SINGLE_QUOTE + OPEN_CURLY_BRACKET + SINGLE_QUOTE
+                    + COMMA + SPACE + SINGLE_QUOTE + SPACE + SINGLE_QUOTE + CLOSE_PARENTHESIS + SEMI_COLAN + NEW_LINE;
+            lines += TWELVE_SPACE_INDENTATION + FROM_STRING_PARAM_NAME + SPACE + EQUAL + SPACE + FROM_STRING_PARAM_NAME
+                    + PERIOD + REPLACE_STRING + OPEN_PARENTHESIS + SINGLE_QUOTE + CLOSE_CURLY_BRACKET + SINGLE_QUOTE
+                    + COMMA + SPACE + SINGLE_QUOTE + SPACE + SINGLE_QUOTE + CLOSE_PARENTHESIS + SEMI_COLAN + NEW_LINE;
+            lines += TWELVE_SPACE_INDENTATION + FROM_STRING_PARAM_NAME + SPACE + EQUAL + SPACE + FROM_STRING_PARAM_NAME
+                    + PERIOD + TRIM_STRING + OPEN_PARENTHESIS + CLOSE_PARENTHESIS + SEMI_COLAN + NEW_LINE;
+            lines += TWELVE_SPACE_INDENTATION + STRING_DATA_TYPE + SQUARE_BRACKETS + SPACE + BITS_STRING_ARRAY_VAR
+                    + SPACE + EQUAL + SPACE + FROM_STRING_PARAM_NAME + PERIOD + SPLIT_STRING + OPEN_PARENTHESIS
+                    + QUOTES + COMMA + QUOTES + COMMA + SPACE + ZERO + CLOSE_PARENTHESIS + SEMI_COLAN + NEW_LINE;
+            lines += TWELVE_SPACE_INDENTATION + FOR + SPACE + OPEN_PARENTHESIS + STRING_DATA_TYPE + SPACE
+                    + BIT_TEMP_VAR + SPACE + COLON + SPACE + BITS_STRING_ARRAY_VAR + CLOSE_PARENTHESIS + SPACE
+                    + OPEN_CURLY_BRACKET + NEW_LINE;
+            lines += SIXTEEN_SPACE_INDENTATION + BIT_TEMP_VAR + SPACE + EQUAL + SPACE + BIT_TEMP_VAR + PERIOD
+                    + TRIM_STRING + OPEN_PARENTHESIS + CLOSE_PARENTHESIS + SEMI_COLAN + NEW_LINE;
+            lines += SIXTEEN_SPACE_INDENTATION + TMP_VAL + PERIOD + SET_METHOD_PREFIX + OPEN_PARENTHESIS
+                    + INTEGER_WRAPPER + PERIOD + PARSE_INT + OPEN_PARENTHESIS + BIT_TEMP_VAR + CLOSE_PARENTHESIS
+                    + CLOSE_PARENTHESIS + SEMI_COLAN + NEW_LINE;
+            lines += TWELVE_SPACE_INDENTATION + CLOSE_CURLY_BRACKET;
+            return lines;
+        } else if (attr.getAttributeType().getDataType() == BINARY) {
+            return targetDataType + SPACE + TMP_VAL + SPACE + EQUAL + SPACE + BASE64 + PERIOD
+                    + GET_DECODER + OPEN_PARENTHESIS + CLOSE_PARENTHESIS + PERIOD + DECODE + OPEN_PARENTHESIS
+                    + FROM_STRING_PARAM_NAME + CLOSE_PARENTHESIS + SEMI_COLAN;
         } else {
             String parseFromStringMethod = getParseFromStringMethod(targetDataType,
                     fromStringAttributeInfo.getAttributeType());
             return targetDataType + SPACE + TMP_VAL + SPACE + EQUAL + SPACE + parseFromStringMethod
-                    + OPEN_PARENTHESIS + FROM_STRING_PARAM_NAME + CLOSE_PARENTHESIS;
+                    + OPEN_PARENTHESIS + FROM_STRING_PARAM_NAME + CLOSE_PARENTHESIS + SEMI_COLAN;
         }
     }
 
@@ -970,12 +1418,13 @@ public final class MethodsGenerator {
      * @return of method's string and java doc for special type
      */
     public static String getOfMethodStringAndJavaDoc(JavaAttributeInfo attr, String generatedJavaClassName,
-            YangPluginConfig pluginConfig) {
+                                                     YangPluginConfig pluginConfig) {
 
         String attrType = getReturnType(attr);
         String attrName = attr.getAttributeName();
 
-        return getJavaDoc(OF_METHOD, generatedJavaClassName + " for type " + attrName, false, pluginConfig, null)
+        return getJavaDoc(OF_METHOD, generatedJavaClassName + " for type " + attrName, false, pluginConfig,
+                attr.getCompilerAnnotation())
                 + getOfMethodString(attrType, generatedJavaClassName);
     }
 
@@ -1003,14 +1452,45 @@ public final class MethodsGenerator {
      * @return string and java doc for constructor of type class
      */
     public static String getTypeConstructorStringAndJavaDoc(JavaAttributeInfo attr,
-            String generatedJavaClassName,
-            YangPluginConfig pluginConfig) {
+                                                            String generatedJavaClassName,
+                                                            YangPluginConfig pluginConfig) {
 
         String attrType = getReturnType(attr);
         String attrName = attr.getAttributeName();
 
-        return getJavaDoc(TYPE_CONSTRUCTOR, generatedJavaClassName + " for type " + attrName, false, pluginConfig, null)
+        return getJavaDoc(TYPE_CONSTRUCTOR, generatedJavaClassName + " for type " + attrName, false, pluginConfig,
+                attr.getCompilerAnnotation())
                 + getTypeConstructorString(attrType, attrName, generatedJavaClassName);
+    }
+
+    /**
+     * Returns string and java doc for constructor of type class.
+     *
+     * @param attr1                  first attribute info
+     * @param attr2                  second attribute info
+     * @param generatedJavaClassName class name
+     * @param pluginConfig           plugin config
+     * @param type                   conflict validate type
+     * @param addFirst               whether int came first or uint came first
+     * @return string and java doc for constructor of type class
+     */
+    public static String getTypeConstructorStringAndJavaDoc(JavaAttributeInfo attr1, JavaAttributeInfo
+            attr2, String generatedJavaClassName, YangPluginConfig pluginConfig, ValidatorTypeForUnionTypes type,
+                                                            boolean addFirst) {
+
+        String attrType = getReturnType(attr1);
+        String attrName1 = "";
+        String attrName2 = "";
+        if (attr1 != null) {
+            attrName1 = attr1.getAttributeName();
+        }
+        if (attr2 != null) {
+            attrName2 = attr2.getAttributeName();
+        }
+
+        return getJavaDoc(TYPE_CONSTRUCTOR, generatedJavaClassName + " for type " + attrName1, false, pluginConfig,
+                attr1.getCompilerAnnotation())
+                + getTypeConstructorString(attrType, attrName1, attrName2, generatedJavaClassName, type, addFirst);
     }
 
     /**
@@ -1030,17 +1510,52 @@ public final class MethodsGenerator {
     }
 
     /**
+     * Returns type constructor string.
+     *
+     * @param type      data type
+     * @param attr1     attribute attr1
+     * @param className class attr1
+     * @return type constructor string
+     */
+    private static String getTypeConstructorString(String type, String attr1, String attr2, String className,
+                                                   ValidatorTypeForUnionTypes validatorType, boolean addInt) {
+
+        String constructor;
+        constructor = FOUR_SPACE_INDENTATION + PUBLIC + SPACE + className + OPEN_PARENTHESIS + type + SPACE + VALUE
+                + CLOSE_PARENTHESIS + SPACE + OPEN_CURLY_BRACKET + NEW_LINE;
+
+        String name1;
+        String name2;
+        if (addInt) {
+            name1 = attr1;
+            name2 = attr2;
+        } else {
+            name1 = attr2;
+            name2 = attr1;
+        }
+        constructor = constructor + ifConditionForIntInTypeDefConstrcutor(validatorType, addInt) +
+                TWELVE_SPACE_INDENTATION + THIS + PERIOD
+                + name1 + SPACE + EQUAL + SPACE + VALUE + SEMI_COLAN + NEW_LINE + EIGHT_SPACE_INDENTATION
+                + CLOSE_CURLY_BRACKET + SPACE + ELSE + SPACE + OPEN_CURLY_BRACKET + NEW_LINE + TWELVE_SPACE_INDENTATION
+                + THIS + PERIOD
+                + name2 + SPACE + EQUAL + SPACE + VALUE + SEMI_COLAN + NEW_LINE + EIGHT_SPACE_INDENTATION
+                + CLOSE_CURLY_BRACKET + NEW_LINE + FOUR_SPACE_INDENTATION
+                + CLOSE_CURLY_BRACKET;
+
+        return constructor;
+    }
+
+    /**
      * Returns implementation of add augmentation.
      *
      * @return implementation of add augmentation
      */
-    public static String getAddAugmentInfoMethodImpl() {
-        return NEW_LINE + generateForAddAugmentation() + FOUR_SPACE_INDENTATION +
-                PUBLIC + SPACE + VOID + SPACE + ADD_STRING
-                + AUGMENTATION + OPEN_PARENTHESIS + YANG_AUGMENTED_INFO + SPACE + VALUE + COMMA + SPACE + CLASS_STRING +
-                SPACE + CLASS + OBJECT_STRING + CLOSE_PARENTHESIS + SPACE + OPEN_CURLY_BRACKET + NEW_LINE +
-                EIGHT_SPACE_INDENTATION + getSmallCase(YANG_AUGMENTED_INFO) + MAP + PERIOD + PUT + OPEN_PARENTHESIS +
-                CLASS + OBJECT_STRING + COMMA + SPACE + VALUE +
+    static String getAddAugmentInfoMethodImpl() {
+        return NEW_LINE + generateForAddAugmentation() + FOUR_SPACE_INDENTATION + PUBLIC + SPACE + VOID + SPACE +
+                ADD_STRING + AUGMENTED_INFO + OPEN_PARENTHESIS + YANG_AUGMENTED_INFO + SPACE + VALUE + COMMA +
+                SPACE + CLASS_STRING + SPACE + CLASS + OBJECT_STRING + CLOSE_PARENTHESIS + SPACE + OPEN_CURLY_BRACKET +
+                NEW_LINE + EIGHT_SPACE_INDENTATION + getSmallCase(YANG_AUGMENTED_INFO) + MAP + PERIOD + PUT +
+                OPEN_PARENTHESIS + CLASS + OBJECT_STRING + COMMA + SPACE + VALUE +
                 CLOSE_PARENTHESIS + SEMI_COLAN + NEW_LINE + FOUR_SPACE_INDENTATION +
                 CLOSE_CURLY_BRACKET + NEW_LINE;
     }
@@ -1050,15 +1565,32 @@ public final class MethodsGenerator {
      *
      * @return implementation of get augment info
      */
-    public static String getAugmentInfoImpl() {
+    static String getAugmentInfoImpl() {
 
         return generateForGetAugmentation() + FOUR_SPACE_INDENTATION + PUBLIC + SPACE +
                 YANG_AUGMENTED_INFO + SPACE + GET_METHOD_PREFIX +
-                YANG_AUGMENTED_INFO + OPEN_PARENTHESIS + CLASS_STRING + SPACE + CLASS + OBJECT_STRING +
+                AUGMENTED_INFO + OPEN_PARENTHESIS + CLASS_STRING + SPACE + CLASS + OBJECT_STRING +
                 CLOSE_PARENTHESIS + SPACE + OPEN_CURLY_BRACKET + NEW_LINE + EIGHT_SPACE_INDENTATION +
                 RETURN + SPACE + getSmallCase(YANG_AUGMENTED_INFO) + MAP + PERIOD + GET + OPEN_PARENTHESIS + CLASS +
                 OBJECT_STRING + CLOSE_PARENTHESIS + SEMI_COLAN + NEW_LINE + FOUR_SPACE_INDENTATION +
                 CLOSE_CURLY_BRACKET + NEW_LINE;
+    }
+
+    /**
+     * Returns implementation of get augment info.
+     *
+     * @return implementation of get augment info
+     */
+    static String getAugmentInfoMapImpl(YangPluginConfig pluginConfig) {
+
+        return getJavaDoc(GETTER_METHOD, getSmallCase(YANG_AUGMENTED_INFO) + MAP, false, pluginConfig, null)
+                + FOUR_SPACE_INDENTATION + PUBLIC + SPACE +
+                MAP + DIAMOND_OPEN_BRACKET + CLASS_STRING + DIAMOND_OPEN_BRACKET + QUESTION_MARK +
+                DIAMOND_CLOSE_BRACKET + COMMA + SPACE + YANG_AUGMENTED_INFO + DIAMOND_CLOSE_BRACKET + SPACE +
+                GET_METHOD_PREFIX + YANG_AUGMENTED_INFO + MAP + OPEN_PARENTHESIS +
+                CLOSE_PARENTHESIS + SPACE + OPEN_CURLY_BRACKET + NEW_LINE + EIGHT_SPACE_INDENTATION +
+                RETURN + SPACE + getSmallCase(YANG_AUGMENTED_INFO) + MAP + SEMI_COLAN + NEW_LINE
+                + FOUR_SPACE_INDENTATION + CLOSE_CURLY_BRACKET + NEW_LINE;
     }
 
     /**
@@ -1084,8 +1616,8 @@ public final class MethodsGenerator {
      * @return of method
      */
     public static String getEnumsOfMethod(String className, JavaAttributeInfo attr,
-            Map<String, Integer> enumMap, List<String> enumList,
-            YangPluginConfig pluginConfig) {
+                                          Map<String, Integer> enumMap, List<String> enumList,
+                                          YangPluginConfig pluginConfig) {
         String attrType = getReturnType(attr);
         String attrName = attr.getAttributeName();
 
@@ -1098,15 +1630,16 @@ public final class MethodsGenerator {
         for (String str : enumList) {
 
             value = enumMap.get(str);
-            method = method + TWELVE_SPACE_INDENTATION + CASE + SPACE + value + COLAN + NEW_LINE
+            method = method + TWELVE_SPACE_INDENTATION + CASE + SPACE + value + COLON + NEW_LINE
                     + SIXTEEN_SPACE_INDENTATION + RETURN + SPACE + getCapitalCase(className) + PERIOD
                     + str + SEMI_COLAN + NEW_LINE;
         }
-        method = method + TWELVE_SPACE_INDENTATION + DEFAULT + SPACE + COLAN + NEW_LINE + SIXTEEN_SPACE_INDENTATION
+        method = method + TWELVE_SPACE_INDENTATION + DEFAULT + SPACE + COLON + NEW_LINE + SIXTEEN_SPACE_INDENTATION
                 + RETURN + SPACE + NULL + SEMI_COLAN + NEW_LINE + EIGHT_SPACE_INDENTATION + CLOSE_CURLY_BRACKET
                 + NEW_LINE + FOUR_SPACE_INDENTATION + CLOSE_CURLY_BRACKET;
 
-        return getJavaDoc(OF_METHOD, getCapitalCase(className) + " for type " + attrName, false, pluginConfig, null)
+        return getJavaDoc(OF_METHOD, getCapitalCase(className) + " for type " + attrName, false, pluginConfig,
+                attr.getCompilerAnnotation())
                 + method;
     }
 
@@ -1185,24 +1718,6 @@ public final class MethodsGenerator {
     }
 
     /**
-     * Returns copy constructor for augmented class.
-     *
-     * @param yangName    augmente class name
-     * @param augmentName augmented class name
-     * @return copy constructor for augmented class
-     */
-    public static String getAugmentedNodesConstructorStart(String yangName,
-            String augmentName) {
-
-        String javadoc = generateForTypeConstructor(yangName);
-        String constructor = FOUR_SPACE_INDENTATION + PUBLIC + SPACE + yangName + BUILDER + OPEN_PARENTHESIS
-                + augmentName + PERIOD + augmentName + BUILDER + SPACE + VALUE + CLOSE_PARENTHESIS + SPACE
-                + OPEN_CURLY_BRACKET + NEW_LINE;
-        return javadoc + constructor;
-
-    }
-
-    /**
      * Returns the constructor strings for class file.
      *
      * @param attr         attribute info
@@ -1224,26 +1739,27 @@ public final class MethodsGenerator {
      * @param parent parent node
      * @return augmented data getter and setter methods for service class
      */
-    public static String getAugmentsDataMethodForService(YangNode parent) {
-        Map<YangAbsolutePath, YangAugment> resolvedAugmentsForManager = getResolvedAugmentsForManager(parent);
-        List<YangAbsolutePath> targets = getSetOfNodeIdentifiers(parent);
+    static String getAugmentsDataMethodForService(YangNode parent) {
+        List<YangAtomicPath> targets = getSetOfNodeIdentifiers(parent);
         YangNode augmentedNode;
         String curNodeName;
         String method;
         StringBuilder methods = new StringBuilder();
         String parentName;
         String returnType;
+        YangNode methodNode;
         YangPluginConfig pluginConfig = ((JavaFileInfoContainer) parent).getJavaFileInfo().getPluginConfig();
-        for (YangAbsolutePath nodeId : targets) {
-            augmentedNode = resolvedAugmentsForManager.get(nodeId).getResolveNodeInPath().get(nodeId);
-            if (((JavaFileInfoContainer) augmentedNode).getJavaFileInfo().getJavaName() != null) {
-                curNodeName = ((JavaFileInfoContainer) augmentedNode).getJavaFileInfo().getJavaName();
+        for (YangAtomicPath nodeId : targets) {
+            augmentedNode = nodeId.getResolvedNode().getParent();
+            methodNode = nodeId.getResolvedNode();
+            if (((JavaFileInfoContainer) methodNode).getJavaFileInfo().getJavaName() != null) {
+                curNodeName = ((JavaFileInfoContainer) methodNode).getJavaFileInfo().getJavaName();
             } else {
-                curNodeName = getCapitalCase(getCamelCase(augmentedNode.getName(), pluginConfig
+                curNodeName = getCapitalCase(getCamelCase(methodNode.getName(), pluginConfig
                         .getConflictResolver()));
             }
             returnType = getAugmentedClassNameForDataMethods(augmentedNode, parent);
-            parentName = getParentNodeNameForDataMethods(augmentedNode.getParent(), pluginConfig);
+            parentName = getParentNodeNameForDataMethods(augmentedNode, pluginConfig);
             method = getJavaDoc(GETTER_METHOD, getSmallCase(AUGMENTED + parentName + curNodeName), false,
                     pluginConfig, null) + getGetterForInterface(AUGMENTED + parentName
                             + getCapitalCase(curNodeName),
@@ -1252,7 +1768,7 @@ public final class MethodsGenerator {
             methods.append(method);
 
             method = getJavaDoc(MANAGER_SETTER_METHOD, AUGMENTED +
-                    getCapitalCase(parentName) + curNodeName, false, pluginConfig, null) +
+                    getCapitalCase(parentName) + getCapitalCase(curNodeName), false, pluginConfig, null) +
                     getSetterForInterface(getSmallCase(AUGMENTED) + parentName +
                                     getCapitalCase(curNodeName), returnType, parentName,
                             false,
@@ -1268,26 +1784,27 @@ public final class MethodsGenerator {
      * @param parent parent node
      * @return augmented data getter and setter methods for manager class
      */
-    public static String getAugmentsDataMethodForManager(YangNode parent) {
-        Map<YangAbsolutePath, YangAugment> resolvedAugmentsForManager = getResolvedAugmentsForManager(parent);
-        List<YangAbsolutePath> targets = getSetOfNodeIdentifiers(parent);
+    static String getAugmentsDataMethodForManager(YangNode parent) {
+        List<YangAtomicPath> targets = getSetOfNodeIdentifiers(parent);
         YangNode augmentedNode;
         String curNodeName;
         String returnType;
         String method;
         StringBuilder methods = new StringBuilder();
         String parentName;
+        YangNode methodNode;
         YangPluginConfig pluginConfig = ((JavaFileInfoContainer) parent).getJavaFileInfo().getPluginConfig();
-        for (YangAbsolutePath nodeId : targets) {
-            augmentedNode = resolvedAugmentsForManager.get(nodeId).getResolveNodeInPath().get(nodeId);
-            if (((JavaFileInfoContainer) augmentedNode).getJavaFileInfo().getJavaName() != null) {
-                curNodeName = ((JavaFileInfoContainer) augmentedNode).getJavaFileInfo().getJavaName();
+        for (YangAtomicPath nodeId : targets) {
+            augmentedNode = nodeId.getResolvedNode().getParent();
+            methodNode = nodeId.getResolvedNode();
+            if (((JavaFileInfoContainer) methodNode).getJavaFileInfo().getJavaName() != null) {
+                curNodeName = ((JavaFileInfoContainer) methodNode).getJavaFileInfo().getJavaName();
             } else {
-                curNodeName = getCapitalCase(getCamelCase(augmentedNode.getName(), pluginConfig
+                curNodeName = getCapitalCase(getCamelCase(methodNode.getName(), pluginConfig
                         .getConflictResolver()));
             }
             returnType = getAugmentedClassNameForDataMethods(augmentedNode, parent);
-            parentName = getParentNodeNameForDataMethods(augmentedNode.getParent(), pluginConfig);
+            parentName = getParentNodeNameForDataMethods(augmentedNode, pluginConfig);
             method = getOverRideString() + getGetter(returnType, AUGMENTED
                             + parentName + getCapitalCase(curNodeName),
                     GENERATE_SERVICE_AND_MANAGER) + NEW_LINE;
@@ -1302,5 +1819,50 @@ public final class MethodsGenerator {
         }
         return methods.toString();
     }
+
+    /**
+     * Returns validator method for range in union class.
+     *
+     * @param type type
+     * @return validator method for range in union class
+     */
+    public static String getRangeValidatorMethodForUnion(String type) {
+        return generateForValidatorMethod() + FOUR_SPACE_INDENTATION + PRIVATE + SPACE + BOOLEAN_DATA_TYPE + SPACE +
+                VALIDATE_RANGE +
+                OPEN_PARENTHESIS
+                + type + SPACE + MIN_RANGE + COMMA + SPACE + type + SPACE + MAX_RANGE + COMMA + SPACE +
+                type +
+                SPACE + VALUE + CLOSE_PARENTHESIS + SPACE + OPEN_CURLY_BRACKET + NEW_LINE + EIGHT_SPACE_INDENTATION
+                + RETURN + SPACE + VALUE + SPACE + DIAMOND_CLOSE_BRACKET + EQUAL + SPACE + MIN_RANGE + SPACE + AND +
+                AND + SPACE + VALUE + DIAMOND_OPEN_BRACKET + EQUAL + SPACE + MAX_RANGE + SEMI_COLAN + NEW_LINE +
+                FOUR_SPACE_INDENTATION + CLOSE_CURLY_BRACKET + NEW_LINE;
+    }
+
+    /**
+     * Returns if condition string for typedef constructor.
+     *
+     * @param type     type of conflict
+     * @param addFirst true int/long need to be added first
+     * @return if condition string for typedef constructor
+     */
+    private static String ifConditionForIntInTypeDefConstrcutor(ValidatorTypeForUnionTypes type, boolean addFirst) {
+        String condition = EIGHT_SPACE_INDENTATION + IF + SPACE + OPEN_PARENTHESIS + VALIDATE_RANGE + OPEN_PARENTHESIS;
+
+        if (type == INT_TYPE_CONFLICT) {
+            if (addFirst) {
+                condition = condition + INT_MIN_RANGE + COMMA + SPACE + INT_MAX_RANGE + COMMA + SPACE + VALUE;
+            } else {
+                condition = condition + UINT_MIN_RANGE + COMMA + SPACE + UINT_MAX_RANGE + COMMA + SPACE + VALUE;
+            }
+        } else {
+            if (addFirst) {
+                condition = condition + LONG_MIN_RANGE + COMMA + SPACE + LONG_MAX_RANGE + COMMA + SPACE + VALUE;
+            } else {
+                condition = condition + ULONG_MIN_RANGE + COMMA + SPACE + ULONG_MAX_RANGE + COMMA + SPACE + VALUE;
+            }
+        }
+        return condition + CLOSE_PARENTHESIS + CLOSE_PARENTHESIS + SPACE + OPEN_CURLY_BRACKET + NEW_LINE;
+    }
+
 
 }

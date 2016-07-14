@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * Representation of data model node to maintain absolute path defined in YANG path-arg.
  */
-public class YangAbsolutePath implements Serializable {
+public class YangAtomicPath implements Serializable {
 
     private static final long serialVersionUID = 806201688L;
 
@@ -29,7 +29,12 @@ public class YangAbsolutePath implements Serializable {
     private YangNodeIdentifier nodeIdentifier;
 
     // List of path predicates expression.
-    private List<YangPathPredicate> predicatesExp;
+    private List<YangPathPredicate> pathPredicatesList;
+
+    /**
+     * Resolved node for the absolute path.
+     */
+    private YangNode resolvedNode;
 
     /**
      * Returns the node identifier.
@@ -54,17 +59,17 @@ public class YangAbsolutePath implements Serializable {
      *
      * @return the path predicate expression
      */
-    public List<YangPathPredicate> getPredicatesExp() {
-        return predicatesExp;
+    public List<YangPathPredicate> getPathPredicatesList() {
+        return pathPredicatesList;
     }
 
     /**
      * Sets the path predicate expression.
      *
-     * @param predicatesExp Sets the path predicate expression
+     * @param pathPredicatesList Sets the path predicate expression
      */
-    public void setPredicatesExp(List<YangPathPredicate> predicatesExp) {
-        this.predicatesExp = predicatesExp;
+    public void setPathPredicatesList(List<YangPathPredicate> pathPredicatesList) {
+        this.pathPredicatesList = pathPredicatesList;
     }
 
     /**
@@ -72,7 +77,26 @@ public class YangAbsolutePath implements Serializable {
      *
      * @param predicatesExp the predicate expression to be added
      */
-    public void addLeaf(YangPathPredicate predicatesExp) {
-        getPredicatesExp().add(predicatesExp);
+    public void addLeavesPredicate(YangPathPredicate predicatesExp) {
+        getPathPredicatesList().add(predicatesExp);
+    }
+
+
+    /**
+     * Returns resolved node.
+     *
+     * @return resolved node
+     */
+    public YangNode getResolvedNode() {
+        return resolvedNode;
+    }
+
+    /**
+     * Sets resolved node.
+     *
+     * @param resolvedNode resolved node
+     */
+    public void setResolvedNode(YangNode resolvedNode) {
+        this.resolvedNode = resolvedNode;
     }
 }

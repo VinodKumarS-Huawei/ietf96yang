@@ -19,7 +19,7 @@ package org.onosproject.yangutils.linker.impl;
 /**
  * Enum for prefix resolver type when augment has come in path.
  */
-public enum PrefixResolverType {
+enum PrefixResolverType {
 
     /**
      * When prefix changes from inter file to intra file.
@@ -37,12 +37,12 @@ public enum PrefixResolverType {
     INTER_TO_INTER,
 
     /**
-     * When no prefix change occurres.
+     * When no prefix change occurs.
      */
     NO_PREFIX_CHANGE_FOR_INTRA,
 
     /**
-     * When no prefix change occurres.
+     * When no prefix change occurs.
      */
     NO_PREFIX_CHANGE_FOR_INTER
 }

@@ -41,10 +41,10 @@ import org.onosproject.yangutils.utils.io.impl.YangPluginConfig;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.onosproject.yangutils.datamodel.utils.DataModelUtils.deSerializeDataModel;
-import static org.onosproject.yangutils.datamodel.utils.ResolvableStatus.RESOLVED;
 import static org.onosproject.yangutils.datamodel.utils.builtindatatype.YangDataTypes.DERIVED;
 import static org.onosproject.yangutils.datamodel.utils.builtindatatype.YangDataTypes.STRING;
+import static org.onosproject.yangutils.datamodel.utils.ResolvableStatus.RESOLVED;
+import static org.onosproject.yangutils.datamodel.utils.DataModelUtils.deSerializeDataModel;
 import static org.onosproject.yangutils.plugin.manager.YangPluginUtils.parseJarFile;
 import static org.onosproject.yangutils.plugin.manager.YangPluginUtils.serializeDataModel;
 import static org.onosproject.yangutils.utils.UtilConstants.SLASH;
@@ -191,7 +191,7 @@ public class InterJarLinkerTest {
         yangPluginConfig.setCodeGenDir(TARGET);
         yangPluginConfig.setManagerCodeGenDir(TARGET);
 
-        utilManager.translateToJava(utilManager.getYangFileInfoSet(), yangPluginConfig);
+        utilManager.translateToJava(yangPluginConfig);
 
         testIfFlowClassifierFilesExists();
         testIfPortPairFileDoesNotExist();
@@ -308,6 +308,7 @@ public class InterJarLinkerTest {
 
             for (YangNode node : interJarResolvedNodes) {
                 YangFileInfo dependentFileInfo = new YangFileInfo();
+                node.setToTranslate(false);
                 dependentFileInfo.setRootNode(node);
                 dependentFileInfo.setForTranslator(false);
                 dependentFileInfo.setYangFileName(node.getName());

@@ -16,7 +16,10 @@
 
 package org.onosproject.yangutils.linker.impl;
 
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 import org.onosproject.yangutils.datamodel.ResolvableType;
@@ -27,6 +30,7 @@ import org.onosproject.yangutils.datamodel.exceptions.DataModelException;
 import org.onosproject.yangutils.linker.YangLinker;
 import org.onosproject.yangutils.linker.exceptions.LinkerException;
 
+import static org.onosproject.yangutils.linker.impl.YangLinkerUtils.updateFilePriority;
 import static org.onosproject.yangutils.utils.UtilConstants.NEW_LINE;
 
 /**
@@ -74,6 +78,9 @@ public class YangLinkerManager
         // Add reference to include list.
         addRefToYangFilesIncludeList(yangNodeSet);
 
+        // Update the priority for all the files.
+        updateFilePriority(yangNodeSet);
+
         // TODO check for circular import/include.
 
         // Carry out inter-file linking.
@@ -109,8 +116,7 @@ public class YangLinkerManager
      * @param yangNodeSet set of YANG files info
      * @throws LinkerException fails to find imported module
      */
-    public void addRefToYangFilesImportList(Set<YangNode> yangNodeSet)
-            throws LinkerException {
+    public void addRefToYangFilesImportList(Set<YangNode> yangNodeSet) throws LinkerException {
         for (YangNode yangNode : yangNodeSet) {
             if (yangNode instanceof YangReferenceResolver) {
                 try {
@@ -132,8 +138,7 @@ public class YangLinkerManager
      * @param yangNodeSet set of YANG files info
      * @throws LinkerException fails to find included sub-module
      */
-    public void addRefToYangFilesIncludeList(Set<YangNode> yangNodeSet)
-            throws LinkerException {
+    public void addRefToYangFilesIncludeList(Set<YangNode> yangNodeSet) throws LinkerException {
         for (YangNode yangNode : yangNodeSet) {
             if (yangNode instanceof YangReferenceResolver) {
                 try {
@@ -157,7 +162,10 @@ public class YangLinkerManager
      */
     public void processInterFileLinking(Set<YangNode> yangNodeSet)
             throws LinkerException {
-        for (YangNode yangNode : yangNodeSet) {
+        List<YangNode> yangNodeSortedList = new LinkedList<>();
+        yangNodeSortedList.addAll(yangNodeSet);
+        Collections.sort(yangNodeSortedList);
+        for (YangNode yangNode : yangNodeSortedList) {
             try {
                 ((YangReferenceResolver) yangNode)
                         .resolveInterFileLinking(ResolvableType.YANG_IF_FEATURE);
@@ -183,4 +191,5 @@ public class YangLinkerManager
             }
         }
     }
+
 }

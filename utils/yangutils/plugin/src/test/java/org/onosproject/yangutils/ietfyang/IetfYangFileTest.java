@@ -56,7 +56,7 @@ public class IetfYangFileTest {
         yangPluginConfig.setCodeGenDir("target/ietfyang/l3vpnservice/");
         yangPluginConfig.setManagerCodeGenDir("target/ietfyang/l3vpnservice/");
 
-        utilManager.translateToJava(utilManager.getYangFileInfoSet(), yangPluginConfig);
+        utilManager.translateToJava(yangPluginConfig);
 
         deleteDirectory(userDir + "/target/ietfyang/");
     }
@@ -74,14 +74,13 @@ public class IetfYangFileTest {
         utilManager.parseYangFileInfoSet();
         utilManager.resolveDependenciesUsingLinker();
 
-        String userDir = System.getProperty("user.dir");
         YangPluginConfig yangPluginConfig = new YangPluginConfig();
         yangPluginConfig.setCodeGenDir("target/ietfyang/l3vpnservice/");
         yangPluginConfig.setManagerCodeGenDir("target/ietfyang/l3vpnservice/");
 
-        utilManager.translateToJava(utilManager.getYangFileInfoSet(), yangPluginConfig);
+        utilManager.translateToJava(yangPluginConfig);
 
-        deleteDirectory(userDir + "/target/ietfyang/");
+        deleteDirectory("target/ietfyang/");
     }
 
 }

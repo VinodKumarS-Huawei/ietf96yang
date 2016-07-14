@@ -29,7 +29,7 @@ import static org.onosproject.yangutils.datamodel.utils.DataModelUtils.updateClo
  * Represents base class of a node in data model tree.
  */
 public abstract class YangNode
-        implements Cloneable, Serializable, YangDataNode {
+        implements Cloneable, Serializable, YangDataNode, Comparable<YangNode> {
 
     private static final long serialVersionUID = 806201601L;
 
@@ -57,6 +57,34 @@ public abstract class YangNode
      * Previous sibling reference.
      */
     private YangNode previousSibling;
+
+    /**
+     * Priority of the node.
+     */
+    private int priority;
+
+    /**
+     * Flag if the node is for translation.
+     */
+    private boolean isToTranslate = true;
+
+    /**
+     * Returns the priority of the node.
+     *
+     * @return priority of the node
+     */
+    public int getPriority() {
+        return priority;
+    }
+
+    /**
+     * Sets the priority of the node.
+     *
+     * @param priority of the node
+     */
+    public void setPriority(int priority) {
+        this.priority = priority;
+    }
 
     /**
      * Returns the nodes name.
@@ -234,19 +262,28 @@ public abstract class YangNode
         }
     }
 
+    @Override
+    public int compareTo(YangNode otherNode) {
+        if (priority == otherNode.getPriority()) {
+            return 1;
+        }
+        return ((Integer) otherNode.getPriority()).compareTo(priority);
+    }
+
     /**
-     * Clone the current node contents and create a new node.
+     * Clones the current node contents and create a new node.
      *
+     * @param yangUses YANG uses
      * @return cloned node
      * @throws CloneNotSupportedException clone is not supported by the referred
      *                                    node
      */
-    public YangNode clone()
+    public YangNode clone(YangUses yangUses)
             throws CloneNotSupportedException {
         YangNode clonedNode = (YangNode) super.clone();
         if (clonedNode instanceof YangLeavesHolder) {
             try {
-                cloneLeaves((YangLeavesHolder) clonedNode);
+                cloneLeaves((YangLeavesHolder) clonedNode, yangUses);
             } catch (DataModelException e) {
                 throw new CloneNotSupportedException(e.getMessage());
             }
@@ -260,15 +297,16 @@ public abstract class YangNode
     }
 
     /**
-     * Clone the subtree from the specified source node to the mentioned target
+     * Clones the subtree from the specified source node to the mentioned target
      * node. The source and target root node cloning is carried out by the
      * caller.
      *
      * @param srcRootNode source node for sub tree cloning
      * @param dstRootNode destination node where the sub tree needs to be cloned
+     * @param yangUses    YANG uses
      * @throws DataModelException data model error
      */
-    public static void cloneSubTree(YangNode srcRootNode, YangNode dstRootNode)
+    public static void cloneSubTree(YangNode srcRootNode, YangNode dstRootNode, YangUses yangUses)
             throws DataModelException {
 
         YangNode nextNodeToClone = srcRootNode;
@@ -296,7 +334,7 @@ public abstract class YangNode
                     throw new DataModelException("Internal error: Cloning failed, source tree null pointer reached");
                 }
                 if (curTraversal != PARENT) {
-                    newNode = nextNodeToClone.clone();
+                    newNode = nextNodeToClone.clone(yangUses);
                     detectCollisionWhileCloning(clonedTreeCurNode, newNode, curTraversal);
                 }
 
@@ -380,7 +418,25 @@ public abstract class YangNode
     }
 
     /**
-     * Add a new next sibling.
+     * /** Returns true if translation required.
+     *
+     * @return true if translation required
+     */
+    public boolean isToTranslate() {
+        return isToTranslate;
+    }
+
+    /**
+     * Sest true if translation required.
+     *
+     * @param toTranslate true if translation required.
+     */
+    public void setToTranslate(boolean toTranslate) {
+        isToTranslate = toTranslate;
+    }
+
+    /**
+     * Adds a new next sibling.
      *
      * @param newSibling new sibling to be added
      * @throws DataModelException data model error

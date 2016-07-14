@@ -315,7 +315,10 @@ public final class TypeListener {
                     parserException = new ParserException("YANG file error : a type leafref" +
                             " must have one path statement.");
                     break;
-                // TODO : identity ref
+                case IDENTITYREF:
+                    parserException = new ParserException("YANG file error : a type identityref" +
+                                                                  " must have base statement.");
+                    break;
                 default:
                     return;
             }

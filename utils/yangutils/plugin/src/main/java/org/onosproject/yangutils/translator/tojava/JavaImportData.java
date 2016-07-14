@@ -21,6 +21,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import static org.onosproject.yangutils.utils.UtilConstants.ABSTRACT_EVENT;
+import static org.onosproject.yangutils.utils.UtilConstants.YANG_AUGMENTED_INFO_CLASS_IMPORT_CLASS;
+import static org.onosproject.yangutils.utils.UtilConstants.YANG_AUGMENTED_INFO_CLASS_IMPORT_PKG;
 import static org.onosproject.yangutils.utils.UtilConstants.COLLECTION_IMPORTS;
 import static org.onosproject.yangutils.utils.UtilConstants.EMPTY_STRING;
 import static org.onosproject.yangutils.utils.UtilConstants.EVENT_LISTENER;
@@ -30,6 +32,7 @@ import static org.onosproject.yangutils.utils.UtilConstants.HASH_MAP;
 import static org.onosproject.yangutils.utils.UtilConstants.IMPORT;
 import static org.onosproject.yangutils.utils.UtilConstants.JAVA_LANG;
 import static org.onosproject.yangutils.utils.UtilConstants.JAVA_UTIL_OBJECTS_IMPORT_CLASS;
+import static org.onosproject.yangutils.utils.UtilConstants.BITSET;
 import static org.onosproject.yangutils.utils.UtilConstants.JAVA_UTIL_OBJECTS_IMPORT_PKG;
 import static org.onosproject.yangutils.utils.UtilConstants.LIST;
 import static org.onosproject.yangutils.utils.UtilConstants.LISTENER_REG;
@@ -40,9 +43,7 @@ import static org.onosproject.yangutils.utils.UtilConstants.ONOS_EVENT_PKG;
 import static org.onosproject.yangutils.utils.UtilConstants.PERIOD;
 import static org.onosproject.yangutils.utils.UtilConstants.QUEUE;
 import static org.onosproject.yangutils.utils.UtilConstants.SEMI_COLAN;
-import static org.onosproject.yangutils.utils.UtilConstants.YANG_AUGMENTED_INFO_CLASS_IMPORT_CLASS;
-import static org.onosproject.yangutils.utils.UtilConstants.YANG_AUGMENTED_INFO_CLASS_IMPORT_PKG;
-
+import static org.onosproject.yangutils.utils.UtilConstants.YANG_AUGMENTED_OP_PARAM_INFO_CLASS;
 import static java.util.Collections.sort;
 
 /**
@@ -238,12 +239,12 @@ public class JavaImportData {
     }
 
     /**
-     * Returns import for list attribute.
+     * Returns import for to bitset method.
      *
-     * @return import for list attribute
+     * @return import for to bitset method
      */
-    public String getImportForList() {
-        return IMPORT + COLLECTION_IMPORTS + PERIOD + LIST + SEMI_COLAN + NEW_LINE;
+    public String getImportForToBitSet() {
+        return IMPORT + JAVA_UTIL_OBJECTS_IMPORT_PKG + PERIOD + BITSET + SEMI_COLAN + NEW_LINE;
     }
 
     /**
@@ -253,6 +254,15 @@ public class JavaImportData {
      */
     public String getImportForQueue() {
         return IMPORT + COLLECTION_IMPORTS + PERIOD + QUEUE + SEMI_COLAN + NEW_LINE;
+    }
+
+    /**
+     * Returns import for list attribute.
+     *
+     * @return import for list attribute
+     */
+    public String getImportForList() {
+        return IMPORT + COLLECTION_IMPORTS + PERIOD + LIST + SEMI_COLAN + NEW_LINE;
     }
 
     /**
@@ -316,5 +326,15 @@ public class JavaImportData {
      */
     public String getYangAugmentedInfoImport() {
         return IMPORT + YANG_AUGMENTED_INFO_CLASS_IMPORT_PKG + PERIOD + YANG_AUGMENTED_INFO_CLASS_IMPORT_CLASS;
+    }
+
+    /**
+     * Returns import string for YangAugmentedOpParamInfo class.
+     *
+     * @return import string for YangAugmentedOpParamInfo class
+     */
+    public String getYangAugmentedOpParamInfoImport() {
+        return IMPORT + YANG_AUGMENTED_INFO_CLASS_IMPORT_PKG + PERIOD +
+                YANG_AUGMENTED_OP_PARAM_INFO_CLASS;
     }
 }

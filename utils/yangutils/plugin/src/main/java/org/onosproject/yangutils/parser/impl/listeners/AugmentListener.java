@@ -18,11 +18,12 @@ package org.onosproject.yangutils.parser.impl.listeners;
 
 import java.util.List;
 
-import org.onosproject.yangutils.datamodel.YangAbsolutePath;
+import org.onosproject.yangutils.datamodel.YangAtomicPath;
 import org.onosproject.yangutils.datamodel.YangAugment;
 import org.onosproject.yangutils.datamodel.YangModule;
 import org.onosproject.yangutils.datamodel.YangNode;
 import org.onosproject.yangutils.datamodel.YangSubModule;
+import org.onosproject.yangutils.datamodel.YangUses;
 import org.onosproject.yangutils.datamodel.exceptions.DataModelException;
 import org.onosproject.yangutils.datamodel.utils.Parsable;
 import org.onosproject.yangutils.linker.impl.YangResolutionInfoImpl;
@@ -102,7 +103,7 @@ public final class AugmentListener {
         checkStackIsNotEmpty(listener, MISSING_HOLDER, AUGMENT_DATA, ctx.augment().getText(), ENTRY);
 
         // Validate augment argument string
-        List<YangAbsolutePath> targetNodes = getValidAbsoluteSchemaNodeId(ctx.augment().getText(),
+        List<YangAtomicPath> targetNodes = getValidAbsoluteSchemaNodeId(ctx.augment().getText(),
                 AUGMENT_DATA, ctx);
 
         // Validate sub statement cardinality.
@@ -114,7 +115,7 @@ public final class AugmentListener {
         detectCollidingChildUtil(listener, line, charPositionInLine, "", AUGMENT_DATA);
 
         Parsable curData = listener.getParsedDataStack().peek();
-        if (curData instanceof YangModule || curData instanceof YangSubModule) {
+        if (curData instanceof YangModule || curData instanceof YangSubModule || curData instanceof YangUses) {
             YangNode curNode = (YangNode) curData;
             YangAugment yangAugment = getYangAugmentNode(JAVA_GENERATION);
 

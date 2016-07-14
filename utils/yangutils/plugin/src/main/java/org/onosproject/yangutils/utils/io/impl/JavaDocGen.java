@@ -19,8 +19,14 @@ package org.onosproject.yangutils.utils.io.impl;
 import org.onosproject.yangutils.datamodel.YangCompilerAnnotation;
 
 import static org.onosproject.yangutils.utils.UtilConstants.AUGMENTED;
+import static org.onosproject.yangutils.utils.UtilConstants.JAVA_DOC_FOR_VALIDATOR;
+import static org.onosproject.yangutils.utils.UtilConstants.JAVA_DOC_FOR_VALIDATOR_RETURN;
+import static org.onosproject.yangutils.utils.UtilConstants.MAX_RANGE;
+import static org.onosproject.yangutils.utils.UtilConstants.MIN_RANGE;
+import static org.onosproject.yangutils.utils.UtilConstants.YANG_AUGMENTED_INFO;
 import static org.onosproject.yangutils.utils.UtilConstants.BUILDER;
 import static org.onosproject.yangutils.utils.UtilConstants.BUILDER_CLASS_JAVA_DOC;
+import static org.onosproject.yangutils.utils.UtilConstants.OP_PARAM_JAVA_DOC;
 import static org.onosproject.yangutils.utils.UtilConstants.BUILDER_INTERFACE_JAVA_DOC;
 import static org.onosproject.yangutils.utils.UtilConstants.BUILDER_OBJECT;
 import static org.onosproject.yangutils.utils.UtilConstants.CLASS;
@@ -66,7 +72,6 @@ import static org.onosproject.yangutils.utils.UtilConstants.SPACE;
 import static org.onosproject.yangutils.utils.UtilConstants.STRING_DATA_TYPE;
 import static org.onosproject.yangutils.utils.UtilConstants.VALUE;
 import static org.onosproject.yangutils.utils.UtilConstants.VOID;
-import static org.onosproject.yangutils.utils.UtilConstants.YANG_AUGMENTED_INFO;
 import static org.onosproject.yangutils.utils.io.impl.YangIoUtils.getCamelCase;
 import static org.onosproject.yangutils.utils.io.impl.YangIoUtils.getSmallCase;
 
@@ -101,6 +106,12 @@ public final class JavaDocGen {
             }
             case BUILDER_CLASS: {
                 return generateForBuilderClass(name);
+            }
+            case OPERATION_CLASS: {
+                return generateForOpParamClass(name);
+            }
+            case OPERATION_BUILDER_CLASS: {
+                return generateForOpParamClass(name);
             }
             case INTERFACE: {
                 return generateForInterface(name);
@@ -465,6 +476,17 @@ public final class JavaDocGen {
     }
 
     /**
+     * Generates javaDocs for the op param class.
+     *
+     * @param className class name
+     * @return javaDocs
+     */
+    private static String generateForOpParamClass(String className) {
+        return NEW_LINE + JAVA_DOC_FIRST_LINE + OP_PARAM_JAVA_DOC + className + PERIOD + NEW_LINE
+                + JAVA_DOC_END_LINE;
+    }
+
+    /**
      * Generates javaDoc for the interface.
      *
      * @param interfaceName interface name
@@ -572,6 +594,23 @@ public final class JavaDocGen {
                 OBJECT_STRING + SPACE + VALUE + SPACE + OF + SPACE + AUGMENTED + CLASS + NEW_LINE +
                 FOUR_SPACE_INDENTATION + JAVA_DOC_RETURN + VALUE + SPACE +
                 OF + SPACE + YANG_AUGMENTED_INFO + NEW_LINE + FOUR_SPACE_INDENTATION + JAVA_DOC_END_LINE;
+    }
+
+    /**
+     * Returns javadoc for validator method.
+     *
+     * @return javadoc for validator method
+     */
+    public static String generateForValidatorMethod() {
+        return NEW_LINE + FOUR_SPACE_INDENTATION + JAVA_DOC_FIRST_LINE + FOUR_SPACE_INDENTATION +
+                JAVA_DOC_FOR_VALIDATOR + NEW_LINE + FOUR_SPACE_INDENTATION + NEW_LINE_ASTERISK +
+                FOUR_SPACE_INDENTATION + JAVA_DOC_PARAM + MIN_RANGE + SPACE + MIN_RANGE + SPACE + OF + SPACE +
+                VALUE + NEW_LINE +
+                FOUR_SPACE_INDENTATION + JAVA_DOC_PARAM + MAX_RANGE + SPACE + MAX_RANGE + SPACE + OF + SPACE + VALUE +
+                NEW_LINE +
+                FOUR_SPACE_INDENTATION + JAVA_DOC_PARAM + VALUE + SPACE + VALUE + NEW_LINE +
+                FOUR_SPACE_INDENTATION + JAVA_DOC_FOR_VALIDATOR_RETURN + NEW_LINE + FOUR_SPACE_INDENTATION +
+                JAVA_DOC_END_LINE;
     }
 
     /**
@@ -687,6 +726,16 @@ public final class JavaDocGen {
         /**
          * For event subject.
          */
-        EVENT_SUBJECT_CLASS
+        EVENT_SUBJECT_CLASS,
+
+        /**
+         * For operation.
+         */
+        OPERATION_CLASS,
+
+        /**
+         * For operation builder.
+         */
+        OPERATION_BUILDER_CLASS
     }
 }

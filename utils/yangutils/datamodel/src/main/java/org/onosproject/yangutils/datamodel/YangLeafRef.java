@@ -16,19 +16,23 @@
 
 package org.onosproject.yangutils.datamodel;
 
-import java.io.Serializable;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-
 import org.onosproject.yangutils.datamodel.exceptions.DataModelException;
 import org.onosproject.yangutils.datamodel.utils.Parsable;
 import org.onosproject.yangutils.datamodel.utils.ResolvableStatus;
 import org.onosproject.yangutils.datamodel.utils.YangConstructType;
 import org.onosproject.yangutils.datamodel.utils.builtindatatype.YangDataTypes;
 
+import java.io.Serializable;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
 import static org.onosproject.yangutils.datamodel.utils.ResolvableStatus.INTRA_FILE_RESOLVED;
 import static org.onosproject.yangutils.datamodel.utils.ResolvableStatus.RESOLVED;
+import static org.onosproject.yangutils.datamodel.utils.YangErrMsgConstants.DATA_MISSING_ERROR_TAG;
+import static org.onosproject.yangutils.datamodel.utils.YangErrMsgConstants.ERROR_PATH_LEAFREF_LEAF;
+import static org.onosproject.yangutils.datamodel.utils.YangErrMsgConstants.INSTANCE_REQUIRED_ERROR_APP_TAG;
 
 /*
  * Reference:RFC 6020.
@@ -43,9 +47,8 @@ import static org.onosproject.yangutils.datamodel.utils.ResolvableStatus.RESOLVE
  *
  * @param <T> YANG leafref info
  */
-public class YangLeafRef<T>
-        implements Parsable, Resolvable, Serializable, YangIfFeatureHolder,
-        YangXPathResolver {
+public class YangLeafRef<T> implements Parsable, Resolvable, Serializable, YangIfFeatureHolder,
+        YangXPathResolver, YangAppErrorHolder, LocationInfo {
 
     private static final long serialVersionUID = 286201644L;
 
@@ -70,9 +73,9 @@ public class YangLeafRef<T>
     private YangPathArgType pathType;
 
     /**
-     * List of nodes in absolute path.
+     * List of atomic paths in absolute Path.
      */
-    private List<YangAbsolutePath> absolutePath;
+    private List<YangAtomicPath> atomicPath;
 
     /**
      * YANG relative path.
@@ -96,6 +99,76 @@ public class YangLeafRef<T>
      * List of if-feature.
      */
     private List<YangIfFeature> ifFeatureList;
+
+    /**
+     * Parent node of the leafref's leaf.
+     */
+    private YangNode parentNodeOfLeafref;
+
+    /**
+     * Error line number.
+     */
+    private transient int lineNumber;
+
+    /**
+     * Error character position in number.
+     */
+    private transient int charPositionInLine;
+
+    /**
+     * Prefix in the nodes of the leafref path and its imported node name.
+     */
+    private Map<String, String> prefixAndItsImportedModule;
+
+    /**
+     * Returns the prefix in the leafref path and its imported node name.
+     *
+     * @return the list of leafref prefix and imported node name
+     */
+    public Map<String, String> getPrefixAndItsImportedModule() {
+        return prefixAndItsImportedModule;
+    }
+
+    /**
+     * Sets the prefix in the leafref path and its imported node name.
+     *
+     * @param prefixAndItsImportedModule the list of leafref prefix and imported node name
+     */
+    public void setPrefixAndItsImportedModule(Map<String, String> prefixAndItsImportedModule) {
+        this.prefixAndItsImportedModule = prefixAndItsImportedModule;
+    }
+
+    /**
+     * Returns the parent node from the leafref's leaf.
+     *
+     * @return parent node of the leafref
+     */
+    public YangNode getParentNodeOfLeafref() {
+        return parentNodeOfLeafref;
+    }
+
+    /**
+     * Sets the parent node from the leafref's leaf.
+     *
+     * @param parentNodeOfLeafref parent node of the leafref
+     */
+    public void setParentNodeOfLeafref(YangNode parentNodeOfLeafref) {
+        this.parentNodeOfLeafref = parentNodeOfLeafref;
+    }
+    /**
+     * YANG application error information.
+     */
+    private YangAppErrorInfo yangAppErrorInfo;
+
+    /**
+     * Creates a YANG leaf ref.
+     */
+    public YangLeafRef() {
+        yangAppErrorInfo = new YangAppErrorInfo();
+        yangAppErrorInfo.setErrorTag(DATA_MISSING_ERROR_TAG);
+        yangAppErrorInfo.setErrorAppTag(INSTANCE_REQUIRED_ERROR_APP_TAG);
+        yangAppErrorInfo.setErrorAppPath(ERROR_PATH_LEAFREF_LEAF);
+    }
 
     /**
      * Returns the status of the require instance in leafref.
@@ -170,21 +243,21 @@ public class YangLeafRef<T>
     }
 
     /**
-     * Returns the list of node object in absolute path.
+     * Returns the list of atomic path.
      *
-     * @return list of node object in absolute path
+     * @return list of atomic path
      */
-    public List<YangAbsolutePath> getAbsolutePath() {
-        return absolutePath;
+    public List<YangAtomicPath> getAtomicPath() {
+        return atomicPath;
     }
 
     /**
-     * Sets the list of node object in absolute path.
+     * Sets the list of atomic path.
      *
-     * @param absolutePath list of node object in absolute path
+     * @param atomicPath list of atomic path.
      */
-    public void setAbsolutePath(List<YangAbsolutePath> absolutePath) {
-        this.absolutePath = absolutePath;
+    public void setAtomicPath(List<YangAtomicPath> atomicPath) {
+        this.atomicPath = atomicPath;
     }
 
     /**
@@ -247,14 +320,12 @@ public class YangLeafRef<T>
     }
 
     @Override
-    public void validateDataOnEntry()
-            throws DataModelException {
+    public void validateDataOnEntry() throws DataModelException {
         // TODO auto-generated method stub, to be implemented by parser
     }
 
     @Override
-    public void validateDataOnExit()
-            throws DataModelException {
+    public void validateDataOnExit() throws DataModelException {
         // TODO auto-generated method stub, to be implemented by parser
     }
 
@@ -269,8 +340,17 @@ public class YangLeafRef<T>
     }
 
     @Override
-    public void resolve()
-            throws DataModelException {
+    public void setAppErrorInfo(YangAppErrorInfo yangAppErrorInfo) {
+        this.yangAppErrorInfo = yangAppErrorInfo;
+    }
+
+    @Override
+    public YangAppErrorInfo getAppErrorInfo() {
+        return yangAppErrorInfo;
+    }
+
+    @Override
+    public Object resolve() throws DataModelException {
 
         if (getReferredLeafOrLeafList() == null) {
             throw new DataModelException("Linker Error: The leafref does not refer to any leaf/leaf-list.");
@@ -282,6 +362,7 @@ public class YangLeafRef<T>
         } catch (DataModelException e) {
             throw new DataModelException(e.getMessage());
         }
+        return null;
     }
 
     /**
@@ -290,8 +371,7 @@ public class YangLeafRef<T>
      * @return status of resolution
      * @throws DataModelException a violation of data model rules
      */
-    private ResolvableStatus getResolution()
-            throws DataModelException {
+    private ResolvableStatus getResolution() throws DataModelException {
 
         if (getReferredLeafOrLeafList() instanceof YangLeaf) {
             YangLeaf yangLeaf = ((YangLeaf) getReferredLeafOrLeafList());
@@ -419,5 +499,25 @@ public class YangLeafRef<T>
         } else {
             throw new DataModelException("Linker Error: The leafref must refer only to leaf/leaf-list.");
         }
+    }
+
+    @Override
+    public int getLineNumber() {
+        return lineNumber;
+    }
+
+    @Override
+    public int getCharPosition() {
+        return charPositionInLine;
+    }
+
+    @Override
+    public void setLineNumber(int lineNumber) {
+        this.lineNumber = lineNumber;
+    }
+
+    @Override
+    public void setCharPosition(int charPositionInLine) {
+        this.charPositionInLine = charPositionInLine;
     }
 }

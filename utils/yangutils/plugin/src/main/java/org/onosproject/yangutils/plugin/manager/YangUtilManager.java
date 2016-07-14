@@ -17,8 +17,9 @@
 package org.onosproject.yangutils.plugin.manager;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -68,17 +69,15 @@ import static org.onosproject.yangutils.utils.io.impl.YangIoUtils.getPackageDirP
 public class YangUtilManager
         extends AbstractMojo {
 
+    private static final String DEFAULT_PKG = SLASH + getPackageDirPathFromJavaJPackage(DEFAULT_BASE_PKG);
+    YangPluginConfig yangPlugin = new YangPluginConfig();
     private YangNode rootNode;
     // YANG file information set.
     private Set<YangFileInfo> yangFileInfoSet = new HashSet<>();
     private YangUtilsParser yangUtilsParser = new YangUtilsParserManager();
     private YangLinker yangLinker = new YangLinkerManager();
     private YangFileInfo curYangFileInfo = new YangFileInfo();
-
     private Set<YangNode> yangNodeSet = new HashSet<>();
-
-    private static final String DEFAULT_PKG = SLASH + getPackageDirPathFromJavaJPackage(DEFAULT_BASE_PKG);
-
     /**
      * Source directory for YANG files.
      */
@@ -145,11 +144,23 @@ public class YangUtilManager
     @Component
     private BuildContext context;
 
+    /**
+     * Local maven repository.
+     */
     @Parameter(readonly = true, defaultValue = "${localRepository}")
     private ArtifactRepository localRepository;
 
+    /**
+     * Remote maven repositories.
+     */
     @Parameter(readonly = true, defaultValue = "${project.remoteArtifactRepositories}")
     private List<ArtifactRepository> remoteRepository;
+
+    /**
+     * Code generation is for nbi or sbi.
+     */
+    @Parameter(property = "generateJavaFileForsbi", defaultValue = "nbi")
+    private String generateJavaFileForsbi;
 
     @Override
     public void execute()
@@ -173,11 +184,11 @@ public class YangUtilManager
             conflictResolver.setReplacementForHyphen(replacementForHyphen);
             conflictResolver.setReplacementForUnderscore(replacementForUnderscore);
             conflictResolver.setPrefixForIdentifier(prefixForIdentifier);
-            YangPluginConfig yangPlugin = new YangPluginConfig();
             yangPlugin.setCodeGenDir(codeGenDir);
             yangPlugin.setManagerCodeGenDir(managerCodeGenDir);
             yangPlugin.setConflictResolver(conflictResolver);
 
+            yangPlugin.setCodeGenerateForsbi(generateJavaFileForsbi.toLowerCase());
             /*
              * Obtain the YANG files at a path mentioned in plugin and creates
              * YANG file information set.
@@ -190,7 +201,7 @@ public class YangUtilManager
                 return;
             }
             // Resolve inter jar dependency.
-            resolveInterJardependency();
+            resolveInterJarDependency();
 
             // Carry out the parsing for all the YANG files.
             parseYangFileInfoSet();
@@ -199,7 +210,7 @@ public class YangUtilManager
             resolveDependenciesUsingLinker();
 
             // Perform translation to JAVA.
-            translateToJava(getYangFileInfoSet(), yangPlugin);
+            translateToJava(yangPlugin);
 
             // Serialize data model.
             serializeDataModel(getDirectory(baseDir, outputDirectory), getYangFileInfoSet(), project, true);
@@ -209,13 +220,12 @@ public class YangUtilManager
 
             copyYangFilesToTarget(getYangFileInfoSet(), getDirectory(baseDir, outputDirectory), project);
         } catch (IOException | ParserException e) {
-            getLog().info(e);
             String fileName = "";
             if (getCurYangFileInfo() != null) {
                 fileName = getCurYangFileInfo().getYangFileName();
             }
             try {
-                translatorErrorHandler(getRootNode());
+                translatorErrorHandler(getRootNode(), yangPlugin);
                 deleteDirectory(getDirectory(baseDir, classFileDir) + DEFAULT_PKG);
             } catch (IOException ex) {
                 throw new MojoExecutionException(
@@ -232,7 +242,7 @@ public class YangUtilManager
      *
      * @return YANG node set
      */
-    public Set<YangNode> getYangNodeSet() {
+    Set<YangNode> getYangNodeSet() {
         return yangNodeSet;
     }
 
@@ -241,12 +251,13 @@ public class YangUtilManager
      *
      * @throws IOException when fails to do IO operations
      */
-    public void resolveInterJardependency() throws IOException {
+    private void resolveInterJarDependency() throws IOException {
         try {
             List<YangNode> interJarResolvedNodes = resolveInterJarDependencies(project, localRepository,
                     remoteRepository, getDirectory(baseDir, outputDirectory));
             for (YangNode node : interJarResolvedNodes) {
                 YangFileInfo dependentFileInfo = new YangFileInfo();
+                node.setToTranslate(false);
                 dependentFileInfo.setRootNode(node);
                 dependentFileInfo.setForTranslator(false);
                 dependentFileInfo.setYangFileName(node.getName());
@@ -276,7 +287,7 @@ public class YangUtilManager
     /**
      * Creates YANG nodes set.
      */
-    public void createYangNodeSet() {
+    void createYangNodeSet() {
         for (YangFileInfo yangFileInfo : getYangFileInfoSet()) {
             getYangNodeSet().add(yangFileInfo.getRootNode());
         }
@@ -334,19 +345,17 @@ public class YangUtilManager
     /**
      * Translates to java code corresponding to the YANG schema.
      *
-     * @param yangFileInfoSet YANG file information
-     * @param yangPlugin      YANG plugin config
-     * @throws IOException when fails to generate java code file the current
-     *                     node
+     * @param yangPlugin YANG plugin config
+     * @throws IOException when fails to generate java code file the current node
      */
-    public void translateToJava(Set<YangFileInfo> yangFileInfoSet, YangPluginConfig yangPlugin)
+    public void translateToJava(YangPluginConfig yangPlugin)
             throws IOException {
-        Iterator<YangFileInfo> yangFileIterator = yangFileInfoSet.iterator();
-        while (yangFileIterator.hasNext()) {
-            YangFileInfo yangFileInfo = yangFileIterator.next();
-            setCurYangFileInfo(yangFileInfo);
-            if (yangFileInfo.isForTranslator()) {
-                generateJavaCode(yangFileInfo.getRootNode(), yangPlugin);
+        List<YangNode> yangNodeSortedList = new LinkedList<>();
+        yangNodeSortedList.addAll(getYangNodeSet());
+        Collections.sort(yangNodeSortedList);
+        for (YangNode node : yangNodeSortedList) {
+            if (node.isToTranslate()) {
+                generateJavaCode(node, yangPlugin);
             }
         }
     }
@@ -378,7 +387,7 @@ public class YangUtilManager
      *
      * @param yangFileInfoSet the YANG file info set
      */
-    public void setYangFileInfoSet(Set<YangFileInfo> yangFileInfoSet) {
+    void setYangFileInfoSet(Set<YangFileInfo> yangFileInfoSet) {
         this.yangFileInfoSet = yangFileInfoSet;
     }
 
@@ -387,7 +396,7 @@ public class YangUtilManager
      *
      * @return the yangFileInfo
      */
-    public YangFileInfo getCurYangFileInfo() {
+    private YangFileInfo getCurYangFileInfo() {
         return curYangFileInfo;
     }
 
@@ -396,7 +405,7 @@ public class YangUtilManager
      *
      * @param yangFileInfo the yangFileInfo to set
      */
-    public void setCurYangFileInfo(YangFileInfo yangFileInfo) {
+    private void setCurYangFileInfo(YangFileInfo yangFileInfo) {
         curYangFileInfo = yangFileInfo;
     }
 }

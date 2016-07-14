@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.util.ListIterator;
 
 import org.junit.Test;
-import org.onosproject.yangutils.datamodel.YangAbsolutePath;
+import org.onosproject.yangutils.datamodel.YangAtomicPath;
 import org.onosproject.yangutils.datamodel.YangAugment;
 import org.onosproject.yangutils.datamodel.utils.builtindatatype.YangDataTypes;
 import org.onosproject.yangutils.datamodel.YangLeaf;
@@ -54,8 +54,8 @@ public class AugmentListenerTest {
         assertThat(yangNode.getName(), is("Test"));
 
         YangAugment yangAugment = (YangAugment) yangNode.getChild();
-        ListIterator<YangAbsolutePath> absPathIterator = yangAugment.getTargetNode().listIterator();
-        YangAbsolutePath absPathIdentifier = absPathIterator.next();
+        ListIterator<YangAtomicPath> absPathIterator = yangAugment.getTargetNode().listIterator();
+        YangAtomicPath absPathIdentifier = absPathIterator.next();
         assertThat(absPathIdentifier.getNodeIdentifier().getPrefix(), is("if"));
         assertThat(absPathIdentifier.getNodeIdentifier().getName(), is("interfaces"));
 

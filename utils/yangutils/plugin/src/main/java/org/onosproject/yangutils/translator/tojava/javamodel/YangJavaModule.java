@@ -29,15 +29,14 @@ import org.onosproject.yangutils.translator.tojava.JavaFileInfo;
 import org.onosproject.yangutils.translator.tojava.TempJavaCodeFragmentFiles;
 import org.onosproject.yangutils.utils.io.impl.YangPluginConfig;
 
-import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.GENERATE_EVENT_CLASS;
-import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.GENERATE_EVENT_LISTENER_INTERFACE;
-import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.GENERATE_EVENT_SUBJECT_CLASS;
+import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.GENERATE_ALL_EVENT_CLASS_MASK;
 import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.GENERATE_INTERFACE_WITH_BUILDER;
 import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.GENERATE_SERVICE_AND_MANAGER;
 import static org.onosproject.yangutils.translator.tojava.YangJavaModelUtils.generateCodeOfRootNode;
-import static org.onosproject.yangutils.translator.tojava.YangJavaModelUtils.isManagerCodeGenRequired;
 import static org.onosproject.yangutils.translator.tojava.YangJavaModelUtils.isGenerationOfCodeReq;
+import static org.onosproject.yangutils.translator.tojava.YangJavaModelUtils.isManagerCodeGenRequired;
 import static org.onosproject.yangutils.translator.tojava.utils.JavaIdentifierSyntax.getRootPackage;
+import static org.onosproject.yangutils.utils.UtilConstants.SBI;
 import static org.onosproject.yangutils.utils.io.impl.YangIoUtils.searchAndDeleteTempDir;
 
 /**
@@ -55,8 +54,7 @@ public class YangJavaModule
     private JavaFileInfo javaFileInfo;
 
     /**
-     * File handle to maintain temporary java code fragments as per the code
-     * snippet types.
+     * File handle to maintain temporary java code fragments as per the code snippet types.
      */
     private transient TempJavaCodeFragmentFiles tempFileHandle;
 
@@ -72,12 +70,7 @@ public class YangJavaModule
         super();
         setJavaFileInfo(new JavaFileInfo());
         setNotificationNodes(new ArrayList<>());
-        int gentype = GENERATE_SERVICE_AND_MANAGER | GENERATE_INTERFACE_WITH_BUILDER;
-        if (isNotificationChildNodePresent(this)) {
-            gentype = GENERATE_SERVICE_AND_MANAGER | GENERATE_EVENT_SUBJECT_CLASS | GENERATE_EVENT_CLASS
-                    | GENERATE_EVENT_LISTENER_INTERFACE;
-        }
-        getJavaFileInfo().setGeneratedFileTypes(gentype);
+        getJavaFileInfo().setGeneratedFileTypes(GENERATE_SERVICE_AND_MANAGER | GENERATE_INTERFACE_WITH_BUILDER);
 
     }
 
@@ -134,6 +127,11 @@ public class YangJavaModule
     public void generateCodeEntry(YangPluginConfig yangPlugin) throws TranslatorException {
         String modulePkg = getRootPackage(getVersion(), getNameSpace().getUri(), getRevision().getRevDate(),
                 yangPlugin.getConflictResolver());
+
+        if (isNotificationChildNodePresent(this)) {
+            getJavaFileInfo().setGeneratedFileTypes(getJavaFileInfo().getGeneratedFileTypes()
+                    | GENERATE_ALL_EVENT_CLASS_MASK);
+        }
         try {
             generateCodeOfRootNode(this, yangPlugin, modulePkg);
         } catch (IOException e) {
@@ -156,14 +154,22 @@ public class YangJavaModule
          *
          * The manager class needs to extend the "ListenerRegistry".
          */
-
         try {
-            if (isManagerCodeGenRequired(this) && isGenerationOfCodeReq(getJavaFileInfo())) {
-                getTempJavaCodeFragmentFiles()
-                        .generateJavaFile(GENERATE_INTERFACE_WITH_BUILDER, this);
-                getTempJavaCodeFragmentFiles()
-                        .generateJavaFile(GENERATE_SERVICE_AND_MANAGER, this);
+            if ((getJavaFileInfo().getGeneratedFileTypes() & GENERATE_ALL_EVENT_CLASS_MASK) != 0) {
+                getTempJavaCodeFragmentFiles().generateJavaFile(GENERATE_ALL_EVENT_CLASS_MASK, this);
             }
+            getTempJavaCodeFragmentFiles()
+                    .generateJavaFile(GENERATE_INTERFACE_WITH_BUILDER, this);
+            if (isManagerCodeGenRequired(this)) {
+                if (isGenerationOfCodeReq(getJavaFileInfo())) {
+                    if ((getJavaFileInfo().getPluginConfig().getCodeGenerateForsbi() == null)
+                        || (!getJavaFileInfo().getPluginConfig().getCodeGenerateForsbi().equals(SBI))) {
+                         getTempJavaCodeFragmentFiles().getServiceTempFiles().setManagerNeedToBeGenerated(true);
+                     }
+                }
+            }
+            getTempJavaCodeFragmentFiles().generateJavaFile(GENERATE_SERVICE_AND_MANAGER, this);
+
             searchAndDeleteTempDir(getJavaFileInfo().getBaseCodeGenPath() +
                     getJavaFileInfo().getPackageFilePath());
             searchAndDeleteTempDir(getJavaFileInfo().getPluginConfig().getCodeGenDir() +
@@ -206,7 +212,7 @@ public class YangJavaModule
      * @param rootNode root node of the data model
      * @return status of rpc's existence
      */
-    public boolean isNotificationChildNodePresent(YangNode rootNode) {
+    private boolean isNotificationChildNodePresent(YangNode rootNode) {
         YangNode childNode = rootNode.getChild();
 
         while (childNode != null) {
@@ -216,9 +222,6 @@ public class YangJavaModule
             childNode = childNode.getNextSibling();
         }
 
-        if (!getNotificationNodes().isEmpty()) {
-            return true;
-        }
-        return false;
+        return !getNotificationNodes().isEmpty();
     }
 }
