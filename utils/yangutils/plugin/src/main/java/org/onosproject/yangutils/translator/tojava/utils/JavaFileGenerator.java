@@ -202,7 +202,7 @@ public final class JavaFileGenerator {
      * @throws IOException when fails to write in file
      */
     public static File generateInterfaceFile(File file, List<String> imports, YangNode curNode,
-                                             boolean isAttrPresent)
+            boolean isAttrPresent)
             throws IOException {
 
         JavaFileInfo javaFileInfo = ((JavaFileInfoContainer) curNode).getJavaFileInfo();
@@ -310,7 +310,8 @@ public final class JavaFileGenerator {
      * @throws IOException when fails to write in file
      */
     public static File generateBuilderClassFile(File file, YangNode curNode,
-                                                boolean isAttrPresent) throws IOException {
+            boolean isAttrPresent)
+            throws IOException {
 
         JavaFileInfo javaFileInfo = ((JavaFileInfoContainer) curNode).getJavaFileInfo();
         YangPluginConfig pluginConfig = javaFileInfo.getPluginConfig();
@@ -391,7 +392,8 @@ public final class JavaFileGenerator {
      * @throws IOException when fails to write in file
      */
     public static File generateOpParamBuilderClassFile(File file, YangNode curNode,
-                                                       boolean isAttrPresent) throws IOException {
+            boolean isAttrPresent)
+            throws IOException {
 
         JavaFileInfo javaFileInfo = ((JavaFileInfoContainer) curNode).getJavaFileInfo();
         YangPluginConfig pluginConfig = javaFileInfo.getPluginConfig();
@@ -688,7 +690,7 @@ public final class JavaFileGenerator {
      * @throws IOException when fails to write in file
      */
     public static File generateOpParamImplClassFile(File file, YangNode curNode,
-                                                    boolean isAttrPresent, List<String> imports)
+            boolean isAttrPresent, List<String> imports)
             throws IOException {
 
         JavaFileInfo javaFileInfo = ((JavaFileInfoContainer) curNode).getJavaFileInfo();
@@ -1153,7 +1155,7 @@ public final class JavaFileGenerator {
         /**
          * Add a constructor for enum.
          */
-        insertDataIntoJavaFile(file, getJavaDoc(TYPE_CONSTRUCTOR, className, false, pluginConfig)
+        insertDataIntoJavaFile(file, getJavaDoc(TYPE_CONSTRUCTOR, className, false, pluginConfig, null)
                 + getEnumsConstructor(getCapitalCase(className)) + NEW_LINE);
 
         TempJavaEnumerationFragmentFiles enumFragFiles = ((TempJavaCodeFragmentFilesContainer) curNode)
@@ -1168,7 +1170,7 @@ public final class JavaFileGenerator {
         /**
          * Add a getter method for enum.
          */
-        insertDataIntoJavaFile(file, getJavaDoc(GETTER_METHOD, className, false, pluginConfig)
+        insertDataIntoJavaFile(file, getJavaDoc(GETTER_METHOD, className, false, pluginConfig, null)
                 + getGetter(INT, className, GENERATE_ENUM_CLASS) + NEW_LINE);
 
         try {
@@ -1254,7 +1256,8 @@ public final class JavaFileGenerator {
      * @param imports imports for file
      * @throws IOException when fails to generate class file
      */
-    public static void generateEventFile(File file, YangNode curNode, List<String> imports) throws IOException {
+    public static void generateEventFile(File file, YangNode curNode, List<String> imports)
+            throws IOException {
 
         String className = getCapitalCase(((JavaFileInfoContainer) curNode).getJavaFileInfo().getJavaName())
                 + EVENT_STRING;

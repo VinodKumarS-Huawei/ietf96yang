@@ -10,11 +10,11 @@ module test-annotation {
        reference "";  
     }  
      
-    ca:compiler-annotation /test:list1/test:list2{ 
+    /*ca:compiler-annotation /test:list1/test:list2{
         ds:app-data-structure "queue" ;
-    }
+    }*/
 
-    ca:compiler-annotation /test:list1{ 
+    ca:compiler-annotation /test:list1{
         ds:app-data-structure "queue" ;
         /*ae:app-extended "special-list";*/
     }

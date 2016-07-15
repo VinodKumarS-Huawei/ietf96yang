@@ -103,7 +103,7 @@ public final class YangIoUtils {
      * @throws IOException when fails to create package info file
      */
     public static void addPackageInfo(File path, String classInfo, String pack, boolean isChildNode,
-                                      YangPluginConfig pluginConfig)
+            YangPluginConfig pluginConfig)
             throws IOException {
 
         pack = parsePkg(pack);
@@ -117,7 +117,8 @@ public final class YangIoUtils {
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
 
             bufferedWriter.write(CopyrightHeader.getCopyrightHeader());
-            bufferedWriter.write(getJavaDoc(PACKAGE_INFO, classInfo, isChildNode, pluginConfig));
+            //TODO: get the compiler annotations and pass the info
+            bufferedWriter.write(getJavaDoc(PACKAGE_INFO, classInfo, isChildNode, pluginConfig, null));
             String pkg = PACKAGE + SPACE + pack + SEMI_COLAN;
             if (pkg.length() > LINE_SIZE) {
                 pkg = whenDelimiterIsPersent(pkg, LINE_SIZE);
@@ -385,7 +386,7 @@ public final class YangIoUtils {
 
     /* Updates the given line with the given size conditions. */
     private static StringBuilder updateString(String[] strArray, StringBuilder stringBuilder, String string,
-                                              int lineSize) {
+            int lineSize) {
 
         StringBuilder tempBuilder = new StringBuilder();
         for (String str : strArray) {
@@ -550,7 +551,7 @@ public final class YangIoUtils {
      * @return camel cased string
      */
     public static String upperCaseConflictResolver(String[] stringArray,
-                                                   YangToJavaNamingConflictUtil conflictResolver) {
+            YangToJavaNamingConflictUtil conflictResolver) {
 
         for (int l = 0; l < stringArray.length; l++) {
             String[] upperCaseSplitArray = stringArray[l].split(REGEX_WITH_UPPERCASE);

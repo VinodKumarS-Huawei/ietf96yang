@@ -16,15 +16,11 @@
 
 package org.onosproject.yangutils.utils.io.impl;
 
+import org.onosproject.yangutils.datamodel.YangCompilerAnnotation;
+
 import static org.onosproject.yangutils.utils.UtilConstants.AUGMENTED;
-import static org.onosproject.yangutils.utils.UtilConstants.JAVA_DOC_FOR_VALIDATOR;
-import static org.onosproject.yangutils.utils.UtilConstants.JAVA_DOC_FOR_VALIDATOR_RETURN;
-import static org.onosproject.yangutils.utils.UtilConstants.MAX_RANGE;
-import static org.onosproject.yangutils.utils.UtilConstants.MIN_RANGE;
-import static org.onosproject.yangutils.utils.UtilConstants.YANG_AUGMENTED_INFO;
 import static org.onosproject.yangutils.utils.UtilConstants.BUILDER;
 import static org.onosproject.yangutils.utils.UtilConstants.BUILDER_CLASS_JAVA_DOC;
-import static org.onosproject.yangutils.utils.UtilConstants.OP_PARAM_JAVA_DOC;
 import static org.onosproject.yangutils.utils.UtilConstants.BUILDER_INTERFACE_JAVA_DOC;
 import static org.onosproject.yangutils.utils.UtilConstants.BUILDER_OBJECT;
 import static org.onosproject.yangutils.utils.UtilConstants.CLASS;
@@ -45,6 +41,8 @@ import static org.onosproject.yangutils.utils.UtilConstants.JAVA_DOC_BUILD_RETUR
 import static org.onosproject.yangutils.utils.UtilConstants.JAVA_DOC_CONSTRUCTOR;
 import static org.onosproject.yangutils.utils.UtilConstants.JAVA_DOC_END_LINE;
 import static org.onosproject.yangutils.utils.UtilConstants.JAVA_DOC_FIRST_LINE;
+import static org.onosproject.yangutils.utils.UtilConstants.JAVA_DOC_FOR_VALIDATOR;
+import static org.onosproject.yangutils.utils.UtilConstants.JAVA_DOC_FOR_VALIDATOR_RETURN;
 import static org.onosproject.yangutils.utils.UtilConstants.JAVA_DOC_GETTERS;
 import static org.onosproject.yangutils.utils.UtilConstants.JAVA_DOC_MANAGER_SETTERS;
 import static org.onosproject.yangutils.utils.UtilConstants.JAVA_DOC_OF;
@@ -55,20 +53,25 @@ import static org.onosproject.yangutils.utils.UtilConstants.JAVA_DOC_SETTERS;
 import static org.onosproject.yangutils.utils.UtilConstants.JAVA_DOC_SETTERS_COMMON;
 import static org.onosproject.yangutils.utils.UtilConstants.LIST;
 import static org.onosproject.yangutils.utils.UtilConstants.MAP;
+import static org.onosproject.yangutils.utils.UtilConstants.MAX_RANGE;
+import static org.onosproject.yangutils.utils.UtilConstants.MIN_RANGE;
 import static org.onosproject.yangutils.utils.UtilConstants.NEW_LINE;
 import static org.onosproject.yangutils.utils.UtilConstants.NEW_LINE_ASTERISK;
 import static org.onosproject.yangutils.utils.UtilConstants.OBJECT;
 import static org.onosproject.yangutils.utils.UtilConstants.OBJECT_STRING;
 import static org.onosproject.yangutils.utils.UtilConstants.OF;
+import static org.onosproject.yangutils.utils.UtilConstants.OP_PARAM_JAVA_DOC;
 import static org.onosproject.yangutils.utils.UtilConstants.PACKAGE_INFO_JAVADOC;
 import static org.onosproject.yangutils.utils.UtilConstants.PACKAGE_INFO_JAVADOC_OF_CHILD;
 import static org.onosproject.yangutils.utils.UtilConstants.PERIOD;
+import static org.onosproject.yangutils.utils.UtilConstants.QUEUE;
 import static org.onosproject.yangutils.utils.UtilConstants.RPC_INPUT_STRING;
 import static org.onosproject.yangutils.utils.UtilConstants.RPC_OUTPUT_STRING;
 import static org.onosproject.yangutils.utils.UtilConstants.SPACE;
 import static org.onosproject.yangutils.utils.UtilConstants.STRING_DATA_TYPE;
 import static org.onosproject.yangutils.utils.UtilConstants.VALUE;
 import static org.onosproject.yangutils.utils.UtilConstants.VOID;
+import static org.onosproject.yangutils.utils.UtilConstants.YANG_AUGMENTED_INFO;
 import static org.onosproject.yangutils.utils.io.impl.YangIoUtils.getCamelCase;
 import static org.onosproject.yangutils.utils.io.impl.YangIoUtils.getSmallCase;
 
@@ -86,13 +89,15 @@ public final class JavaDocGen {
     /**
      * Returns java docs.
      *
-     * @param type         java doc type
-     * @param name         name of the YangNode
-     * @param isList       is list attribute
-     * @param pluginConfig plugin configurations
+     * @param type               java doc type
+     * @param name               name of the YangNode
+     * @param isList             is list attribute
+     * @param pluginConfig       plugin configurations
+     * @param compilerAnnotation compiler annotations for user defined data type
      * @return javadocs.
      */
-    public static String getJavaDoc(JavaDocType type, String name, boolean isList, YangPluginConfig pluginConfig) {
+    public static String getJavaDoc(JavaDocType type, String name, boolean isList, YangPluginConfig pluginConfig,
+            YangCompilerAnnotation compilerAnnotation) {
 
         name = YangIoUtils.getSmallCase(getCamelCase(name, pluginConfig.getConflictResolver()));
         switch (type) {
@@ -118,16 +123,16 @@ public final class JavaDocGen {
                 return generateForPackage(name, isList);
             }
             case GETTER_METHOD: {
-                return generateForGetters(name, isList);
+                return generateForGetters(name, isList, compilerAnnotation);
             }
             case TYPE_DEF_SETTER_METHOD: {
                 return generateForTypeDefSetter(name);
             }
             case SETTER_METHOD: {
-                return generateForSetters(name, isList);
+                return generateForSetters(name, isList, compilerAnnotation);
             }
             case MANAGER_SETTER_METHOD: {
-                return generateForManagerSetters(name, isList);
+                return generateForManagerSetters(name, isList, compilerAnnotation);
             }
             case OF_METHOD: {
                 return generateForOf(name);
@@ -192,7 +197,7 @@ public final class JavaDocGen {
      * @return javaDocs of rpc method
      */
     public static String generateJavaDocForRpc(String rpcName, String inputName, String outputName,
-                                               YangPluginConfig pluginConfig) {
+            YangPluginConfig pluginConfig) {
         rpcName = getCamelCase(rpcName, pluginConfig.getConflictResolver());
 
         String javadoc =
@@ -269,18 +274,37 @@ public final class JavaDocGen {
     /**
      * Generates javaDocs for getter method.
      *
-     * @param attribute attribute
-     * @param isList    is list attribute
+     * @param attribute          attribute
+     * @param isList             is list attribute
+     * @param compilerAnnotation
      * @return javaDocs
      */
-    private static String generateForGetters(String attribute, boolean isList) {
+    private static String generateForGetters(String attribute, boolean isList,
+            YangCompilerAnnotation compilerAnnotation) {
 
         String getter = NEW_LINE + FOUR_SPACE_INDENTATION + JAVA_DOC_FIRST_LINE + FOUR_SPACE_INDENTATION
                 + JAVA_DOC_GETTERS + attribute + PERIOD + NEW_LINE + FOUR_SPACE_INDENTATION + NEW_LINE_ASTERISK
                 + FOUR_SPACE_INDENTATION + JAVA_DOC_RETURN;
         if (isList) {
-            String listAttribute = LIST.toLowerCase() + SPACE + OF + SPACE;
-            getter = getter + listAttribute;
+            String attrParam;
+            if (compilerAnnotation != null && compilerAnnotation.getYangAppDataStructure() != null) {
+                switch (compilerAnnotation.getYangAppDataStructure().getDataStructure()) {
+                    case QUEUE: {
+                        attrParam = QUEUE.toLowerCase() + SPACE + OF + SPACE;
+                        break;
+                    }
+                    case LIST: {
+                        attrParam = LIST.toLowerCase() + SPACE + OF + SPACE;
+                        break;
+                    }
+                    default: {
+                        attrParam = LIST.toLowerCase() + SPACE + OF + SPACE;
+                    }
+                }
+            } else {
+                attrParam = LIST.toLowerCase() + SPACE + OF + SPACE;
+            }
+            getter = getter + attrParam;
         } else {
             getter = getter + VALUE + SPACE + OF + SPACE;
         }
@@ -292,18 +316,38 @@ public final class JavaDocGen {
     /**
      * Generates javaDocs for setter method.
      *
-     * @param attribute attribute
-     * @param isList    is list attribute
+     * @param attribute          attribute
+     * @param isList             is list attribute
+     * @param compilerAnnotation
      * @return javaDocs
      */
-    private static String generateForSetters(String attribute, boolean isList) {
+    private static String generateForSetters(String attribute, boolean isList,
+            YangCompilerAnnotation compilerAnnotation) {
 
         String setter = NEW_LINE + FOUR_SPACE_INDENTATION + JAVA_DOC_FIRST_LINE + FOUR_SPACE_INDENTATION
                 + JAVA_DOC_SETTERS + attribute + PERIOD + NEW_LINE + FOUR_SPACE_INDENTATION + NEW_LINE_ASTERISK
                 + FOUR_SPACE_INDENTATION + JAVA_DOC_PARAM + attribute + SPACE;
-        if (isList) {
-            String listAttribute = LIST.toLowerCase() + SPACE + OF + SPACE;
-            setter = setter + listAttribute;
+
+        String attributeParam;
+        if (compilerAnnotation != null && compilerAnnotation.getYangAppDataStructure() != null) {
+            switch (compilerAnnotation.getYangAppDataStructure().getDataStructure()) {
+                case QUEUE: {
+                    attributeParam = QUEUE.toLowerCase() + SPACE + OF + SPACE;
+                    setter = setter + attributeParam;
+                    break;
+                }
+                case LIST: {
+                    attributeParam = LIST.toLowerCase() + SPACE + OF + SPACE;
+                    setter = setter + attributeParam;
+                    break;
+                }
+                default: {
+
+                }
+            }
+        } else if (isList) {
+            attributeParam = LIST.toLowerCase() + SPACE + OF + SPACE;
+            setter = setter + attributeParam;
         } else {
             setter = setter + VALUE + SPACE + OF + SPACE;
         }
@@ -316,18 +360,38 @@ public final class JavaDocGen {
     /**
      * Generates javaDocs for setter method.
      *
-     * @param attribute attribute
-     * @param isList    is list attribute
+     * @param attribute          attribute
+     * @param isList             is list attribute
+     * @param compilerAnnotation
      * @return javaDocs
      */
-    private static String generateForManagerSetters(String attribute, boolean isList) {
+    private static String generateForManagerSetters(String attribute, boolean isList,
+            YangCompilerAnnotation compilerAnnotation) {
 
         String setter = NEW_LINE + FOUR_SPACE_INDENTATION + JAVA_DOC_FIRST_LINE + FOUR_SPACE_INDENTATION
                 + JAVA_DOC_MANAGER_SETTERS + attribute + PERIOD + NEW_LINE + FOUR_SPACE_INDENTATION + NEW_LINE_ASTERISK
                 + FOUR_SPACE_INDENTATION + JAVA_DOC_PARAM + attribute + SPACE;
-        if (isList) {
-            String listAttribute = LIST.toLowerCase() + SPACE + OF + SPACE;
-            setter = setter + listAttribute;
+
+        String attributeParam;
+        if (compilerAnnotation != null && compilerAnnotation.getYangAppDataStructure() != null) {
+            switch (compilerAnnotation.getYangAppDataStructure().getDataStructure()) {
+                case QUEUE: {
+                    attributeParam = QUEUE.toLowerCase() + SPACE + OF + SPACE;
+                    setter = setter + attributeParam;
+                    break;
+                }
+                case LIST: {
+                    attributeParam = LIST.toLowerCase() + SPACE + OF + SPACE;
+                    setter = setter + attributeParam;
+                    break;
+                }
+                default: {
+
+                }
+            }
+        } else if (isList) {
+            attributeParam = LIST.toLowerCase() + SPACE + OF + SPACE;
+            setter = setter + attributeParam;
         } else {
             setter = setter + VALUE + SPACE + OF + SPACE;
         }

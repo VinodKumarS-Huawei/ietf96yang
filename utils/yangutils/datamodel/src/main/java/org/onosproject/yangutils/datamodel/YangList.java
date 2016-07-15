@@ -208,10 +208,23 @@ public class YangList
     private List<YangIfFeature> ifFeatureList;
 
     /**
+     * Compiler Annotation.
+     */
+    private transient YangCompilerAnnotation compilerAnnotation;
+
+    /**
      * Creates a YANG list object.
      */
     public YangList() {
         super(YangNodeType.LIST_NODE);
+    }
+
+    public YangCompilerAnnotation getCompilerAnnotation() {
+        return compilerAnnotation;
+    }
+
+    public void setCompilerAnnotation(YangCompilerAnnotation compilerAnnotation) {
+        this.compilerAnnotation = compilerAnnotation;
     }
 
     /**

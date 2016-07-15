@@ -140,7 +140,7 @@ public final class JavaFileGeneratorUtils {
      * @throws IOException when failed to get the data from temporary file handle
      */
     static String getDataFromTempFileHandle(int generatedTempFiles,
-                                            TempJavaFragmentFiles tempJavaFragmentFiles, String absolutePath)
+            TempJavaFragmentFiles tempJavaFragmentFiles, String absolutePath)
             throws IOException {
 
         TempJavaTypeFragmentFiles typeFragmentFiles = null;
@@ -294,7 +294,7 @@ public final class JavaFileGeneratorUtils {
      * @throws IOException when fails to generate a file
      */
     public static void initiateJavaFileGeneration(File file, String className, int genType, List<String> imports,
-                                                  String pkg, YangPluginConfig pluginConfig)
+            String pkg, YangPluginConfig pluginConfig)
             throws IOException {
 
         boolean isFileCreated;
@@ -320,7 +320,7 @@ public final class JavaFileGeneratorUtils {
      * @throws IOException when fails to generate a file
      */
     public static void initiateJavaFileGeneration(File file, int genType, List<String> imports,
-                                                  YangNode curNode, String className)
+            YangNode curNode, String className)
             throws IOException {
 
         boolean isFileCreated;
@@ -346,7 +346,7 @@ public final class JavaFileGeneratorUtils {
      * @throws IOException
      */
     private static void appendContents(File file, int genType, List<String> importsList, YangNode curNode,
-                                       String className)
+            String className)
             throws IOException {
 
         JavaFileInfo javaFileInfo = ((JavaFileInfoContainer) curNode).getJavaFileInfo();
@@ -422,7 +422,7 @@ public final class JavaFileGeneratorUtils {
      * @throws IOException when fails to append contents
      */
     private static void appendContents(File file, String fileName, int genType, List<String> importsList, String pkg,
-                                       YangPluginConfig pluginConfig)
+            YangPluginConfig pluginConfig)
             throws IOException {
 
         String pkgString = parsePackageString(pkg, importsList);
@@ -510,13 +510,13 @@ public final class JavaFileGeneratorUtils {
         YangPluginConfig pluginConfig = ((JavaFileInfoContainer) curNode).getJavaFileInfo().getPluginConfig();
         if ((genType & GENERATE_SERVICE_AND_MANAGER) != 0) {
             if (!fileName.matches(REGEX_FOR_ANY_STRING_ENDING_WITH_SERVICE)) {
-                insertDataIntoJavaFile(file, getJavaDoc(RPC_MANAGER, fileName, false, pluginConfig));
+                insertDataIntoJavaFile(file, getJavaDoc(RPC_MANAGER, fileName, false, pluginConfig, null));
                 insertDataIntoJavaFile(file, JavaCodeSnippetGen.addComponentString());
             } else {
-                insertDataIntoJavaFile(file, getJavaDoc(javaDocType, fileName, false, pluginConfig));
+                insertDataIntoJavaFile(file, getJavaDoc(javaDocType, fileName, false, pluginConfig, null));
             }
         } else {
-            insertDataIntoJavaFile(file, getJavaDoc(javaDocType, fileName, false, pluginConfig));
+            insertDataIntoJavaFile(file, getJavaDoc(javaDocType, fileName, false, pluginConfig, null));
         }
         insertDataIntoJavaFile(file, generateClassDefinition(genType, fileName, curNode));
     }
@@ -532,9 +532,9 @@ public final class JavaFileGeneratorUtils {
      * @throws IOException when fails to write into a file
      */
     private static void write(File file, String fileName, int genType, JavaDocType javaDocType,
-                              YangPluginConfig pluginConfig)
+            YangPluginConfig pluginConfig)
             throws IOException {
-        insertDataIntoJavaFile(file, getJavaDoc(javaDocType, fileName, false, pluginConfig));
+        insertDataIntoJavaFile(file, getJavaDoc(javaDocType, fileName, false, pluginConfig, null));
         insertDataIntoJavaFile(file, generateClassDefinition(genType, fileName));
     }
 
@@ -626,7 +626,7 @@ public final class JavaFileGeneratorUtils {
      * @return qualified type info of augmented node
      */
     private static JavaQualifiedTypeInfo getQualifiedTypeInfoOfAugmentedNode(YangNode augmentedNode, String curNodeName,
-                                                                             YangPluginConfig pluginConfig) {
+            YangPluginConfig pluginConfig) {
         JavaQualifiedTypeInfo javaQualifiedTypeInfo = getQualifiedTypeInfoOfCurNode(augmentedNode,
                 getCapitalCase(curNodeName));
         if (javaQualifiedTypeInfo.getPkgInfo() == null) {
@@ -644,7 +644,7 @@ public final class JavaFileGeneratorUtils {
      * @return true if present in imports
      */
     private static boolean validateQualifiedInfoOfAugmentedNode(JavaQualifiedTypeInfo javaQualifiedTypeInfo,
-                                                                JavaImportData importData) {
+            JavaImportData importData) {
         for (JavaQualifiedTypeInfo curImportInfo : importData.getImportSet()) {
             if (curImportInfo.getClassInfo()
                     .contentEquals(javaQualifiedTypeInfo.getClassInfo())) {

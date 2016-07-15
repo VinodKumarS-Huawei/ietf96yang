@@ -116,7 +116,8 @@ public class YangLinkerManager
      * @param yangNodeSet set of YANG files info
      * @throws LinkerException fails to find imported module
      */
-    public void addRefToYangFilesImportList(Set<YangNode> yangNodeSet) throws LinkerException {
+    public void addRefToYangFilesImportList(Set<YangNode> yangNodeSet)
+            throws LinkerException {
         for (YangNode yangNode : yangNodeSet) {
             if (yangNode instanceof YangReferenceResolver) {
                 try {
@@ -138,7 +139,8 @@ public class YangLinkerManager
      * @param yangNodeSet set of YANG files info
      * @throws LinkerException fails to find included sub-module
      */
-    public void addRefToYangFilesIncludeList(Set<YangNode> yangNodeSet) throws LinkerException {
+    public void addRefToYangFilesIncludeList(Set<YangNode> yangNodeSet)
+            throws LinkerException {
         for (YangNode yangNode : yangNodeSet) {
             if (yangNode instanceof YangReferenceResolver) {
                 try {
@@ -172,7 +174,7 @@ public class YangLinkerManager
                 ((YangReferenceResolver) yangNode)
                         .resolveInterFileLinking(ResolvableType.YANG_USES);
                 ((YangReferenceResolver) yangNode)
-                .resolveInterFileLinking(ResolvableType.YANG_AUGMENT);
+                        .resolveInterFileLinking(ResolvableType.YANG_AUGMENT);
                 ((YangReferenceResolver) yangNode)
                         .resolveInterFileLinking(ResolvableType.YANG_DERIVED_DATA_TYPE);
                 ((YangReferenceResolver) yangNode)
@@ -181,6 +183,8 @@ public class YangLinkerManager
                         .resolveInterFileLinking(ResolvableType.YANG_IDENTITYREF);
                 ((YangReferenceResolver) yangNode)
                         .resolveInterFileLinking(ResolvableType.YANG_LEAFREF);
+                ((YangReferenceResolver) yangNode)
+                        .resolveInterFileLinking(ResolvableType.YANG_COMPILER_ANNOTATION);
             } catch (DataModelException e) {
                 String errorInfo = "Error in file: " + yangNode.getName() + " at line: "
                         + e.getLineNumber() + " at position: " + e.getCharPositionInLine() + NEW_LINE + e.getMessage();

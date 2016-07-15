@@ -384,6 +384,10 @@ public enum YangConstructType {
      */
     ANYXML_DATA,
 
+    COMPILER_ANNOTATION_DATA,
+
+    APP_DATA_STRUCTURE,
+
     /**
      * Identifies the YANG argument element parsed data.
      */
@@ -544,6 +548,10 @@ public enum YangConstructType {
                 return "deviation";
             case ANYXML_DATA:
                 return "anyxml";
+            case COMPILER_ANNOTATION_DATA:
+                return "compiler-annotation";
+            case APP_DATA_STRUCTURE:
+                return "app-data-structure";
             case ARGUMENT_DATA:
                 return "argument";
             default:

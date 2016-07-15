@@ -21,8 +21,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import static org.onosproject.yangutils.utils.UtilConstants.ABSTRACT_EVENT;
-import static org.onosproject.yangutils.utils.UtilConstants.YANG_AUGMENTED_INFO_CLASS_IMPORT_CLASS;
-import static org.onosproject.yangutils.utils.UtilConstants.YANG_AUGMENTED_INFO_CLASS_IMPORT_PKG;
+import static org.onosproject.yangutils.utils.UtilConstants.BITSET;
 import static org.onosproject.yangutils.utils.UtilConstants.COLLECTION_IMPORTS;
 import static org.onosproject.yangutils.utils.UtilConstants.EMPTY_STRING;
 import static org.onosproject.yangutils.utils.UtilConstants.EVENT_LISTENER;
@@ -32,7 +31,6 @@ import static org.onosproject.yangutils.utils.UtilConstants.HASH_MAP;
 import static org.onosproject.yangutils.utils.UtilConstants.IMPORT;
 import static org.onosproject.yangutils.utils.UtilConstants.JAVA_LANG;
 import static org.onosproject.yangutils.utils.UtilConstants.JAVA_UTIL_OBJECTS_IMPORT_CLASS;
-import static org.onosproject.yangutils.utils.UtilConstants.BITSET;
 import static org.onosproject.yangutils.utils.UtilConstants.JAVA_UTIL_OBJECTS_IMPORT_PKG;
 import static org.onosproject.yangutils.utils.UtilConstants.LIST;
 import static org.onosproject.yangutils.utils.UtilConstants.LISTENER_REG;
@@ -41,8 +39,12 @@ import static org.onosproject.yangutils.utils.UtilConstants.MAP;
 import static org.onosproject.yangutils.utils.UtilConstants.NEW_LINE;
 import static org.onosproject.yangutils.utils.UtilConstants.ONOS_EVENT_PKG;
 import static org.onosproject.yangutils.utils.UtilConstants.PERIOD;
+import static org.onosproject.yangutils.utils.UtilConstants.QUEUE;
 import static org.onosproject.yangutils.utils.UtilConstants.SEMI_COLAN;
+import static org.onosproject.yangutils.utils.UtilConstants.YANG_AUGMENTED_INFO_CLASS_IMPORT_CLASS;
+import static org.onosproject.yangutils.utils.UtilConstants.YANG_AUGMENTED_INFO_CLASS_IMPORT_PKG;
 import static org.onosproject.yangutils.utils.UtilConstants.YANG_AUGMENTED_OP_PARAM_INFO_CLASS;
+
 import static java.util.Collections.sort;
 
 /**
@@ -54,6 +56,11 @@ public class JavaImportData {
      * Flag to denote if any list in imported.
      */
     private boolean isListToImport;
+
+    /**
+     * Flag to denote if any queue is imported dud to compiler annotation.
+     */
+    private boolean isQueueToImport;
 
     /**
      * Sorted set of import info, to be used to maintain the set of classes to
@@ -84,6 +91,24 @@ public class JavaImportData {
      */
     public void setIfListImported(boolean isList) {
         isListToImport = isList;
+    }
+
+    /**
+     * Is Queue to be imported due to compiler annotations.
+     *
+     * @return status of queue import
+     */
+    public boolean isQueueToImport() {
+        return isQueueToImport;
+    }
+
+    /**
+     * Set the status of the queue to be imported due to compiler annotations.
+     *
+     * @param queueToImport status of queue to import
+     */
+    public void setQueueToImport(boolean queueToImport) {
+        isQueueToImport = queueToImport;
     }
 
     /**
@@ -188,6 +213,10 @@ public class JavaImportData {
             imports.add(getImportForList());
         }
 
+        if (isQueueToImport()) {
+            imports.add(getImportForQueue());
+        }
+
         sort(imports);
         return imports;
     }
@@ -226,6 +255,15 @@ public class JavaImportData {
      */
     public String getImportForList() {
         return IMPORT + COLLECTION_IMPORTS + PERIOD + LIST + SEMI_COLAN + NEW_LINE;
+    }
+
+    /**
+     * Returns import for queue attribute.
+     *
+     * @return import for queue attribute
+     */
+    public String getImportForQueue() {
+        return IMPORT + COLLECTION_IMPORTS + PERIOD + QUEUE + SEMI_COLAN + NEW_LINE;
     }
 
     /**

@@ -18,6 +18,7 @@ package org.onosproject.yangutils.translator.tojava.utils;
 
 import java.util.List;
 
+import org.onosproject.yangutils.datamodel.YangCompilerAnnotation;
 import org.onosproject.yangutils.datamodel.YangNode;
 import org.onosproject.yangutils.translator.tojava.JavaCodeGeneratorInfo;
 import org.onosproject.yangutils.translator.tojava.JavaQualifiedTypeInfo;
@@ -59,6 +60,7 @@ import static org.onosproject.yangutils.utils.UtilConstants.PERIOD;
 import static org.onosproject.yangutils.utils.UtilConstants.PRIVATE;
 import static org.onosproject.yangutils.utils.UtilConstants.PUBLIC;
 import static org.onosproject.yangutils.utils.UtilConstants.QUESTION_MARK;
+import static org.onosproject.yangutils.utils.UtilConstants.QUEUE;
 import static org.onosproject.yangutils.utils.UtilConstants.SEMI_COLAN;
 import static org.onosproject.yangutils.utils.UtilConstants.SERVICE_ANNOTATION;
 import static org.onosproject.yangutils.utils.UtilConstants.SERVICE_ANNOTATION_IMPORT;
@@ -73,6 +75,7 @@ import static org.onosproject.yangutils.utils.UtilConstants.YANG_AUGMENTED_INFO;
 import static org.onosproject.yangutils.utils.io.impl.JavaDocGen.JavaDocType.ENUM_ATTRIBUTE;
 import static org.onosproject.yangutils.utils.io.impl.JavaDocGen.getJavaDoc;
 import static org.onosproject.yangutils.utils.io.impl.YangIoUtils.getSmallCase;
+
 import static java.util.Collections.sort;
 
 /**
@@ -120,8 +123,8 @@ public final class JavaCodeSnippetGen {
      * @return the textual java code for attribute definition in class
      */
     public static String getJavaAttributeDefination(String javaAttributeTypePkg, String javaAttributeType,
-                                                    String javaAttributeName, boolean isList,
-                                                    String attributeAccessType) {
+            String javaAttributeName, boolean isList, String attributeAccessType,
+            YangCompilerAnnotation compilerAnnotation) {
 
         String attributeDefination = attributeAccessType + SPACE;
 
@@ -133,13 +136,38 @@ public final class JavaCodeSnippetGen {
             attributeDefination = attributeDefination + javaAttributeType + SPACE + javaAttributeName + SEMI_COLAN
                     + NEW_LINE;
         } else {
-            attributeDefination = attributeDefination + LIST + DIAMOND_OPEN_BRACKET;
+            if (compilerAnnotation != null && compilerAnnotation.getYangAppDataStructure() != null) {
+                switch (compilerAnnotation.getYangAppDataStructure().getDataStructure()) {
+                    case QUEUE: {
+                        attributeDefination = attributeDefination + QUEUE + DIAMOND_OPEN_BRACKET;
+                        break;
+                    }
+                    default: {
+                        attributeDefination = attributeDefination + LIST + DIAMOND_OPEN_BRACKET;
+                    }
+                }
+            } else {
+                attributeDefination = attributeDefination + LIST + DIAMOND_OPEN_BRACKET;
+            }
+
             if (javaAttributeTypePkg != null) {
                 attributeDefination = attributeDefination + javaAttributeTypePkg + PERIOD;
             }
 
-            attributeDefination = attributeDefination + javaAttributeType + DIAMOND_CLOSE_BRACKET + SPACE
-                    + javaAttributeName + SEMI_COLAN + NEW_LINE;
+            attributeDefination = attributeDefination + javaAttributeType;
+
+            if (compilerAnnotation != null && compilerAnnotation.getYangAppDataStructure() != null) {
+                switch (compilerAnnotation.getYangAppDataStructure().getDataStructure()) {
+                    default: {
+                        attributeDefination = attributeDefination + DIAMOND_CLOSE_BRACKET + SPACE
+                                + javaAttributeName + SEMI_COLAN + NEW_LINE;
+                    }
+                }
+            } else {
+                attributeDefination = attributeDefination + DIAMOND_CLOSE_BRACKET + SPACE
+                        + javaAttributeName + SEMI_COLAN + NEW_LINE;
+            }
+
         }
         return attributeDefination;
     }
@@ -172,7 +200,7 @@ public final class JavaCodeSnippetGen {
      * @return string for enum's attribute
      */
     public static String generateEnumAttributeString(String name, int value, YangPluginConfig pluginConfig) {
-        return getJavaDoc(ENUM_ATTRIBUTE, name, false, pluginConfig) + FOUR_SPACE_INDENTATION
+        return getJavaDoc(ENUM_ATTRIBUTE, name, false, pluginConfig, null) + FOUR_SPACE_INDENTATION
                 + getEnumJavaAttribute(name).toUpperCase() + OPEN_PARENTHESIS
                 + value + CLOSE_PARENTHESIS + COMMA + NEW_LINE;
     }
@@ -232,7 +260,7 @@ public final class JavaCodeSnippetGen {
      * @param classInfo class info to be added to import list
      */
     public static void addListenersImport(YangNode curNode, List<String> imports, boolean operation,
-                                          String classInfo) {
+            String classInfo) {
         String thisImport = "";
         TempJavaServiceFragmentFiles tempJavaServiceFragmentFiles = ((JavaCodeGeneratorInfo) curNode)
                 .getTempJavaCodeFragmentFiles().getServiceTempFiles();
@@ -254,7 +282,7 @@ public final class JavaCodeSnippetGen {
      * @return import list
      */
     private static List<String> performOperationOnImports(List<String> imports, String curImport,
-                                                          boolean operation) {
+            boolean operation) {
         if (operation) {
             imports.add(curImport);
         } else {

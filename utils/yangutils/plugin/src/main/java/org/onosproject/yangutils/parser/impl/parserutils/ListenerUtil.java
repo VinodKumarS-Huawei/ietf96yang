@@ -148,7 +148,7 @@ public final class ListenerUtil {
      * @return concatenated string after removing double quotes
      */
     public static String getValidIdentifierForLeafref(String identifier, YangConstructType yangConstruct,
-                                                      ParserRuleContext ctx, YangLeafRef yangLeafRef) {
+            ParserRuleContext ctx, YangLeafRef yangLeafRef) {
 
         String identifierString = removeQuotesAndHandleConcat(identifier);
         ParserException parserException;
@@ -226,7 +226,7 @@ public final class ListenerUtil {
      * @return valid non negative integer value
      */
     public static int getValidNonNegativeIntegerValue(String integerValue, YangConstructType yangConstruct,
-                                                      ParserRuleContext ctx) {
+            ParserRuleContext ctx) {
 
         String value = removeQuotesAndHandleConcat(integerValue);
         if (!value.matches(NON_NEGATIVE_INTEGER_PATTERN)) {
@@ -261,7 +261,7 @@ public final class ListenerUtil {
      * @return valid integer value
      */
     public static int getValidIntegerValue(String integerValue, YangConstructType yangConstruct,
-                                           ParserRuleContext ctx) {
+                                                      ParserRuleContext ctx) {
 
         String value = removeQuotesAndHandleConcat(integerValue);
         if (!INTEGER_PATTERN.matcher(value).matches()) {

@@ -16,11 +16,22 @@
 
 package org.onosproject.yangutils.datamodel.utils;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.onosproject.yangutils.datamodel.CollisionDetector;
 import org.onosproject.yangutils.datamodel.ResolvableType;
 import org.onosproject.yangutils.datamodel.YangAtomicPath;
 import org.onosproject.yangutils.datamodel.YangAugment;
 import org.onosproject.yangutils.datamodel.YangBase;
+import org.onosproject.yangutils.datamodel.YangCompilerAnnotation;
 import org.onosproject.yangutils.datamodel.YangEntityToResolveInfoImpl;
 import org.onosproject.yangutils.datamodel.YangEnumeration;
 import org.onosproject.yangutils.datamodel.YangIdentityRef;
@@ -40,16 +51,6 @@ import org.onosproject.yangutils.datamodel.YangUnion;
 import org.onosproject.yangutils.datamodel.YangUses;
 import org.onosproject.yangutils.datamodel.exceptions.DataModelException;
 import org.onosproject.yangutils.datamodel.utils.builtindatatype.YangDataTypes;
-
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Represents utilities for data model tree.
@@ -201,6 +202,10 @@ public final class DataModelUtils {
             resolutionNode.addToResolutionList(resolutionInfo, ResolvableType.YANG_BASE);
         } else if (resolutionInfo.getEntityToResolveInfo().getEntityToResolve() instanceof YangIdentityRef) {
             resolutionNode.addToResolutionList(resolutionInfo, ResolvableType.YANG_IDENTITYREF);
+        } else if (resolutionInfo.getEntityToResolveInfo()
+                .getEntityToResolve() instanceof YangCompilerAnnotation) {
+            resolutionNode.addToResolutionList(resolutionInfo,
+                    ResolvableType.YANG_COMPILER_ANNOTATION);
         }
     }
 
@@ -212,7 +217,7 @@ public final class DataModelUtils {
      * @throws DataModelException a violation of data model rules
      */
     public static void resolveLinkingForResolutionList(List<YangResolutionInfo> resolutionList,
-                                                       YangReferenceResolver dataModelRootNode)
+            YangReferenceResolver dataModelRootNode)
             throws DataModelException {
 
         for (YangResolutionInfo resolutionInfo : resolutionList) {
@@ -228,7 +233,7 @@ public final class DataModelUtils {
      * @throws DataModelException a violation of data model rules
      */
     public static void linkInterFileReferences(List<YangResolutionInfo> resolutionList,
-                                               YangReferenceResolver dataModelRootNode)
+            YangReferenceResolver dataModelRootNode)
             throws DataModelException {
         /*
          * Run through the resolution list, find type/uses referring to inter
@@ -299,7 +304,8 @@ public final class DataModelUtils {
      * @return de-serializes YANG data-model nodes
      * @throws IOException when fails do IO operations
      */
-    public static List<YangNode> deSerializeDataModel(List<String> serializableInfoSet) throws IOException {
+    public static List<YangNode> deSerializeDataModel(List<String> serializableInfoSet)
+            throws IOException {
 
         List<YangNode> nodes = new ArrayList<>();
         for (String fileInfo : serializableInfoSet) {
@@ -479,7 +485,8 @@ public final class DataModelUtils {
      * @param leavesHolder cloned leaves holder, for whom the leaves reference needs to be updated
      * @throws DataModelException when fails to do data model operations
      */
-    public static void updateClonedLeavesUnionEnumRef(YangLeavesHolder leavesHolder) throws DataModelException {
+    public static void updateClonedLeavesUnionEnumRef(YangLeavesHolder leavesHolder)
+            throws DataModelException {
         List<YangLeaf> currentListOfLeaves = leavesHolder.getListOfLeaf();
         if (currentListOfLeaves != null) {
             for (YangLeaf leaf : currentListOfLeaves) {

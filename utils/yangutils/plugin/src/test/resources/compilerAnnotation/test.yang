@@ -11,13 +11,20 @@ module test {
         leaf leaf1 {
             type int32;
         }
-        list list2 {
+        /*list list2 {
            key "leaf2";
            leaf leaf2 {
               type int32;
            }
-        }
+        }*/
      }
+
+    /*container cont1 {
+        container cont2 {
+           leaf leaf {
+              type int32;
+           }
+        }
+     }*/
 }
-    
 
