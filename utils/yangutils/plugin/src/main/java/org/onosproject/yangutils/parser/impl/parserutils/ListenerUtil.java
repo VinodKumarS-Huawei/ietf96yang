@@ -107,9 +107,9 @@ public final class ListenerUtil {
     /**
      * Validates identifier and returns concatenated string if string contains plus symbol.
      *
-     * @param identifier string from yang file
+     * @param identifier    string from yang file
      * @param yangConstruct yang construct for creating error message
-     * @param ctx yang construct's context to get the line number and character position
+     * @param ctx           yang construct's context to get the line number and character position
      * @return concatenated string after removing double quotes
      */
     public static String getValidIdentifier(String identifier, YangConstructType yangConstruct, ParserRuleContext ctx) {
@@ -141,14 +141,14 @@ public final class ListenerUtil {
     /**
      * Validates identifier and returns concatenated string if string contains plus symbol.
      *
-     * @param identifier string from yang file
+     * @param identifier    string from yang file
      * @param yangConstruct yang construct for creating error message
-     * @param ctx yang construct's context to get the line number and character position
-     * @param yangLeafRef instance of leafref where the path argument has to be set
+     * @param ctx           yang construct's context to get the line number and character position
+     * @param yangLeafRef   instance of leafref where the path argument has to be set
      * @return concatenated string after removing double quotes
      */
     public static String getValidIdentifierForLeafref(String identifier, YangConstructType yangConstruct,
-            ParserRuleContext ctx, YangLeafRef yangLeafRef) {
+                                                      ParserRuleContext ctx, YangLeafRef yangLeafRef) {
 
         String identifierString = removeQuotesAndHandleConcat(identifier);
         ParserException parserException;
@@ -220,13 +220,13 @@ public final class ListenerUtil {
     /**
      * Validates non negative integer value.
      *
-     * @param integerValue integer to be validated
+     * @param integerValue  integer to be validated
      * @param yangConstruct yang construct for creating error message
-     * @param ctx context object of the grammar rule
+     * @param ctx           context object of the grammar rule
      * @return valid non negative integer value
      */
     public static int getValidNonNegativeIntegerValue(String integerValue, YangConstructType yangConstruct,
-            ParserRuleContext ctx) {
+                                                      ParserRuleContext ctx) {
 
         String value = removeQuotesAndHandleConcat(integerValue);
         if (!value.matches(NON_NEGATIVE_INTEGER_PATTERN)) {
@@ -255,13 +255,13 @@ public final class ListenerUtil {
     /**
      * Validates integer value.
      *
-     * @param integerValue integer to be validated
+     * @param integerValue  integer to be validated
      * @param yangConstruct yang construct for creating error message
-     * @param ctx context object of the grammar rule
+     * @param ctx           context object of the grammar rule
      * @return valid integer value
      */
     public static int getValidIntegerValue(String integerValue, YangConstructType yangConstruct,
-                                                      ParserRuleContext ctx) {
+                                           ParserRuleContext ctx) {
 
         String value = removeQuotesAndHandleConcat(integerValue);
         if (!INTEGER_PATTERN.matcher(value).matches()) {
@@ -290,13 +290,13 @@ public final class ListenerUtil {
     /**
      * Validates boolean value.
      *
-     * @param booleanValue value to be validated
+     * @param booleanValue  value to be validated
      * @param yangConstruct yang construct for creating error message
-     * @param ctx context object of the grammar rule
+     * @param ctx           context object of the grammar rule
      * @return boolean value either true or false
      */
     public static boolean getValidBooleanValue(String booleanValue, YangConstructType yangConstruct,
-            ParserRuleContext ctx) {
+                                               ParserRuleContext ctx) {
 
         String value = removeQuotesAndHandleConcat(booleanValue);
         if (value.equals(TRUE)) {
@@ -338,12 +338,12 @@ public final class ListenerUtil {
      * Checks and return valid node identifier.
      *
      * @param nodeIdentifierString string from yang file
-     * @param yangConstruct yang construct for creating error message
-     * @param ctx yang construct's context to get the line number and character position
+     * @param yangConstruct        yang construct for creating error message
+     * @param ctx                  yang construct's context to get the line number and character position
      * @return valid node identifier
      */
     public static YangNodeIdentifier getValidNodeIdentifier(String nodeIdentifierString,
-            YangConstructType yangConstruct, ParserRuleContext ctx) {
+                                                            YangConstructType yangConstruct, ParserRuleContext ctx) {
         String tmpIdentifierString = removeQuotesAndHandleConcat(nodeIdentifierString);
         String[] tmpData = tmpIdentifierString.split(Pattern.quote(COLON));
         if (tmpData.length == 1) {
@@ -402,13 +402,13 @@ public final class ListenerUtil {
     /**
      * Validates the path argument. It can be either absolute or relative path.
      *
-     * @param pathString the path string from the path type
+     * @param pathString    the path string from the path type
      * @param yangConstruct yang construct for creating error message
-     * @param ctx yang construct's context to get the line number and character position
-     * @param yangLeafRef instance of leafref where the path argument has to be set
+     * @param ctx           yang construct's context to get the line number and character position
+     * @param yangLeafRef   instance of leafref where the path argument has to be set
      */
     public static void validatePathArgument(String pathString, YangConstructType yangConstruct,
-            ParserRuleContext ctx, YangLeafRef yangLeafRef) {
+                                            ParserRuleContext ctx, YangLeafRef yangLeafRef) {
 
         String completePathString = removeQuotesAndHandleConcat(pathString);
         yangLeafRef.setPath(completePathString);
@@ -659,12 +659,12 @@ public final class ListenerUtil {
      * Validates the relative path.
      *
      * @param completePathString the path string of relative path
-     * @param yangConstruct yang construct for creating error message
-     * @param ctx yang construct's context to get the line number and character position
-     * @param yangLeafRef instance of leafref where the path argument has to be set
+     * @param yangConstruct      yang construct for creating error message
+     * @param ctx                yang construct's context to get the line number and character position
+     * @param yangLeafRef        instance of leafref where the path argument has to be set
      */
     private static void validateRelativePath(String completePathString, YangConstructType yangConstruct,
-            ParserRuleContext ctx, YangLeafRef yangLeafRef) {
+                                             ParserRuleContext ctx, YangLeafRef yangLeafRef) {
 
         YangRelativePath relativePath = new YangRelativePath();
         int numberOfAncestors = 0;
@@ -792,11 +792,11 @@ public final class ListenerUtil {
     /**
      * Validates path predicate in the absolute path's node.
      *
-     * @param pathPredicate list of path predicates in the node of absolute path
-     * @param yangConstruct yang construct for creating error message
-     * @param ctx yang construct's context to get the line number and character position
+     * @param pathPredicate     list of path predicates in the node of absolute path
+     * @param yangConstruct     yang construct for creating error message
+     * @param ctx               yang construct's context to get the line number and character position
      * @param yangPathPredicate instance of path predicate where it has to be set
-     * @param yangLeafRef instance of leafref where the path argument has to be set
+     * @param yangLeafRef       instance of leafref where the path argument has to be set
      * @return list of object of path predicates in absolute path's node
      */
     private static List<YangPathPredicate> validatePathPredicate(List<String> pathPredicate,
@@ -823,10 +823,10 @@ public final class ListenerUtil {
      * Validates the path equality expression.
      *
      * @param pathEqualityExpression list of path equality expression in the path predicates of the node
-     * @param yangConstruct yang construct for creating error message
-     * @param ctx yang construct's context to get the line number and character position
-     * @param yangPathPredicate instance of path predicate where it has to be set
-     * @param yangLeafRef instance of leafref where the path argument has to be set
+     * @param yangConstruct          yang construct for creating error message
+     * @param ctx                    yang construct's context to get the line number and character position
+     * @param yangPathPredicate      instance of path predicate where it has to be set
+     * @param yangLeafRef            instance of leafref where the path argument has to be set
      * @return list of object of path predicates in absolute path's node
      */
     private static List<YangPathPredicate> validatePathEqualityExpression(List<String> pathEqualityExpression,
@@ -860,9 +860,9 @@ public final class ListenerUtil {
      * Validate the path key expression.
      *
      * @param rightRelativePath relative path in the path predicate
-     * @param yangConstruct yang construct for creating error message
-     * @param ctx yang construct's context to get the line number and character position
-     * @param yangLeafRef instance of leafref where the path argument has to be set
+     * @param yangConstruct     yang construct for creating error message
+     * @param ctx               yang construct's context to get the line number and character position
+     * @param yangLeafRef       instance of leafref where the path argument has to be set
      * @return object of right relative path in path predicate
      */
     private static YangRelativePath validatePathKeyExpression(String rightRelativePath,
@@ -891,9 +891,9 @@ public final class ListenerUtil {
      * Validates the relative path key expression.
      *
      * @param rightAbsolutePath absolute path nodes present in the relative path
-     * @param yangConstruct yang construct for creating error message
-     * @param ctx yang construct's context to get the line number and character position
-     * @param yangLeafRef instance of leafref where the path argument has to be set
+     * @param yangConstruct     yang construct for creating error message
+     * @param ctx               yang construct's context to get the line number and character position
+     * @param yangLeafRef       instance of leafref where the path argument has to be set
      * @return list of object of absolute path nodes present in the relative path
      */
     private static List<YangAtomicPath> validateRelativePathKeyExpression(List<String> rightAbsolutePath,
@@ -947,9 +947,9 @@ public final class ListenerUtil {
     /**
      * Checks and return valid absolute schema node id.
      *
-     * @param argumentString string from yang file
+     * @param argumentString    string from yang file
      * @param yangConstructType yang construct for creating error message
-     * @param ctx yang construct's context to get the line number and character position
+     * @param ctx               yang construct's context to get the line number and character position
      * @return target nodes list of absolute schema node id
      */
     public static List<YangAtomicPath> getValidAbsoluteSchemaNodeId(String argumentString,
@@ -983,11 +983,11 @@ public final class ListenerUtil {
      * Throws parser exception for unsupported YANG constructs.
      *
      * @param yangConstructType yang construct for creating error message
-     * @param ctx yang construct's context to get the line number and character position
-     * @param errorInfo error information
+     * @param ctx               yang construct's context to get the line number and character position
+     * @param errorInfo         error information
      */
     public static void handleUnsupportedYangConstruct(YangConstructType yangConstructType,
-        ParserRuleContext ctx, String errorInfo) {
+                                                      ParserRuleContext ctx, String errorInfo) {
         ParserException parserException = new ParserException(YANG_FILE_ERROR
                 + QUOTES + YangConstructType.getYangConstructType(yangConstructType) + QUOTES
                 + errorInfo);

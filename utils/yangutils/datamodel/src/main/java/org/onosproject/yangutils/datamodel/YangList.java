@@ -208,23 +208,10 @@ public class YangList
     private List<YangIfFeature> ifFeatureList;
 
     /**
-     * Compiler Annotation.
-     */
-    private transient YangCompilerAnnotation compilerAnnotation;
-
-    /**
      * Creates a YANG list object.
      */
     public YangList() {
         super(YangNodeType.LIST_NODE);
-    }
-
-    public YangCompilerAnnotation getCompilerAnnotation() {
-        return compilerAnnotation;
-    }
-
-    public void setCompilerAnnotation(YangCompilerAnnotation compilerAnnotation) {
-        this.compilerAnnotation = compilerAnnotation;
     }
 
     /**
@@ -558,11 +545,11 @@ public class YangList
         validateConfig(leaves, leafLists);
 
         /* A list must have atleast one key leaf if config is true */
-        if (isConfig && (keys == null || leaves == null && leafLists == null) && !isUsesPresentInList()
+        if (isConfig && (keys == null || leaves == null) && !isUsesPresentInList()
                 && !isListPresentInGrouping()) {
             throw new DataModelException("A list must have atleast one key leaf if config is true;");
         } else if (keys != null) {
-            validateKey(leaves, leafLists, keys);
+            validateKey(leaves, keys);
         }
     }
 
@@ -641,11 +628,10 @@ public class YangList
      * @param keys      list of key attributes of list
      * @throws DataModelException a violation of data model rules
      */
-    private void validateKey(List<YangLeaf> leaves, List<YangLeafList> leafLists, List<String> keys)
+    private void validateKey(List<YangLeaf> leaves, List<String> keys)
             throws DataModelException {
         boolean leafFound = false;
         List<YangLeaf> keyLeaves = new LinkedList<>();
-        List<YangLeafList> keyLeafLists = new LinkedList<>();
 
         /*
          * 1. Leaf identifier must refer to a child leaf of the list 2. A leaf
@@ -666,20 +652,6 @@ public class YangList
                 }
             }
 
-            if (leafLists != null && !leafLists.isEmpty()) {
-                for (YangLeafList leafList : leafLists) {
-                    if (key.equals(leafList.getName())) {
-                        if (leafList.getDataType().getDataType() == YangDataTypes.EMPTY) {
-                            throw new DataModelException(" A leaf-list that is part of the key" +
-                                    " must not be the built-in type \"empty\".");
-                        }
-                        leafFound = true;
-                        keyLeafLists.add(leafList);
-                        break;
-                    }
-                }
-            }
-
             if (!leafFound && !isUsesPresentInList() && !isListPresentInGrouping()) {
                 throw new DataModelException("An identifier, in key, must refer to a child leaf of the list");
             }
@@ -693,17 +665,6 @@ public class YangList
         for (YangLeaf keyLeaf : keyLeaves) {
             if (isConfig != keyLeaf.isConfig()) {
                 throw new DataModelException("All key leafs in a list must have the same value for their" +
-                        " \"config\" as the list itself.");
-            }
-        }
-
-        /*
-        * All key leafs in a list MUST have the same value for their "config"
-        * as the list itself.
-        */
-        for (YangLeafList keyLeafList : keyLeafLists) {
-            if (isConfig() != keyLeafList.isConfig()) {
-                throw new DataModelException("All key leaf-lists in a list must have the same value for their" +
                         " \"config\" as the list itself.");
             }
         }

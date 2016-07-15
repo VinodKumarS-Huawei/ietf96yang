@@ -188,7 +188,7 @@ public class TempJavaCodeFragmentFiles {
      * Constructs java code exit.
      *
      * @param fileType generated file type
-     * @param curNode current YANG node
+     * @param curNode  current YANG node
      * @throws IOException when fails to generate java files
      */
     public void generateJavaFile(int fileType, YangNode curNode)

@@ -510,13 +510,13 @@ public final class JavaFileGeneratorUtils {
         YangPluginConfig pluginConfig = ((JavaFileInfoContainer) curNode).getJavaFileInfo().getPluginConfig();
         if ((genType & GENERATE_SERVICE_AND_MANAGER) != 0) {
             if (!fileName.matches(REGEX_FOR_ANY_STRING_ENDING_WITH_SERVICE)) {
-                insertDataIntoJavaFile(file, getJavaDoc(RPC_MANAGER, fileName, false, pluginConfig, null));
+                insertDataIntoJavaFile(file, getJavaDoc(RPC_MANAGER, fileName, false, pluginConfig));
                 insertDataIntoJavaFile(file, JavaCodeSnippetGen.addComponentString());
             } else {
-                insertDataIntoJavaFile(file, getJavaDoc(javaDocType, fileName, false, pluginConfig, null));
+                insertDataIntoJavaFile(file, getJavaDoc(javaDocType, fileName, false, pluginConfig));
             }
         } else {
-            insertDataIntoJavaFile(file, getJavaDoc(javaDocType, fileName, false, pluginConfig, null));
+            insertDataIntoJavaFile(file, getJavaDoc(javaDocType, fileName, false, pluginConfig));
         }
         insertDataIntoJavaFile(file, generateClassDefinition(genType, fileName, curNode));
     }
@@ -534,7 +534,7 @@ public final class JavaFileGeneratorUtils {
     private static void write(File file, String fileName, int genType, JavaDocType javaDocType,
                               YangPluginConfig pluginConfig)
             throws IOException {
-        insertDataIntoJavaFile(file, getJavaDoc(javaDocType, fileName, false, pluginConfig, null));
+        insertDataIntoJavaFile(file, getJavaDoc(javaDocType, fileName, false, pluginConfig));
         insertDataIntoJavaFile(file, generateClassDefinition(genType, fileName));
     }
 

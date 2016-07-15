@@ -61,26 +61,4 @@ public class IetfYangFileTest {
         deleteDirectory(userDir + "/target/ietfyang/");
     }
 
-    /**
-     * Checks hierarchical intra with inter file type linking.
-     * Reference: https://datatracker.ietf.org/doc/draft-zha-l3sm-l3vpn-onos-deployment
-     */
-    @Test
-    public void compilerAnnotations()
-            throws IOException, ParserException, MojoExecutionException {
-
-        String searchDir = "src/test/resources/compilerAnnotation";
-        utilManager.createYangFileInfoSet(YangFileScanner.getYangFiles(searchDir));
-        utilManager.parseYangFileInfoSet();
-        utilManager.resolveDependenciesUsingLinker();
-
-        YangPluginConfig yangPluginConfig = new YangPluginConfig();
-        yangPluginConfig.setCodeGenDir("target/ietfyang/l3vpnservice/");
-        yangPluginConfig.setManagerCodeGenDir("target/ietfyang/l3vpnservice/");
-
-        utilManager.translateToJava(yangPluginConfig);
-
-        deleteDirectory("target/ietfyang/");
-    }
-
 }

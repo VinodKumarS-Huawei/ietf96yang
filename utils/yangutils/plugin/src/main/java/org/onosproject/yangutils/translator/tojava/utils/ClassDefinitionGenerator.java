@@ -84,8 +84,7 @@ public final class ClassDefinitionGenerator {
     }
 
     /**
-     * Based on the file type and the YANG name of the file, generate the class
-     * / interface definition start.
+     * Based on the file type and the YANG name of the file, generate the class / interface definition start.
      *
      * @param genFileTypes generated file type
      * @param yangName     class name
@@ -109,8 +108,7 @@ public final class ClassDefinitionGenerator {
     }
 
     /**
-     * Based on the file type and the YANG name of the file, generate the class
-     * / interface definition start.
+     * Based on the file type and the YANG name of the file, generate the class / interface definition start.
      *
      * @param genFileTypes generated file type
      * @param yangName     class name
@@ -180,8 +178,7 @@ public final class ClassDefinitionGenerator {
     /**
      * Returns builder interface file class definition.
      *
-     * @param yangName java class name, corresponding to which the builder class
-     *                 is being generated
+     * @param yangName java class name, corresponding to which the builder class is being generated
      * @return definition
      */
     private static String getBuilderInterfaceDefinition(String yangName, YangNode curNode) {

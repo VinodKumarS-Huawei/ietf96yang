@@ -41,7 +41,6 @@ import static org.onosproject.yangutils.utils.UtilConstants.MAP;
 import static org.onosproject.yangutils.utils.UtilConstants.NEW_LINE;
 import static org.onosproject.yangutils.utils.UtilConstants.ONOS_EVENT_PKG;
 import static org.onosproject.yangutils.utils.UtilConstants.PERIOD;
-import static org.onosproject.yangutils.utils.UtilConstants.QUEUE;
 import static org.onosproject.yangutils.utils.UtilConstants.SEMI_COLAN;
 import static org.onosproject.yangutils.utils.UtilConstants.YANG_AUGMENTED_OP_PARAM_INFO_CLASS;
 import static java.util.Collections.sort;
@@ -55,11 +54,6 @@ public class JavaImportData {
      * Flag to denote if any list in imported.
      */
     private boolean isListToImport;
-
-    /**
-     * Flag to denote if any queue is imported dud to compiler annotation.
-     */
-    private boolean isQueueToImport;
 
     /**
      * Sorted set of import info, to be used to maintain the set of classes to
@@ -93,24 +87,6 @@ public class JavaImportData {
     }
 
     /**
-     * Is Queue to be imported due to compiler annotations.
-     *
-     * @return status of queue import
-     */
-    public boolean isQueueToImport() {
-        return isQueueToImport;
-    }
-
-    /**
-     * Set the status of the queue to be imported due to compiler annotations.
-     *
-     * @param queueToImport status of queue to import
-     */
-    public void setQueueToImport(boolean queueToImport) {
-        isQueueToImport = queueToImport;
-    }
-
-    /**
      * Returns the set containing the imported class/interface info.
      *
      * @return the set containing the imported class/interface info
@@ -131,7 +107,7 @@ public class JavaImportData {
     /**
      * Adds an imported class/interface info if it is not already part of the
      * collection.
-     * <p>
+     *
      * If already part of the collection, check if the packages are same, if so
      * then return true, to denote it is already in the import collection, and
      * it can be accessed without qualified access. If the packages do not
@@ -212,10 +188,6 @@ public class JavaImportData {
             imports.add(getImportForList());
         }
 
-        if (isQueueToImport()) {
-            imports.add(getImportForQueue());
-        }
-
         sort(imports);
         return imports;
     }
@@ -245,15 +217,6 @@ public class JavaImportData {
      */
     public String getImportForToBitSet() {
         return IMPORT + JAVA_UTIL_OBJECTS_IMPORT_PKG + PERIOD + BITSET + SEMI_COLAN + NEW_LINE;
-    }
-
-    /**
-     * Returns import for queue attribute.
-     *
-     * @return import for queue attribute
-     */
-    public String getImportForQueue() {
-        return IMPORT + COLLECTION_IMPORTS + PERIOD + QUEUE + SEMI_COLAN + NEW_LINE;
     }
 
     /**

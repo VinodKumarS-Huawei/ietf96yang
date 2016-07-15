@@ -22,7 +22,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
 import org.onosproject.yangutils.datamodel.YangNode;
 import org.onosproject.yangutils.translator.exception.TranslatorException;
 import org.onosproject.yangutils.translator.tojava.JavaFileInfo;
@@ -242,5 +241,4 @@ public final class JavaIdentifierSyntax {
         File pkgWithFile = new File(pkgDir + SLASH + "package-info.java");
         return pkgDir.exists() && pkgWithFile.isFile();
     }
-
 }

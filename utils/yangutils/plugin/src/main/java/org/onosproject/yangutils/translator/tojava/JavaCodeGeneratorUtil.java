@@ -17,6 +17,7 @@
 package org.onosproject.yangutils.translator.tojava;
 
 import java.io.IOException;
+
 import org.onosproject.yangutils.datamodel.TraversalType;
 import org.onosproject.yangutils.datamodel.YangNode;
 import org.onosproject.yangutils.translator.exception.InvalidNodeForTranslatorException;
@@ -170,8 +171,7 @@ public final class JavaCodeGeneratorUtil {
     }
 
     /**
-     * Free other YANG nodes of data-model tree when error occurs while file
-     * generation of current node.
+     * Free other YANG nodes of data-model tree when error occurs while file generation of current node.
      */
     private static void freeRestResources() {
 

@@ -451,7 +451,7 @@ public class TempJavaEventFragmentFiles
     private void addEventEnum(String notificationName, YangPluginConfig pluginConfig)
             throws IOException {
         appendToFile(getEventEnumTempFileHandle(),
-                getJavaDoc(ENUM_ATTRIBUTE, notificationName, false, pluginConfig, null) + FOUR_SPACE_INDENTATION
+                getJavaDoc(ENUM_ATTRIBUTE, notificationName, false, pluginConfig) + FOUR_SPACE_INDENTATION
                         + getEnumJavaAttribute(notificationName).toUpperCase() + COMMA + NEW_LINE);
     }
 
@@ -472,7 +472,7 @@ public class TempJavaEventFragmentFiles
     private void addEventSubjectGetter(JavaAttributeInfo attr, YangPluginConfig pluginConfig)
             throws IOException {
         appendToFile(getEventSubjectGetterTempFileHandle(),
-                getJavaDoc(GETTER_METHOD, getCapitalCase(attr.getAttributeName()), false, pluginConfig, null)
+                getJavaDoc(GETTER_METHOD, getCapitalCase(attr.getAttributeName()), false, pluginConfig)
                         + getGetterForClass(attr, GENERATE_EVENT_SUBJECT_CLASS) + NEW_LINE);
     }
 
@@ -480,7 +480,7 @@ public class TempJavaEventFragmentFiles
     private void addEventSubjectSetter(JavaAttributeInfo attr, YangPluginConfig pluginConfig, String className)
             throws IOException {
         appendToFile(getEventSubjectSetterTempFileHandle(),
-                getJavaDoc(MANAGER_SETTER_METHOD, getCapitalCase(attr.getAttributeName()), false, pluginConfig, null)
+                getJavaDoc(MANAGER_SETTER_METHOD, getCapitalCase(attr.getAttributeName()), false, pluginConfig)
                         + getSetterForClass(attr, className, GENERATE_EVENT_SUBJECT_CLASS) + NEW_LINE);
     }
 

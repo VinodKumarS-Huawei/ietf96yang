@@ -22,7 +22,6 @@ import java.util.Map;
 import org.onosproject.yangutils.datamodel.YangAtomicPath;
 import org.onosproject.yangutils.datamodel.YangAugmentableNode;
 import org.onosproject.yangutils.datamodel.YangLeaf;
-import org.onosproject.yangutils.datamodel.YangCompilerAnnotation;
 import org.onosproject.yangutils.datamodel.YangLeafList;
 import org.onosproject.yangutils.datamodel.YangLeafRef;
 import org.onosproject.yangutils.datamodel.YangLeavesHolder;
@@ -163,7 +162,6 @@ import static org.onosproject.yangutils.utils.UtilConstants.PRIVATE;
 import static org.onosproject.yangutils.utils.UtilConstants.PUBLIC;
 import static org.onosproject.yangutils.utils.UtilConstants.PUT;
 import static org.onosproject.yangutils.utils.UtilConstants.QUESTION_MARK;
-import static org.onosproject.yangutils.utils.UtilConstants.QUEUE;
 import static org.onosproject.yangutils.utils.UtilConstants.QUOTES;
 import static org.onosproject.yangutils.utils.UtilConstants.RECEIVED_OBJECT;
 import static org.onosproject.yangutils.utils.UtilConstants.REPLACE_STRING;
@@ -245,7 +243,7 @@ public final class MethodsGenerator {
      * @return method string for builder interface
      */
     public static String parseBuilderInterfaceBuildMethodString(String name, YangPluginConfig pluginConfig) {
-        return getJavaDoc(BUILD_METHOD, name, false, pluginConfig, null) + getBuildForInterface(name);
+        return getJavaDoc(BUILD_METHOD, name, false, pluginConfig) + getBuildForInterface(name);
     }
 
     /**
@@ -262,9 +260,8 @@ public final class MethodsGenerator {
         String returnType = getReturnType(attr);
         String attributeName = attr.getAttributeName();
 
-        return getJavaDoc(GETTER_METHOD, attributeName, attr.isListAttr(), pluginConfig, attr.getCompilerAnnotation())
-                + getGetterForInterface(attributeName, returnType, attr.isListAttr(), generatedJavaFiles,
-                attr.getCompilerAnnotation());
+        return getJavaDoc(GETTER_METHOD, attributeName, attr.isListAttr(), pluginConfig)
+                + getGetterForInterface(attributeName, returnType, attr.isListAttr(), generatedJavaFiles);
     }
 
     /**
@@ -288,9 +285,8 @@ public final class MethodsGenerator {
             type = SETTER_METHOD;
         }
 
-        return getJavaDoc(type, attributeName, attr.isListAttr(), pluginConfig, attr.getCompilerAnnotation())
-                + getSetterForInterface(attributeName, attrType, className, attr.isListAttr(), generatedJavaFiles,
-                attr.getCompilerAnnotation());
+        return getJavaDoc(type, attributeName, attr.isListAttr(), pluginConfig)
+                + getSetterForInterface(attributeName, attrType, className, attr.isListAttr(), generatedJavaFiles);
     }
 
     /**
@@ -301,7 +297,7 @@ public final class MethodsGenerator {
      * @return constructor string
      */
     public static String getConstructorString(String name, YangPluginConfig pluginConfig) {
-        return getJavaDoc(CONSTRUCTOR, name, false, pluginConfig, null);
+        return getJavaDoc(CONSTRUCTOR, name, false, pluginConfig);
     }
 
     /**
@@ -314,7 +310,7 @@ public final class MethodsGenerator {
      */
     public static String getDefaultConstructorString(String name, String modifierType,
                                                      YangPluginConfig pluginConfig) {
-        return getJavaDoc(DEFAULT_CONSTRUCTOR, name, false, pluginConfig, null)
+        return getJavaDoc(DEFAULT_CONSTRUCTOR, name, false, pluginConfig)
                 + getDefaultConstructor(name, modifierType)
                 + NEW_LINE;
     }
@@ -355,25 +351,8 @@ public final class MethodsGenerator {
         if (!attr.isListAttr()) {
             return getGetter(attrQuaifiedType, attributeName, generatedJavaFiles);
         }
-        String attrParam;
-        if (attr.getCompilerAnnotation() != null && attr.getCompilerAnnotation().getYangAppDataStructure() != null) {
-            switch (attr.getCompilerAnnotation().getYangAppDataStructure().getDataStructure()) {
-                case QUEUE: {
-                    attrParam = QUEUE + DIAMOND_OPEN_BRACKET + attrQuaifiedType + DIAMOND_CLOSE_BRACKET;
-                    break;
-                }
-                case LIST: {
-                    attrParam = getListString() + attrQuaifiedType + DIAMOND_CLOSE_BRACKET;
-                    break;
-                }
-                default: {
-                    attrParam = getListString() + attrQuaifiedType + DIAMOND_CLOSE_BRACKET;
-                }
-            }
-        } else {
-            attrParam = getListString() + attrQuaifiedType + DIAMOND_CLOSE_BRACKET;
-        }
-        return getGetter(attrParam, attributeName, generatedJavaFiles);
+        String listAttr = getListString() + attrQuaifiedType + DIAMOND_CLOSE_BRACKET;
+        return getGetter(listAttr, attributeName, generatedJavaFiles);
     }
 
     /**
@@ -426,30 +405,13 @@ public final class MethodsGenerator {
      */
     public static String getSetterForClass(JavaAttributeInfo attr, String className, int generatedJavaFiles) {
 
-        String attrQualifiedType = getReturnType(attr);
+        String attrQuaifiedType = getReturnType(attr);
         String attributeName = attr.getAttributeName();
         if (!attr.isListAttr()) {
-            return getSetter(className, attributeName, attrQualifiedType, generatedJavaFiles);
+            return getSetter(className, attributeName, attrQuaifiedType, generatedJavaFiles);
         }
-        String attrParam;
-        if (attr.getCompilerAnnotation() != null && attr.getCompilerAnnotation().getYangAppDataStructure() != null) {
-            switch (attr.getCompilerAnnotation().getYangAppDataStructure().getDataStructure()) {
-                case QUEUE: {
-                    attrParam = QUEUE + DIAMOND_OPEN_BRACKET + attrQualifiedType + DIAMOND_CLOSE_BRACKET;
-                    break;
-                }
-                case LIST: {
-                    attrParam = getListString() + attrQualifiedType + DIAMOND_CLOSE_BRACKET;
-                    break;
-                }
-                default: {
-                    attrParam = getListString() + attrQualifiedType + DIAMOND_CLOSE_BRACKET;
-                }
-            }
-        } else {
-            attrParam = getListString() + attrQualifiedType + DIAMOND_CLOSE_BRACKET;
-        }
-        return getSetter(className, attributeName, attrParam, generatedJavaFiles);
+        String listAttr = getListString() + attrQuaifiedType + DIAMOND_CLOSE_BRACKET;
+        return getSetter(className, attributeName, listAttr, generatedJavaFiles);
     }
 
     /**
@@ -523,29 +485,15 @@ public final class MethodsGenerator {
      * @param returnType         return type of attribute
      * @param isList             is list attribute
      * @param generatedJavaFiles generated java files
-     * @param compilerAnnotation compiler annotation
      * @return getter method for interface
      */
     public static String getGetterForInterface(String yangName, String returnType, boolean isList,
-                                               int generatedJavaFiles, YangCompilerAnnotation compilerAnnotation) {
+                                               int generatedJavaFiles) {
 
         if (!isList) {
             return getGetterInterfaceString(returnType, yangName, generatedJavaFiles);
         }
-        String listAttr;
-        if (compilerAnnotation != null && compilerAnnotation.getYangAppDataStructure() != null) {
-            switch (compilerAnnotation.getYangAppDataStructure().getDataStructure()) {
-                case QUEUE: {
-                    listAttr = QUEUE + DIAMOND_OPEN_BRACKET + returnType + DIAMOND_CLOSE_BRACKET;
-                    break;
-                }
-                default: {
-                    listAttr = getListString() + returnType + DIAMOND_CLOSE_BRACKET;
-                }
-            }
-        } else {
-            listAttr = getListString() + returnType + DIAMOND_CLOSE_BRACKET;
-        }
+        String listAttr = getListString() + returnType + DIAMOND_CLOSE_BRACKET;
         return getGetterInterfaceString(listAttr, yangName, generatedJavaFiles);
     }
 
@@ -575,34 +523,15 @@ public final class MethodsGenerator {
      * @param className          name of the java class being generated
      * @param isList             is list attribute
      * @param generatedJavaFiles generated java files
-     * @param compilerAnnotation compiler annotations
      * @return setter method for interface
      */
     public static String getSetterForInterface(String attrName, String attrType, String className,
-                                               boolean isList, int generatedJavaFiles, YangCompilerAnnotation compilerAnnotation) {
+                                               boolean isList, int generatedJavaFiles) {
 
         if (!isList) {
             return getSetterInterfaceString(className, attrName, attrType, generatedJavaFiles);
         }
-
-        String listAttr;
-        if (compilerAnnotation != null && compilerAnnotation.getYangAppDataStructure() != null) {
-            switch (compilerAnnotation.getYangAppDataStructure().getDataStructure()) {
-                case QUEUE: {
-                    listAttr = QUEUE + DIAMOND_OPEN_BRACKET + attrType + DIAMOND_CLOSE_BRACKET;
-                    break;
-                }
-                case LIST: {
-                    listAttr = getListString() + attrType + DIAMOND_CLOSE_BRACKET;
-                    break;
-                }
-                default: {
-                    listAttr = getListString() + attrType + DIAMOND_CLOSE_BRACKET;
-                }
-            }
-        } else {
-            listAttr = getListString() + attrType + DIAMOND_CLOSE_BRACKET;
-        }
+        String listAttr = getListString() + attrType + DIAMOND_CLOSE_BRACKET;
         return getSetterInterfaceString(className, attrName, listAttr, generatedJavaFiles);
     }
 
@@ -899,7 +828,7 @@ public final class MethodsGenerator {
         if (curnode instanceof YangLeavesHolder) {
             YangLeavesHolder leavesHolder = (YangLeavesHolder) curnode;
             List<YangLeaf> leaves = leavesHolder.getListOfLeaf();
-            if (leaves != null && !leaves.isEmpty()) {
+            if (leaves !=  null && !leaves.isEmpty()) {
                 for (YangLeaf leaf : leaves) {
                     JavaAttributeInfo javaAttributeInfo = getJavaAttributeOfLeaf(tempFragmentFiles, leaf, pluginConfig);
                     String attrQuaifiedType = getReturnType(javaAttributeInfo);
@@ -940,7 +869,7 @@ public final class MethodsGenerator {
             YangLeavesHolder leavesHolder = (YangLeavesHolder) curnode;
             List<YangLeafList> listOfLeafList = leavesHolder.getListOfLeafList();
 
-            if (listOfLeafList != null && !listOfLeafList.isEmpty()) {
+            if (listOfLeafList !=  null && !listOfLeafList.isEmpty()) {
                 for (YangLeafList leafList : listOfLeafList) {
                     JavaAttributeInfo javaAttributeInfo = getJavaAttributeOfLeafList(tempFragmentFiles, leafList,
                             pluginConfig);
@@ -1186,7 +1115,7 @@ public final class MethodsGenerator {
      * @return from string method's open string
      */
     public static String getFromStringMethodSignature(String className, YangPluginConfig pluginConfig) {
-        return getJavaDoc(FROM_METHOD, className, false, pluginConfig, null) + FOUR_SPACE_INDENTATION + PUBLIC + SPACE
+        return getJavaDoc(FROM_METHOD, className, false, pluginConfig) + FOUR_SPACE_INDENTATION + PUBLIC + SPACE
                 + STATIC + SPACE + className + SPACE + FROM_STRING_METHOD_NAME + OPEN_PARENTHESIS
                 + STRING_DATA_TYPE + SPACE + FROM_STRING_PARAM_NAME + CLOSE_PARENTHESIS + SPACE
                 + OPEN_CURLY_BRACKET + NEW_LINE;
@@ -1423,8 +1352,7 @@ public final class MethodsGenerator {
         String attrType = getReturnType(attr);
         String attrName = attr.getAttributeName();
 
-        return getJavaDoc(OF_METHOD, generatedJavaClassName + " for type " + attrName, false, pluginConfig,
-                attr.getCompilerAnnotation())
+        return getJavaDoc(OF_METHOD, generatedJavaClassName + " for type " + attrName, false, pluginConfig)
                 + getOfMethodString(attrType, generatedJavaClassName);
     }
 
@@ -1458,8 +1386,7 @@ public final class MethodsGenerator {
         String attrType = getReturnType(attr);
         String attrName = attr.getAttributeName();
 
-        return getJavaDoc(TYPE_CONSTRUCTOR, generatedJavaClassName + " for type " + attrName, false, pluginConfig,
-                attr.getCompilerAnnotation())
+        return getJavaDoc(TYPE_CONSTRUCTOR, generatedJavaClassName + " for type " + attrName, false, pluginConfig)
                 + getTypeConstructorString(attrType, attrName, generatedJavaClassName);
     }
 
@@ -1488,8 +1415,7 @@ public final class MethodsGenerator {
             attrName2 = attr2.getAttributeName();
         }
 
-        return getJavaDoc(TYPE_CONSTRUCTOR, generatedJavaClassName + " for type " + attrName1, false, pluginConfig,
-                attr1.getCompilerAnnotation())
+        return getJavaDoc(TYPE_CONSTRUCTOR, generatedJavaClassName + " for type " + attrName1, false, pluginConfig)
                 + getTypeConstructorString(attrType, attrName1, attrName2, generatedJavaClassName, type, addFirst);
     }
 
@@ -1583,7 +1509,7 @@ public final class MethodsGenerator {
      */
     static String getAugmentInfoMapImpl(YangPluginConfig pluginConfig) {
 
-        return getJavaDoc(GETTER_METHOD, getSmallCase(YANG_AUGMENTED_INFO) + MAP, false, pluginConfig, null)
+        return getJavaDoc(GETTER_METHOD, getSmallCase(YANG_AUGMENTED_INFO) + MAP, false, pluginConfig)
                 + FOUR_SPACE_INDENTATION + PUBLIC + SPACE +
                 MAP + DIAMOND_OPEN_BRACKET + CLASS_STRING + DIAMOND_OPEN_BRACKET + QUESTION_MARK +
                 DIAMOND_CLOSE_BRACKET + COMMA + SPACE + YANG_AUGMENTED_INFO + DIAMOND_CLOSE_BRACKET + SPACE +
@@ -1638,8 +1564,7 @@ public final class MethodsGenerator {
                 + RETURN + SPACE + NULL + SEMI_COLAN + NEW_LINE + EIGHT_SPACE_INDENTATION + CLOSE_CURLY_BRACKET
                 + NEW_LINE + FOUR_SPACE_INDENTATION + CLOSE_CURLY_BRACKET;
 
-        return getJavaDoc(OF_METHOD, getCapitalCase(className) + " for type " + attrName, false, pluginConfig,
-                attr.getCompilerAnnotation())
+        return getJavaDoc(OF_METHOD, getCapitalCase(className) + " for type " + attrName, false, pluginConfig)
                 + method;
     }
 
@@ -1761,18 +1686,18 @@ public final class MethodsGenerator {
             returnType = getAugmentedClassNameForDataMethods(augmentedNode, parent);
             parentName = getParentNodeNameForDataMethods(augmentedNode, pluginConfig);
             method = getJavaDoc(GETTER_METHOD, getSmallCase(AUGMENTED + parentName + curNodeName), false,
-                    pluginConfig, null) + getGetterForInterface(AUGMENTED + parentName
+                    pluginConfig) + getGetterForInterface(AUGMENTED + parentName
                             + getCapitalCase(curNodeName),
-                    returnType, false, GENERATE_SERVICE_AND_MANAGER, null)
+                    returnType, false, GENERATE_SERVICE_AND_MANAGER)
                     + NEW_LINE;
             methods.append(method);
 
             method = getJavaDoc(MANAGER_SETTER_METHOD, AUGMENTED +
-                    getCapitalCase(parentName) + getCapitalCase(curNodeName), false, pluginConfig, null) +
+                    getCapitalCase(parentName) + getCapitalCase(curNodeName), false, pluginConfig) +
                     getSetterForInterface(getSmallCase(AUGMENTED) + parentName +
                                     getCapitalCase(curNodeName), returnType, parentName,
                             false,
-                            GENERATE_SERVICE_AND_MANAGER, null) + NEW_LINE;
+                            GENERATE_SERVICE_AND_MANAGER) + NEW_LINE;
             methods.append(method);
         }
         return methods.toString();

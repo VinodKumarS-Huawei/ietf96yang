@@ -172,17 +172,15 @@ public class YangLinkerManager
                 ((YangReferenceResolver) yangNode)
                         .resolveInterFileLinking(ResolvableType.YANG_USES);
                 ((YangReferenceResolver) yangNode)
-                        .resolveInterFileLinking(ResolvableType.YANG_AUGMENT);
+                .resolveInterFileLinking(ResolvableType.YANG_AUGMENT);
                 ((YangReferenceResolver) yangNode)
                         .resolveInterFileLinking(ResolvableType.YANG_DERIVED_DATA_TYPE);
-                ((YangReferenceResolver) yangNode)
-                        .resolveInterFileLinking(ResolvableType.YANG_LEAFREF);
                 ((YangReferenceResolver) yangNode)
                         .resolveInterFileLinking(ResolvableType.YANG_BASE);
                 ((YangReferenceResolver) yangNode)
                         .resolveInterFileLinking(ResolvableType.YANG_IDENTITYREF);
                 ((YangReferenceResolver) yangNode)
-                        .resolveInterFileLinking(ResolvableType.YANG_COMPILER_ANNOTATION);
+                        .resolveInterFileLinking(ResolvableType.YANG_LEAFREF);
             } catch (DataModelException e) {
                 String errorInfo = "Error in file: " + yangNode.getName() + " at line: "
                         + e.getLineNumber() + " at position: " + e.getCharPositionInLine() + NEW_LINE + e.getMessage();

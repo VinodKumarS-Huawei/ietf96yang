@@ -17,7 +17,6 @@
 package org.onosproject.yangutils.parser.impl.listeners;
 
 import java.util.Date;
-
 import org.onosproject.yangutils.datamodel.ResolvableType;
 import org.onosproject.yangutils.datamodel.YangReferenceResolver;
 import org.onosproject.yangutils.datamodel.YangRevision;
@@ -30,13 +29,10 @@ import org.onosproject.yangutils.parser.exceptions.ParserException;
 import org.onosproject.yangutils.parser.impl.TreeWalkListener;
 
 import static org.onosproject.yangutils.datamodel.utils.GeneratedLanguage.JAVA_GENERATION;
-import static org.onosproject.yangutils.datamodel.utils.YangConstructType.MODULE_DATA;
 import static org.onosproject.yangutils.datamodel.utils.YangConstructType.SUB_MODULE_DATA;
 import static org.onosproject.yangutils.parser.impl.parserutils.ListenerErrorLocation.ENTRY;
 import static org.onosproject.yangutils.parser.impl.parserutils.ListenerErrorLocation.EXIT;
-import static org.onosproject.yangutils.parser.impl.parserutils.ListenerErrorMessageConstruction
-        .constructListenerErrorMessage;
-import static org.onosproject.yangutils.parser.impl.parserutils.ListenerErrorType.INVALID_CHILD;
+import static org.onosproject.yangutils.parser.impl.parserutils.ListenerErrorMessageConstruction.constructListenerErrorMessage;
 import static org.onosproject.yangutils.parser.impl.parserutils.ListenerErrorType.INVALID_HOLDER;
 import static org.onosproject.yangutils.parser.impl.parserutils.ListenerErrorType.MISSING_CURRENT_HOLDER;
 import static org.onosproject.yangutils.parser.impl.parserutils.ListenerErrorType.MISSING_HOLDER;
@@ -85,7 +81,7 @@ public final class SubModuleListener {
      * @param ctx      context object of the grammar rule
      */
     public static void processSubModuleEntry(TreeWalkListener listener,
-            GeneratedYangParser.SubModuleStatementContext ctx) {
+                                             GeneratedYangParser.SubModuleStatementContext ctx) {
 
         // Check if stack is empty.
         checkStackIsEmpty(listener, INVALID_HOLDER, SUB_MODULE_DATA, ctx.identifier().getText(),
@@ -111,7 +107,7 @@ public final class SubModuleListener {
      * @param ctx      context object of the grammar rule
      */
     public static void processSubModuleExit(TreeWalkListener listener,
-            GeneratedYangParser.SubModuleStatementContext ctx) {
+                                            GeneratedYangParser.SubModuleStatementContext ctx) {
 
         // Check for stack to be non empty.
         checkStackIsNotEmpty(listener, MISSING_HOLDER, SUB_MODULE_DATA, ctx.identifier().getText(),
@@ -128,14 +124,6 @@ public final class SubModuleListener {
             YangRevision currentRevision = new YangRevision();
             currentRevision.setRevDate(currentDate);
             ((YangSubModule) tmpNode).setRevision(currentRevision);
-        }
-
-        YangSubModule subModule = (YangSubModule) tmpNode;
-        if (subModule.getUnresolvedResolutionList(ResolvableType.YANG_COMPILER_ANNOTATION) != null
-                && subModule.getUnresolvedResolutionList(ResolvableType.YANG_COMPILER_ANNOTATION).size() != 0
-                && subModule.getChild() != null) {
-            throw new ParserException(constructListenerErrorMessage(INVALID_CHILD, MODULE_DATA,
-                    ctx.identifier().getText(), EXIT));
         }
 
         try {

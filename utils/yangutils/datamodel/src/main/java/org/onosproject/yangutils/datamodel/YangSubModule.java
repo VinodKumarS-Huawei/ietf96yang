@@ -223,7 +223,10 @@ public class YangSubModule
      */
     private List<YangResolutionInfo> identityrefResolutionList;
 
-    private List<YangResolutionInfo> compilerAnnotationList;
+    /**
+     * extension list.
+     */
+    private List<YangExtension> extensionList;
 
     /**
      * Augment resolution list.
@@ -242,11 +245,11 @@ public class YangSubModule
         leafrefResolutionList = new LinkedList<>();
         baseResolutionList = new LinkedList<>();
         identityrefResolutionList = new LinkedList<>();
-        compilerAnnotationList = new LinkedList<>();
         importList = new LinkedList<YangImport>();
         includeList = new LinkedList<YangInclude>();
         listOfLeaf = new LinkedList<YangLeaf>();
         listOfLeafList = new LinkedList<YangLeafList>();
+        extensionList = new LinkedList<YangExtension>();
     }
 
     /**
@@ -586,16 +589,14 @@ public class YangSubModule
             return leafrefResolutionList;
         } else if (type == ResolvableType.YANG_BASE) {
             return baseResolutionList;
-        } else if (type == ResolvableType.YANG_IDENTITYREF) {
-            return identityrefResolutionList;
         } else {
-            return compilerAnnotationList;
+            return identityrefResolutionList;
         }
     }
 
     @Override
     public void addToResolutionList(YangResolutionInfo resolutionInfo,
-            ResolvableType type) {
+                                    ResolvableType type) {
         if (type == ResolvableType.YANG_DERIVED_DATA_TYPE) {
             derivedTypeResolutionList.add(resolutionInfo);
         } else if (type == ResolvableType.YANG_USES) {
@@ -610,14 +611,12 @@ public class YangSubModule
             augmentResolutionList.add(resolutionInfo);
         } else if (type == ResolvableType.YANG_IDENTITYREF) {
             identityrefResolutionList.add(resolutionInfo);
-        } else if (type == ResolvableType.YANG_COMPILER_ANNOTATION) {
-            compilerAnnotationList.add(resolutionInfo);
         }
     }
 
     @Override
     public void setResolutionList(List<YangResolutionInfo> resolutionList,
-            ResolvableType type) {
+                                  ResolvableType type) {
         if (type == ResolvableType.YANG_DERIVED_DATA_TYPE) {
             derivedTypeResolutionList = resolutionList;
         } else if (type == ResolvableType.YANG_USES) {
@@ -632,8 +631,6 @@ public class YangSubModule
             augmentResolutionList = resolutionList;
         } else if (type == ResolvableType.YANG_IDENTITYREF) {
             identityrefResolutionList = resolutionList;
-        } else if (type == ResolvableType.YANG_COMPILER_ANNOTATION) {
-            compilerAnnotationList = resolutionList;
         }
 
     }
@@ -694,4 +691,30 @@ public class YangSubModule
         this.listOfFeature = listOfFeature;
     }
 
+    /**
+     * Adds extension in extension list.
+     *
+     * @param extension the extension to be added
+     */
+    public void addExtension(YangExtension extension) {
+        getExtensionList().add(extension);
+    }
+
+    /**
+     * Returns the extension list.
+     *
+     * @return the extension list
+     */
+    public List<YangExtension> getExtensionList() {
+        return extensionList;
+    }
+
+    /**
+     * Sets the extension list.
+     *
+     * @param extensionList the list of extension
+     */
+    public void setExtensionList(List<YangExtension> extensionList) {
+        this.extensionList = extensionList;
+    }
 }

@@ -1153,7 +1153,7 @@ public final class JavaFileGenerator {
         /**
          * Add a constructor for enum.
          */
-        insertDataIntoJavaFile(file, getJavaDoc(TYPE_CONSTRUCTOR, className, false, pluginConfig, null)
+        insertDataIntoJavaFile(file, getJavaDoc(TYPE_CONSTRUCTOR, className, false, pluginConfig)
                 + getEnumsConstructor(getCapitalCase(className)) + NEW_LINE);
 
         TempJavaEnumerationFragmentFiles enumFragFiles = ((TempJavaCodeFragmentFilesContainer) curNode)
@@ -1168,7 +1168,7 @@ public final class JavaFileGenerator {
         /**
          * Add a getter method for enum.
          */
-        insertDataIntoJavaFile(file, getJavaDoc(GETTER_METHOD, className, false, pluginConfig, null)
+        insertDataIntoJavaFile(file, getJavaDoc(GETTER_METHOD, className, false, pluginConfig)
                 + getGetter(INT, className, GENERATE_ENUM_CLASS) + NEW_LINE);
 
         try {

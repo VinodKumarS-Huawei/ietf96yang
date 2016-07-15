@@ -25,7 +25,6 @@ import org.onosproject.yangutils.datamodel.YangCase;
 import org.onosproject.yangutils.datamodel.YangLeaf;
 import org.onosproject.yangutils.datamodel.YangLeafList;
 import org.onosproject.yangutils.datamodel.YangLeavesHolder;
-import org.onosproject.yangutils.datamodel.YangList;
 import org.onosproject.yangutils.datamodel.YangModule;
 import org.onosproject.yangutils.datamodel.YangNode;
 import org.onosproject.yangutils.datamodel.YangSubModule;
@@ -450,7 +449,7 @@ public class TempJavaFragmentFiles {
      * @throws IOException IO operation exception
      */
     static void addCurNodeInfoInParentTempFile(YangNode curNode,
-                                               boolean isList, YangPluginConfig pluginConfig)
+                                                      boolean isList, YangPluginConfig pluginConfig)
             throws IOException {
         YangNode parent = getParentNodeInGenCode(curNode);
         if (!(parent instanceof JavaCodeGenerator)) {
@@ -527,31 +526,8 @@ public class TempJavaFragmentFiles {
                     className, fileInfo.getPackage());
         }
 
-        boolean collectionSetFlag = false;
-        if (curNode instanceof YangList) {
-            YangList yangList = (YangList) curNode;
-            if (yangList.getCompilerAnnotation() != null && yangList.getCompilerAnnotation()
-                    .getYangAppDataStructure() != null) {
-                switch (yangList.getCompilerAnnotation().getYangAppDataStructure().getDataStructure()) {
-                    case QUEUE: {
-                        parentImportData.setQueueToImport(true);
-                        collectionSetFlag = true;
-                    }
-                    default: {
-
-                    }
-                }
-            }
-        }
-
-        if (isListNode && !(collectionSetFlag)) {
+        if (isListNode) {
             parentImportData.setIfListImported(true);
-        }
-
-
-        if (curNode instanceof YangList) {
-            return getAttributeInfoForTheData(qualifiedTypeInfo, curNodeName, null, isQualified, isListNode,
-                    ((YangList) curNode).getCompilerAnnotation());
         }
 
         return getAttributeInfoForTheData(qualifiedTypeInfo, curNodeName, null, isQualified, isListNode);
@@ -566,7 +542,7 @@ public class TempJavaFragmentFiles {
      * @throws IOException when fails to do IO operations
      */
     private static void getNodesInterfaceFragmentFiles(YangNode node, JavaAttributeInfo attr,
-                                                       YangPluginConfig config) throws IOException {
+                                                      YangPluginConfig config) throws IOException {
         TempJavaFragmentFiles tempJavaFragmentFiles;
         JavaFileInfo javaFileInfo = ((JavaFileInfoContainer) node).getJavaFileInfo();
         if ((javaFileInfo.getGeneratedFileTypes() & GENERATE_SERVICE_AND_MANAGER) != 0) {
@@ -1102,9 +1078,8 @@ public class TempJavaFragmentFiles {
                     getGeneratedJavaFiles()) + NEW_LINE);
         } else {
             appendToFile(getGetterImplTempFileHandle(),
-                    getJavaDoc(GETTER_METHOD, getCapitalCase(attr.getAttributeName()), false, pluginConfig,
-                            attr.getCompilerAnnotation()) + getGetterForClass(attr, getGeneratedJavaFiles())
-                            + NEW_LINE);
+                    getJavaDoc(GETTER_METHOD, getCapitalCase(attr.getAttributeName()), false, pluginConfig)
+                            + getGetterForClass(attr, getGeneratedJavaFiles()) + NEW_LINE);
         }
     }
 
@@ -1315,10 +1290,10 @@ public class TempJavaFragmentFiles {
         if (attr.isQualifiedName()) {
             return getJavaAttributeDefination(attr.getImportInfo().getPkgInfo(),
                     attr.getImportInfo().getClassInfo(),
-                    attributeName, attr.isListAttr(), attr.getCompilerAnnotation(), attributeAccessType);
+                    attributeName, attr.isListAttr(), attributeAccessType);
         } else {
             return getJavaAttributeDefination(null, attr.getImportInfo().getClassInfo(), attributeName,
-                    attr.isListAttr(), attr.getCompilerAnnotation(), attributeAccessType);
+                    attr.isListAttr(), attributeAccessType);
         }
     }
 
@@ -1370,11 +1345,11 @@ public class TempJavaFragmentFiles {
      *
      * @param listOfLeaves     list of YANG leaf
      * @param yangPluginConfig plugin config
-     * @param curNode          current node
+     * @param curNode current node
      * @throws IOException IO operation fail
      */
     private void addLeavesInfoToTempFiles(List<YangLeaf> listOfLeaves,
-                                          YangPluginConfig yangPluginConfig, YangNode curNode)
+                                         YangPluginConfig yangPluginConfig, YangNode curNode)
             throws IOException {
         if (listOfLeaves != null) {
             for (YangLeaf leaf : listOfLeaves) {
@@ -1399,11 +1374,11 @@ public class TempJavaFragmentFiles {
      *
      * @param listOfLeafList   list of YANG leaves
      * @param yangPluginConfig plugin config
-     * @param curNode          current node
+     * @param curNode current node
      * @throws IOException IO operation fail
      */
     private void addLeafListInfoToTempFiles(List<YangLeafList> listOfLeafList, YangPluginConfig yangPluginConfig,
-                                            YangNode curNode) throws IOException {
+                                           YangNode curNode) throws IOException {
         if (listOfLeafList != null) {
             for (YangLeafList leafList : listOfLeafList) {
                 if (!(leafList instanceof JavaLeafInfoContainer)) {
