@@ -169,5 +169,53 @@ public final class UnionTranslatorTest {
         deleteDirectory("target/unionTranslator/");
     }
 
+    /**
+     * Unit test case to test conflicting types.
+     *
+     * @throws IOException when fails to do IO operations
+     * @throws MojoExecutionException when fails to do mojo operations
+     */
+    @Test
+    public void processUnionIntUintUlongLongStringConflictingTypes() throws IOException,
+            MojoExecutionException {
+        String searchDir = "src/test/resources/unionTranslator/intuintulonglongstring";
+        YangUtilManager utilManager = new YangUtilManager();
+        utilManager.createYangFileInfoSet(YangFileScanner.getYangFiles(searchDir));
+        utilManager.parseYangFileInfoSet();
+        utilManager.createYangNodeSet();
+        utilManager.resolveDependenciesUsingLinker();
+
+        YangPluginConfig yangPluginConfig = new YangPluginConfig();
+        yangPluginConfig.setCodeGenDir("target/unionTranslator/");
+        yangPluginConfig.setManagerCodeGenDir("target/unionTranslator/");
+
+        utilManager.translateToJava(yangPluginConfig);
+        deleteDirectory("target/unionTranslator/");
+    }
+
+    /**
+     * Unit test case to test conflicting types.
+     *
+     * @throws IOException when fails to do IO operations
+     * @throws MojoExecutionException when fails to do mojo operations
+     */
+    @Test
+    public void processUnionIntUintStringConflictingTypes() throws IOException,
+            MojoExecutionException {
+        String searchDir = "src/test/resources/unionTranslator/intuintstring";
+        YangUtilManager utilManager = new YangUtilManager();
+        utilManager.createYangFileInfoSet(YangFileScanner.getYangFiles(searchDir));
+        utilManager.parseYangFileInfoSet();
+        utilManager.createYangNodeSet();
+        utilManager.resolveDependenciesUsingLinker();
+
+        YangPluginConfig yangPluginConfig = new YangPluginConfig();
+        yangPluginConfig.setCodeGenDir("target/unionTranslator/");
+        yangPluginConfig.setManagerCodeGenDir("target/unionTranslator/");
+
+        utilManager.translateToJava(yangPluginConfig);
+        deleteDirectory("target/unionTranslator/");
+    }
+
     // TODO enhance the test cases, after having a framework of translator test.
 }

@@ -109,6 +109,11 @@ public final class GeneratedJavaFileType {
     public static final int OPERATION_BUILDER_CLASS_MASK = 8192;
 
     /**
+     * Lists extedned class file.
+     */
+    public static final int LIST_EXTENDED_CLASS_MASK = 16384;
+
+    /**
      * Creates an instance of generate java file type.
      */
     private GeneratedJavaFileType() {

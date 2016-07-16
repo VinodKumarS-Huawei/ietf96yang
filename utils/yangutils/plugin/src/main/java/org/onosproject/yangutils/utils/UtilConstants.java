@@ -1530,7 +1530,6 @@ public final class UtilConstants {
      */
     public static final String BASE_CLASS = "BaseClass()";
 
-
     /**
      * Creates an instance of util constants.
      */

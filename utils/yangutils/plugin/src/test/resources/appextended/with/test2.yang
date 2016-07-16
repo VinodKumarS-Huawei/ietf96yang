@@ -1,0 +1,19 @@
+module test2 {
+
+  namespace "urn:ietf:params:xml:ns:yang:ietf-ipv4-unicast-routing";
+
+  prefix "test2";
+
+  import test {
+    prefix "test";
+  }
+   ca:compiler-annotation /test:list1/test:list2 {
+        ds:app-data-structure "queue" ;
+   }
+   
+   ca:compiler-annotation /test:list1 {
+       ds:app-data-structure "queue" ;
+       ae:app-extended-name "special-list" ;
+   }
+
+}

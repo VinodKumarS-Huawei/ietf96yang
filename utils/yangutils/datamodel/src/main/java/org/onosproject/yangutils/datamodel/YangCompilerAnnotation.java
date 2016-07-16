@@ -16,6 +16,8 @@ public class YangCompilerAnnotation
 
     private YangAppDataStructure yangAppDataStructure;
 
+    private YangAppExtended yangAppExtended;
+
     private String prefix;
 
     private String path;
@@ -30,6 +32,14 @@ public class YangCompilerAnnotation
 
     public void setYangAppDataStructure(YangAppDataStructure yangAppDataStructure) {
         this.yangAppDataStructure = yangAppDataStructure;
+    }
+
+    public YangAppExtended getYangAppExtended() {
+        return yangAppExtended;
+    }
+
+    public void setYangAppExtended(YangAppExtended yangAppExtended) {
+        this.yangAppExtended = yangAppExtended;
     }
 
     public String getPrefix() {

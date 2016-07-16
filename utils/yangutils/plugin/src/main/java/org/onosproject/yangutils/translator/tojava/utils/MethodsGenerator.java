@@ -62,6 +62,7 @@ import static org.onosproject.yangutils.translator.tojava.utils.JavaFileGenerato
 import static org.onosproject.yangutils.translator.tojava.utils.ValidatorTypeForUnionTypes.INT_TYPE_CONFLICT;
 import static org.onosproject.yangutils.utils.UtilConstants.ACTIVATE;
 import static org.onosproject.yangutils.utils.UtilConstants.ACTIVATE_ANNOTATION;
+import static org.onosproject.yangutils.utils.UtilConstants.ADD;
 import static org.onosproject.yangutils.utils.UtilConstants.ADD_STRING;
 import static org.onosproject.yangutils.utils.UtilConstants.AND;
 import static org.onosproject.yangutils.utils.UtilConstants.APP_INSTANCE;
@@ -188,6 +189,7 @@ import static org.onosproject.yangutils.utils.UtilConstants.STATIC;
 import static org.onosproject.yangutils.utils.UtilConstants.STOPPED_LOG_INFO;
 import static org.onosproject.yangutils.utils.UtilConstants.STRING_DATA_TYPE;
 import static org.onosproject.yangutils.utils.UtilConstants.SUFFIX_S;
+import static org.onosproject.yangutils.utils.UtilConstants.SUPER;
 import static org.onosproject.yangutils.utils.UtilConstants.SWITCH;
 import static org.onosproject.yangutils.utils.UtilConstants.THIS;
 import static org.onosproject.yangutils.utils.UtilConstants.THROW;
@@ -259,7 +261,7 @@ public final class MethodsGenerator {
      * @return getter string
      */
     public static String getGetterString(JavaAttributeInfo attr, int generatedJavaFiles,
-            YangPluginConfig pluginConfig) {
+                                         YangPluginConfig pluginConfig) {
 
         String returnType = getReturnType(attr);
         String attributeName = attr.getAttributeName();
@@ -279,7 +281,7 @@ public final class MethodsGenerator {
      * @return setter string
      */
     public static String getSetterString(JavaAttributeInfo attr, String className, int generatedJavaFiles,
-            YangPluginConfig pluginConfig) {
+                                         YangPluginConfig pluginConfig) {
 
         String attrType = getReturnType(attr);
         String attributeName = attr.getAttributeName();
@@ -315,7 +317,7 @@ public final class MethodsGenerator {
      * @return default constructor string
      */
     public static String getDefaultConstructorString(String name, String modifierType,
-            YangPluginConfig pluginConfig) {
+                                                     YangPluginConfig pluginConfig) {
         return getJavaDoc(DEFAULT_CONSTRUCTOR, name, false, pluginConfig, null)
                 + getDefaultConstructor(name, modifierType)
                 + NEW_LINE;
@@ -537,7 +539,7 @@ public final class MethodsGenerator {
      * @return getter method for interface
      */
     public static String getGetterForInterface(String yangName, String returnType, boolean isList,
-            int generatedJavaFiles, YangCompilerAnnotation compilerAnnotation) {
+                                               int generatedJavaFiles, YangCompilerAnnotation compilerAnnotation) {
 
         if (!isList) {
             return getGetterInterfaceString(returnType, yangName, generatedJavaFiles);
@@ -571,7 +573,7 @@ public final class MethodsGenerator {
      * @return getter for interface
      */
     private static String getGetterInterfaceString(String returnType, String yangName,
-            int generatedJavaFiles) {
+                                                   int generatedJavaFiles) {
         if (generatedJavaFiles == GENERATE_SERVICE_AND_MANAGER) {
             return FOUR_SPACE_INDENTATION + returnType + SPACE + GET_METHOD_PREFIX + getCapitalCase(yangName)
                     + OPEN_PARENTHESIS + CLOSE_PARENTHESIS + SEMI_COLAN;
@@ -634,7 +636,7 @@ public final class MethodsGenerator {
      * @return setter string
      */
     private static String getSetterInterfaceString(String className, String attrName, String attrType,
-            int generatedJavaFiles) {
+                                                   int generatedJavaFiles) {
         if (generatedJavaFiles == GENERATE_SERVICE_AND_MANAGER) {
 
             return FOUR_SPACE_INDENTATION + VOID + SPACE + SET_METHOD_PREFIX + getCapitalCase(attrName)
@@ -698,6 +700,26 @@ public final class MethodsGenerator {
     }
 
     /**
+     * Returns constructor for extend class of list.
+     *
+     * @param listName     list name
+     * @param className    class name
+     * @param pluginConfig plugin configurations
+     * @return constructor for extend class of list
+     */
+    public static String getListExtendedClassConstructor(String listName, String className,
+                                                         YangPluginConfig pluginConfig) {
+        String javadoc = getConstructorString(listName, pluginConfig);
+        String constructor = FOUR_SPACE_INDENTATION + PUBLIC + SPACE + className +
+                OPEN_PARENTHESIS + getCapitalCase(listName) +
+                BUILDER + SPACE + BUILDER.toLowerCase() + OBJECT
+                + CLOSE_PARENTHESIS + SPACE + OPEN_CURLY_BRACKET + NEW_LINE + EIGHT_SPACE_INDENTATION + SUPER
+                + OPEN_PARENTHESIS + BUILDER.toLowerCase() + OBJECT + CLOSE_PARENTHESIS + SEMI_COLAN + NEW_LINE +
+                FOUR_SPACE_INDENTATION + CLOSE_CURLY_BRACKET + NEW_LINE;
+        return javadoc + constructor;
+    }
+
+    /**
      * Returns constructor string for op param class.
      *
      * @param yangName     class name
@@ -722,7 +744,7 @@ public final class MethodsGenerator {
      * @return constructor for class
      */
     public static String getConstructor(JavaAttributeInfo attr, int generatedJavaFiles,
-            YangPluginConfig pluginConfig) {
+                                        YangPluginConfig pluginConfig) {
 
         String attributeName = attr.getAttributeName();
         String constructor;
@@ -753,7 +775,7 @@ public final class MethodsGenerator {
      * @return rpc method string
      */
     public static String getRpcServiceMethod(String rpcName, String inputName, String outputName,
-            YangPluginConfig pluginConfig) {
+                                             YangPluginConfig pluginConfig) {
 
         rpcName = getCamelCase(rpcName, pluginConfig.getConflictResolver());
         if (!inputName.equals(EMPTY_STRING)) {
@@ -773,7 +795,7 @@ public final class MethodsGenerator {
      * @return rpc method string
      */
     public static String getRpcManagerMethod(String rpcName, String inputName, String outputName,
-            YangPluginConfig pluginConfig) {
+                                             YangPluginConfig pluginConfig) {
 
         rpcName = getCamelCase(rpcName, pluginConfig.getConflictResolver());
         if (!inputName.equals(EMPTY_STRING)) {
@@ -1022,7 +1044,7 @@ public final class MethodsGenerator {
     }
 
     private static String getIfFilterContentMatchMethodImpl(String attributeName,
-            String filterMethod, int numleaf, YangType dataType) {
+                                                            String filterMethod, int numleaf, YangType dataType) {
         String attrQualifiedType;
 
         if (isPrimitiveDataType(dataType.getDataType())) {
@@ -1229,7 +1251,7 @@ public final class MethodsGenerator {
      * @return from string method's body string
      */
     public static String getFromStringMethod(JavaAttributeInfo attr,
-            JavaAttributeInfo fromStringAttributeInfo) {
+                                             JavaAttributeInfo fromStringAttributeInfo) {
 
         return EIGHT_SPACE_INDENTATION + getTrySubString() + NEW_LINE + TWELVE_SPACE_INDENTATION
                 + getParsedSubString(attr, fromStringAttributeInfo) + SEMI_COLAN + NEW_LINE + TWELVE_SPACE_INDENTATION
@@ -1272,7 +1294,7 @@ public final class MethodsGenerator {
      * @return sub string with parsed statement for union's from string method
      */
     private static String getParsedSubString(JavaAttributeInfo attr,
-            JavaAttributeInfo fromStringAttributeInfo) {
+                                             JavaAttributeInfo fromStringAttributeInfo) {
 
         String targetDataType = getReturnType(attr);
         if (fromStringAttributeInfo.getAttributeType().getDataType() == BITS) {
@@ -1437,7 +1459,7 @@ public final class MethodsGenerator {
      * @return of method's string and java doc for special type
      */
     public static String getOfMethodStringAndJavaDoc(JavaAttributeInfo attr, String generatedJavaClassName,
-            YangPluginConfig pluginConfig) {
+                                                     YangPluginConfig pluginConfig) {
 
         String attrType = getReturnType(attr);
         String attrName = attr.getAttributeName();
@@ -1470,8 +1492,8 @@ public final class MethodsGenerator {
      * @return string and java doc for constructor of type class
      */
     public static String getTypeConstructorStringAndJavaDoc(JavaAttributeInfo attr,
-            String generatedJavaClassName,
-            YangPluginConfig pluginConfig) {
+                                                            String generatedJavaClassName,
+                                                            YangPluginConfig pluginConfig) {
 
         String attrType = getReturnType(attr);
         String attrName = attr.getAttributeName();
@@ -1493,7 +1515,7 @@ public final class MethodsGenerator {
      */
     public static String getTypeConstructorStringAndJavaDoc(JavaAttributeInfo attr1, JavaAttributeInfo
             attr2, String generatedJavaClassName, YangPluginConfig pluginConfig, ValidatorTypeForUnionTypes type,
-            boolean addFirst) {
+                                                            boolean addFirst) {
 
         String attrType = getReturnType(attr1);
         String attrName1 = "";
@@ -1535,7 +1557,7 @@ public final class MethodsGenerator {
      * @return type constructor string
      */
     private static String getTypeConstructorString(String type, String attr1, String attr2, String className,
-            ValidatorTypeForUnionTypes validatorType, boolean addInt) {
+                                                   ValidatorTypeForUnionTypes validatorType, boolean addInt) {
 
         String constructor;
         constructor = FOUR_SPACE_INDENTATION + PUBLIC + SPACE + className + OPEN_PARENTHESIS + type + SPACE + VALUE
@@ -1633,8 +1655,8 @@ public final class MethodsGenerator {
      * @return of method
      */
     public static String getEnumsOfMethod(String className, JavaAttributeInfo attr,
-            Map<String, Integer> enumMap, List<String> enumList,
-            YangPluginConfig pluginConfig) {
+                                          Map<String, Integer> enumMap, List<String> enumList,
+                                          YangPluginConfig pluginConfig) {
         String attrType = getReturnType(attr);
         String attrName = attr.getAttributeName();
 
@@ -1843,15 +1865,32 @@ public final class MethodsGenerator {
      * @return validator method for range in union class
      */
     public static String getRangeValidatorMethodForUnion(String type) {
-        return generateForValidatorMethod() + FOUR_SPACE_INDENTATION + PRIVATE + SPACE + BOOLEAN_DATA_TYPE + SPACE +
+        String newType;
+        if (type.contentEquals(BIG_INTEGER)) {
+            newType = LONG;
+        } else {
+            newType = INT;
+        }
+        String method = generateForValidatorMethod() + FOUR_SPACE_INDENTATION + PRIVATE + SPACE + BOOLEAN_DATA_TYPE +
+                SPACE +
                 VALIDATE_RANGE +
                 OPEN_PARENTHESIS
                 + type + SPACE + MIN_RANGE + COMMA + SPACE + type + SPACE + MAX_RANGE + COMMA + SPACE +
-                type +
-                SPACE + VALUE + CLOSE_PARENTHESIS + SPACE + OPEN_CURLY_BRACKET + NEW_LINE + EIGHT_SPACE_INDENTATION
-                + RETURN + SPACE + VALUE + SPACE + DIAMOND_CLOSE_BRACKET + EQUAL + SPACE + MIN_RANGE + SPACE + AND +
-                AND + SPACE + VALUE + DIAMOND_OPEN_BRACKET + EQUAL + SPACE + MAX_RANGE + SEMI_COLAN + NEW_LINE +
-                FOUR_SPACE_INDENTATION + CLOSE_CURLY_BRACKET + NEW_LINE;
+                newType + SPACE + VALUE + CLOSE_PARENTHESIS + SPACE + OPEN_CURLY_BRACKET + NEW_LINE;
+        if (type.contentEquals(BIG_INTEGER)) {
+            method = method + EIGHT_SPACE_INDENTATION + BIG_INTEGER + SPACE + getSmallCase(BIG_INTEGER)
+                    + SPACE + EQUAL + SPACE + NEW + SPACE + BIG_INTEGER + OPEN_PARENTHESIS + QUOTES + SPACE +
+                    QUOTES + SPACE + ADD + SPACE + VALUE + CLOSE_PARENTHESIS + SEMI_COLAN + NEW_LINE +
+                    EIGHT_SPACE_INDENTATION + RETURN + SPACE + getSmallCase(BIG_INTEGER) + PERIOD + "compareTo"
+                    + OPEN_PARENTHESIS + MIN_RANGE + CLOSE_PARENTHESIS + SPACE + EQUAL + EQUAL + " 1" + SPACE + AND +
+                    AND + SPACE + getSmallCase(BIG_INTEGER) + PERIOD + "compareTo" + OPEN_PARENTHESIS + MAX_RANGE +
+                    CLOSE_PARENTHESIS + SPACE + EQUAL + EQUAL + " 1" + SEMI_COLAN + NEW_LINE;
+        } else {
+            method = method + EIGHT_SPACE_INDENTATION
+                    + RETURN + SPACE + VALUE + SPACE + DIAMOND_CLOSE_BRACKET + EQUAL + SPACE + MIN_RANGE + SPACE + AND +
+                    AND + SPACE + VALUE + DIAMOND_OPEN_BRACKET + EQUAL + SPACE + MAX_RANGE + SEMI_COLAN + NEW_LINE;
+        }
+        return method + FOUR_SPACE_INDENTATION + CLOSE_CURLY_BRACKET + NEW_LINE;
     }
 
     /**

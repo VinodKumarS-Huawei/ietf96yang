@@ -16,6 +16,8 @@
 
 package org.onosproject.yangutils.parser.impl;
 
+import java.util.Stack;
+
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -25,6 +27,7 @@ import org.onosproject.yangutils.datamodel.utils.YangConstructType;
 import org.onosproject.yangutils.parser.antlrgencode.GeneratedYangListener;
 import org.onosproject.yangutils.parser.antlrgencode.GeneratedYangParser;
 import org.onosproject.yangutils.parser.impl.listeners.AppDataStructureListener;
+import org.onosproject.yangutils.parser.impl.listeners.AppExtendedListener;
 import org.onosproject.yangutils.parser.impl.listeners.ArgumentListener;
 import org.onosproject.yangutils.parser.impl.listeners.AugmentListener;
 import org.onosproject.yangutils.parser.impl.listeners.BaseFileListener;
@@ -94,8 +97,6 @@ import org.onosproject.yangutils.parser.impl.listeners.UsesListener;
 import org.onosproject.yangutils.parser.impl.listeners.ValueListener;
 import org.onosproject.yangutils.parser.impl.listeners.VersionListener;
 import org.onosproject.yangutils.parser.impl.listeners.WhenListener;
-
-import java.util.Stack;
 
 import static org.onosproject.yangutils.parser.impl.parserutils.ListenerUtil.handleUnsupportedYangConstruct;
 import static org.onosproject.yangutils.utils.UtilConstants.CURRENTLY_UNSUPPORTED;
@@ -1471,12 +1472,12 @@ public class TreeWalkListener implements GeneratedYangListener {
 
     @Override
     public void enterAppExtendedStatement(GeneratedYangParser.AppExtendedStatementContext currentContext) {
-
+        AppExtendedListener.processAppExtendedEntry(this, currentContext);
     }
 
     @Override
     public void exitAppExtendedStatement(GeneratedYangParser.AppExtendedStatementContext currentContext) {
-
+        AppExtendedListener.processAppExtendedExit(this, currentContext);
     }
 
     @Override

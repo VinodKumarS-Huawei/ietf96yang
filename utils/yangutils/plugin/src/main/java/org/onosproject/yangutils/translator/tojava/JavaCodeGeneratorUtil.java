@@ -75,7 +75,7 @@ public final class JavaCodeGeneratorUtil {
      * @param rootNode   root node of the data model tree
      * @param yangPlugin YANG plugin config
      * @throws TranslatorException when fails to generate java code file the current node
-     * @throws IOException when fails to do IO operations
+     * @throws IOException         when fails to do IO operations
      */
     public static void generateJavaCode(YangNode rootNode, YangPluginConfig yangPlugin)
             throws TranslatorException, IOException {
@@ -136,7 +136,7 @@ public final class JavaCodeGeneratorUtil {
      * @param codeGenNode current data model node for which the code needs to be generated
      * @param yangPlugin  YANG plugin config
      * @throws TranslatorException when fails to generate java code file the current node
-     * @throws IOException when fails to do IO operations
+     * @throws IOException         when fails to do IO operations
      */
     private static void generateCodeEntry(YangNode codeGenNode, YangPluginConfig yangPlugin)
             throws TranslatorException, IOException {
@@ -156,7 +156,7 @@ public final class JavaCodeGeneratorUtil {
      * @param codeGenNode  current data model node for which the code needs to be generated
      * @param pluginConfig plugin configurations
      * @throws TranslatorException when fails to generate java code file the current node
-     * @throws IOException when fails to do IO operations
+     * @throws IOException         when fails to do IO operations
      */
     private static void generateCodeExit(YangNode codeGenNode, YangPluginConfig pluginConfig)
             throws TranslatorException, IOException {
@@ -278,12 +278,14 @@ public final class JavaCodeGeneratorUtil {
             ((TempJavaCodeFragmentFilesContainer) node).getTempJavaCodeFragmentFiles().freeTemporaryResources(true);
         } else {
 
-            JavaFileInfo javaFileInfo = ((JavaFileInfoContainer) getRootNode()).getJavaFileInfo();
-            if (javaFileInfo != null) {
-                searchAndDeleteTempDir(javaFileInfo.getBaseCodeGenPath() +
-                        javaFileInfo.getPackageFilePath());
-            } else {
-                searchAndDeleteTempDir(yangPlugin.getManagerCodeGenDir());
+            if (getRootNode() != null) {
+                JavaFileInfo javaFileInfo = ((JavaFileInfoContainer) getRootNode()).getJavaFileInfo();
+                if (javaFileInfo != null) {
+                    searchAndDeleteTempDir(javaFileInfo.getBaseCodeGenPath() +
+                            javaFileInfo.getPackageFilePath());
+                } else {
+                    searchAndDeleteTempDir(yangPlugin.getManagerCodeGenDir());
+                }
             }
 
         }

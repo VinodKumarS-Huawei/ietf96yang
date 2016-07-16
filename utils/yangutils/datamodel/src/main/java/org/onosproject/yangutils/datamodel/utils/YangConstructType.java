@@ -388,6 +388,8 @@ public enum YangConstructType {
 
     APP_DATA_STRUCTURE,
 
+    APP_EXTENDED,
+
     /**
      * Identifies the YANG argument element parsed data.
      */

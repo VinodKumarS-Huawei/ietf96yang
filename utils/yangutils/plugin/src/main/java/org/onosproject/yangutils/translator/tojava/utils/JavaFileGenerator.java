@@ -37,6 +37,7 @@ import org.onosproject.yangutils.translator.tojava.JavaCodeGeneratorInfo;
 import org.onosproject.yangutils.translator.tojava.JavaFileInfo;
 import org.onosproject.yangutils.translator.tojava.JavaFileInfoContainer;
 import org.onosproject.yangutils.translator.tojava.JavaQualifiedTypeInfo;
+import org.onosproject.yangutils.translator.tojava.TempJavaBeanFragmentFiles;
 import org.onosproject.yangutils.translator.tojava.TempJavaCodeFragmentFilesContainer;
 import org.onosproject.yangutils.translator.tojava.TempJavaEnumerationFragmentFiles;
 import org.onosproject.yangutils.translator.tojava.TempJavaEventFragmentFiles;
@@ -56,6 +57,7 @@ import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.
 import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.GENERATE_UNION_CLASS;
 import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.IMPL_CLASS_MASK;
 import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.INTERFACE_MASK;
+import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.LIST_EXTENDED_CLASS_MASK;
 import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.OPERATION_BUILDER_CLASS_MASK;
 import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.OPERATION_CLASS_MASK;
 import static org.onosproject.yangutils.translator.tojava.GeneratedTempFileType.ATTRIBUTES_MASK;
@@ -107,6 +109,7 @@ import static org.onosproject.yangutils.translator.tojava.utils.MethodsGenerator
 import static org.onosproject.yangutils.translator.tojava.utils.MethodsGenerator.getHashCodeMethodClose;
 import static org.onosproject.yangutils.translator.tojava.utils.MethodsGenerator.getHashCodeMethodOpen;
 import static org.onosproject.yangutils.translator.tojava.utils.MethodsGenerator.getIsFilterContentMatch;
+import static org.onosproject.yangutils.translator.tojava.utils.MethodsGenerator.getListExtendedClassConstructor;
 import static org.onosproject.yangutils.translator.tojava.utils.MethodsGenerator.getOmitNullValueString;
 import static org.onosproject.yangutils.translator.tojava.utils.MethodsGenerator.getOpParamConstructorStart;
 import static org.onosproject.yangutils.translator.tojava.utils.MethodsGenerator.getOperationTypeSetter;
@@ -182,6 +185,7 @@ import static org.onosproject.yangutils.utils.io.impl.YangIoUtils.getCapitalCase
 import static org.onosproject.yangutils.utils.io.impl.YangIoUtils.insertDataIntoJavaFile;
 import static org.onosproject.yangutils.utils.io.impl.YangIoUtils.trimAtLast;
 import static org.onosproject.yangutils.utils.io.impl.YangIoUtils.validateLineLength;
+import static java.util.Collections.sort;
 
 /**
  * Representation of java file generator.
@@ -202,7 +206,7 @@ public final class JavaFileGenerator {
      * @throws IOException when fails to write in file
      */
     public static File generateInterfaceFile(File file, List<String> imports, YangNode curNode,
-            boolean isAttrPresent)
+                                             boolean isAttrPresent)
             throws IOException {
 
         JavaFileInfo javaFileInfo = ((JavaFileInfoContainer) curNode).getJavaFileInfo();
@@ -310,7 +314,7 @@ public final class JavaFileGenerator {
      * @throws IOException when fails to write in file
      */
     public static File generateBuilderClassFile(File file, YangNode curNode,
-            boolean isAttrPresent)
+                                                boolean isAttrPresent)
             throws IOException {
 
         JavaFileInfo javaFileInfo = ((JavaFileInfoContainer) curNode).getJavaFileInfo();
@@ -383,6 +387,41 @@ public final class JavaFileGenerator {
     }
 
     /**
+     * Returns generated lists extended class file for current node.
+     *
+     * @param file              file
+     * @param curNode           current YANG node
+     * @param extendedClassName extended class name
+     * @return lists extended class file
+     * @throws IOException when fails to write in file
+     */
+    public static File generateListExtendedClassFile(File file, YangNode curNode, String extendedClassName)
+            throws IOException {
+
+        String className = getCapitalCase(extendedClassName);
+        JavaFileInfo fileInfo = ((JavaFileInfoContainer) curNode).getJavaFileInfo();
+
+        TempJavaBeanFragmentFiles beanFragmentFiles = ((JavaCodeGeneratorInfo) curNode).getTempJavaCodeFragmentFiles()
+                .getBeanTempFiles();
+        JavaQualifiedTypeInfo qualifiedTypeInfo = new JavaQualifiedTypeInfo();
+        qualifiedTypeInfo.setPkgInfo(fileInfo.getPackage());
+        qualifiedTypeInfo.setClassInfo(getCapitalCase(DEFAULT) + getCapitalCase(fileInfo.getJavaName()));
+        beanFragmentFiles.getJavaExtendsListHolder().addToExtendsList(qualifiedTypeInfo, curNode, beanFragmentFiles);
+
+        initiateJavaFileGeneration(file, LIST_EXTENDED_CLASS_MASK, null, curNode, className);
+
+        /**
+         * Add constructor.
+         */
+        insertDataIntoJavaFile(file, getListExtendedClassConstructor(fileInfo.getJavaName(), className,
+                fileInfo.getPluginConfig()));
+
+        beanFragmentFiles.getJavaExtendsListHolder().getExtendsList().remove(qualifiedTypeInfo);
+        insertDataIntoJavaFile(file, CLOSE_CURLY_BRACKET);
+        return validateLineLength(file);
+    }
+
+    /**
      * Returns generated op param builder class file for current node.
      *
      * @param file          file handle
@@ -392,7 +431,7 @@ public final class JavaFileGenerator {
      * @throws IOException when fails to write in file
      */
     public static File generateOpParamBuilderClassFile(File file, YangNode curNode,
-            boolean isAttrPresent)
+                                                       boolean isAttrPresent)
             throws IOException {
 
         JavaFileInfo javaFileInfo = ((JavaFileInfoContainer) curNode).getJavaFileInfo();
@@ -690,7 +729,7 @@ public final class JavaFileGenerator {
      * @throws IOException when fails to write in file
      */
     public static File generateOpParamImplClassFile(File file, YangNode curNode,
-            boolean isAttrPresent, List<String> imports)
+                                                    boolean isAttrPresent, List<String> imports)
             throws IOException {
 
         JavaFileInfo javaFileInfo = ((JavaFileInfoContainer) curNode).getJavaFileInfo();
@@ -1005,6 +1044,10 @@ public final class JavaFileGenerator {
         TempJavaTypeFragmentFiles tempJavaTypeFragmentFiles = ((JavaCodeGeneratorInfo) curNode)
                 .getTempJavaCodeFragmentFiles().getTypeTempFiles();
 
+        if (tempJavaTypeFragmentFiles.isLongConflict()) {
+            imports.add(tempJavaTypeFragmentFiles.getJavaImportData().getBigIntegerImport());
+            sort(imports);
+        }
         initiateJavaFileGeneration(file, className, GENERATE_UNION_CLASS, imports, path, pluginConfig);
 
         List<String> methods = new ArrayList<>();

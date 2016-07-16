@@ -24,6 +24,7 @@ import java.util.List;
 import org.onosproject.yangutils.datamodel.YangNode;
 import org.onosproject.yangutils.datamodel.YangType;
 import org.onosproject.yangutils.datamodel.YangTypeHolder;
+import org.onosproject.yangutils.datamodel.utils.builtindatatype.YangDataTypes;
 import org.onosproject.yangutils.translator.exception.TranslatorException;
 import org.onosproject.yangutils.translator.tojava.javamodel.YangJavaType;
 import org.onosproject.yangutils.utils.io.impl.YangPluginConfig;
@@ -292,12 +293,19 @@ public class TempJavaTypeFragmentFiles
                                                          YangPluginConfig pluginConfig, List<YangType<?>> typeList)
             throws IOException {
 
-        setIntConflict(validateForConflictingIntTypes(typeList));
-        setLongConflict(validateForConflictingLongypes(typeList));
-        updateAttributeCondition(javaAttributeInfo);
-        super.addJavaSnippetInfoToApplicableTempFiles(javaAttributeInfo, pluginConfig);
+        YangDataTypes attrType = javaAttributeInfo.getAttributeType().getDataType();
 
-        if (!isIntConflict() && !isLongConflict()) {
+        if (attrType == INT32 || attrType == UINT16) {
+            boolean isIntConflict = validateForConflictingIntTypes(typeList);
+            javaAttributeInfo.setIntConflict(isIntConflict);
+            setIntConflict(isIntConflict);
+            updateAttributeCondition(javaAttributeInfo);
+        } else if (attrType == INT64 || attrType == UINT32) {
+            boolean isLongConflict = validateForConflictingLongypes(typeList);
+            javaAttributeInfo.setLongConflict(isLongConflict);
+            setLongConflict(isLongConflict);
+            updateAttributeCondition(javaAttributeInfo);
+        } else {
             if ((getGeneratedTempFiles() & OF_STRING_IMPL_MASK) != 0) {
                 addOfStringMethod(javaAttributeInfo, pluginConfig);
             }
@@ -306,6 +314,8 @@ public class TempJavaTypeFragmentFiles
                 addTypeConstructor(javaAttributeInfo, pluginConfig);
             }
         }
+        super.addJavaSnippetInfoToApplicableTempFiles(javaAttributeInfo, pluginConfig);
+
     }
 
     /**
@@ -315,38 +325,48 @@ public class TempJavaTypeFragmentFiles
      * @throws IOException when fails to do IO operations
      */
     private void addMethodsInConflictCase(YangPluginConfig pluginConfig) throws IOException {
-        if (isIntConflict()) {
-            if (getIntIndex() < getUintIndex()) {
-                appendToFile(getOfStringImplTempFileHandle(), getOfMethodStringAndJavaDoc(getIntAttribute(),
-                        getGeneratedJavaClassName(), pluginConfig)
-                        + NEW_LINE);
-                addGetterImpl(getIntAttribute(), pluginConfig);
-                addFromStringMethod(getIntAttribute(), pluginConfig);
-            } else {
-                appendToFile(getOfStringImplTempFileHandle(), getOfMethodStringAndJavaDoc(getuIntAttribute(),
-                        getGeneratedJavaClassName(), pluginConfig)
-                        + NEW_LINE);
-                addGetterImpl(getuIntAttribute(), pluginConfig);
-                addFromStringMethod(getuIntAttribute(), pluginConfig);
+        JavaAttributeInfo attr = getIntAttribute();
+        if (attr != null) {
+            attr = getuIntAttribute();
+        }
+        if (attr != null) {
+            if (attr.isIntConflict()) {
+                if (getIntIndex() < getUintIndex()) {
+                    appendToFile(getOfStringImplTempFileHandle(), getOfMethodStringAndJavaDoc(getIntAttribute(),
+                            getGeneratedJavaClassName(), pluginConfig)
+                            + NEW_LINE);
+                    addGetterImpl(getIntAttribute(), pluginConfig);
+                    addFromStringMethod(getIntAttribute(), pluginConfig);
+                } else {
+                    appendToFile(getOfStringImplTempFileHandle(), getOfMethodStringAndJavaDoc(getuIntAttribute(),
+                            getGeneratedJavaClassName(), pluginConfig)
+                            + NEW_LINE);
+                    addGetterImpl(getuIntAttribute(), pluginConfig);
+                    addFromStringMethod(getuIntAttribute(), pluginConfig);
+                }
             }
         }
-        if (isLongConflict()) {
-            if (getLongIndex() < getuLongIndex()) {
-                appendToFile(getOfStringImplTempFileHandle(), getOfMethodStringAndJavaDoc(getLongAttribute(),
-                        getGeneratedJavaClassName(), pluginConfig)
-                        + NEW_LINE);
-                addGetterImpl(getLongAttribute(), pluginConfig);
-                addFromStringMethod(getLongAttribute(), pluginConfig);
-            } else {
-                appendToFile(getOfStringImplTempFileHandle(), getOfMethodStringAndJavaDoc(getuLongAttribute(),
-                        getGeneratedJavaClassName(), pluginConfig)
-                        + NEW_LINE);
-                addGetterImpl(getuLongAttribute(), pluginConfig);
-                addFromStringMethod(getuLongAttribute(), pluginConfig);
+        attr = getLongAttribute();
+        if (attr != null) {
+            attr = getuLongAttribute();
+        }
+        if (attr != null) {
+            if (attr.isLongConflict()) {
+                if (getLongIndex() < getuLongIndex()) {
+                    appendToFile(getOfStringImplTempFileHandle(), getOfMethodStringAndJavaDoc(getLongAttribute(),
+                            getGeneratedJavaClassName(), pluginConfig)
+                            + NEW_LINE);
+                    addGetterImpl(getLongAttribute(), pluginConfig);
+                    addFromStringMethod(getLongAttribute(), pluginConfig);
+                } else {
+                    appendToFile(getOfStringImplTempFileHandle(), getOfMethodStringAndJavaDoc(getuLongAttribute(),
+                            getGeneratedJavaClassName(), pluginConfig)
+                            + NEW_LINE);
+                    addGetterImpl(getuLongAttribute(), pluginConfig);
+                    addFromStringMethod(getuLongAttribute(), pluginConfig);
+                }
             }
         }
-
-
     }
 
     /**
@@ -393,15 +413,31 @@ public class TempJavaTypeFragmentFiles
      */
     private void addTypeConstructor(YangPluginConfig pluginConfig)
             throws IOException {
-        if (isIntConflict()) {
-            appendToFile(getConstructorForTypeTempFileHandle(), getTypeConstructorStringAndJavaDoc(getIntAttribute(),
-                    getuIntAttribute(), getGeneratedJavaClassName(), pluginConfig, INT_TYPE_CONFLICT, getIntIndex()
-                            < getUintIndex()) + NEW_LINE);
+        JavaAttributeInfo attr = getIntAttribute();
+        if (attr != null) {
+            attr = getuIntAttribute();
         }
-        if (isLongConflict()) {
-            appendToFile(getConstructorForTypeTempFileHandle(), getTypeConstructorStringAndJavaDoc(getLongAttribute(),
-                    getuLongAttribute(), getGeneratedJavaClassName(), pluginConfig, LONG_TYPE_CONFLICT, getLongIndex()
-                            < getuLongIndex()) + NEW_LINE);
+        if (attr != null) {
+            if (attr.isIntConflict()) {
+                appendToFile(getConstructorForTypeTempFileHandle(), getTypeConstructorStringAndJavaDoc(
+                        getIntAttribute(),
+                        getuIntAttribute(), getGeneratedJavaClassName(), pluginConfig, INT_TYPE_CONFLICT,
+                        getIntIndex()
+                                < getUintIndex()) + NEW_LINE);
+            }
+        }
+        attr = getLongAttribute();
+        if (attr != null) {
+            attr = getuLongAttribute();
+        }
+        if (attr != null) {
+            if (attr.isLongConflict()) {
+                appendToFile(getConstructorForTypeTempFileHandle(), getTypeConstructorStringAndJavaDoc(
+                        getLongAttribute(),
+                        getuLongAttribute(), getGeneratedJavaClassName(), pluginConfig, LONG_TYPE_CONFLICT,
+                        getLongIndex()
+                                < getuLongIndex()) + NEW_LINE);
+            }
         }
     }
 
@@ -617,7 +653,7 @@ public class TempJavaTypeFragmentFiles
      */
     private void updateAttributeCondition(JavaAttributeInfo javaAttributeInfo) {
 
-        if (isIntConflict()) {
+        if (javaAttributeInfo.isIntConflict()) {
             if (javaAttributeInfo.getAttributeType().getDataType() == UINT16) {
                 setuIntAttribute(javaAttributeInfo);
             } else if (javaAttributeInfo.getAttributeType().getDataType() == INT32) {
@@ -625,7 +661,7 @@ public class TempJavaTypeFragmentFiles
             }
 
         }
-        if (isLongConflict()) {
+        if (javaAttributeInfo.isLongConflict()) {
             if (javaAttributeInfo.getAttributeType().getDataType() == UINT32) {
                 setuLongAttribute(javaAttributeInfo);
             } else if (javaAttributeInfo.getAttributeType().getDataType() == INT64) {

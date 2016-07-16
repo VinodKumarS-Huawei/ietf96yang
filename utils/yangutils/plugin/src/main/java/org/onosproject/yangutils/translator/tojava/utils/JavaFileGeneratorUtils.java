@@ -54,6 +54,7 @@ import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.
 import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.GENERATE_UNION_CLASS;
 import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.IMPL_CLASS_MASK;
 import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.INTERFACE_MASK;
+import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.LIST_EXTENDED_CLASS_MASK;
 import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.OPERATION_BUILDER_CLASS_MASK;
 import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.OPERATION_CLASS_MASK;
 import static org.onosproject.yangutils.translator.tojava.GeneratedTempFileType.ATTRIBUTES_MASK;
@@ -368,6 +369,10 @@ public final class JavaFileGeneratorUtils {
                 write(file, genType, INTERFACE, curNode, className);
                 break;
             case IMPL_CLASS_MASK:
+                appendHeaderContents(file, pkgString, importsList);
+                write(file, genType, IMPL_CLASS, curNode, className);
+                break;
+            case LIST_EXTENDED_CLASS_MASK:
                 appendHeaderContents(file, pkgString, importsList);
                 write(file, genType, IMPL_CLASS, curNode, className);
                 break;

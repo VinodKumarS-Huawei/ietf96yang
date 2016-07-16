@@ -39,6 +39,7 @@ import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.
 import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.GENERATE_UNION_CLASS;
 import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.IMPL_CLASS_MASK;
 import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.INTERFACE_MASK;
+import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.LIST_EXTENDED_CLASS_MASK;
 import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.OPERATION_BUILDER_CLASS_MASK;
 import static org.onosproject.yangutils.translator.tojava.GeneratedJavaFileType.OPERATION_CLASS_MASK;
 import static org.onosproject.yangutils.utils.UtilConstants.ABSTRACT;
@@ -130,6 +131,8 @@ public final class ClassDefinitionGenerator {
                 return getOpParamBuilderClassDefinition(yangName, curNode);
             case IMPL_CLASS_MASK:
                 return getImplClassDefinition(yangName, curNode);
+            case LIST_EXTENDED_CLASS_MASK:
+                return getListExtendsClassDefinition(yangName, curNode);
             case OPERATION_CLASS_MASK:
                 return getOpPramImplClassDefinition(yangName, curNode);
             case BUILDER_INTERFACE_MASK:
@@ -242,6 +245,22 @@ public final class ClassDefinitionGenerator {
         }
         return PUBLIC + SPACE + CLASS + SPACE + getCapitalCase(DEFAULT) + yangName + SPACE + IMPLEMENTS + SPACE
                 + yangName + SPACE + OPEN_CURLY_BRACKET + NEW_LINE;
+    }
+
+    /**
+     * Returns list extended file class definition.
+     *
+     * @param yangName file name
+     * @return definition
+     */
+    private static String getListExtendsClassDefinition(String yangName, YangNode curNode) {
+        if (!(curNode instanceof YangCase)) {
+            String clsDef = getClassDefinitionForWhenExtended(curNode, yangName, LIST_EXTENDED_CLASS_MASK);
+            if (clsDef != null) {
+                return clsDef;
+            }
+        }
+        return PUBLIC + SPACE + CLASS + SPACE + yangName + SPACE + OPEN_CURLY_BRACKET + NEW_LINE;
     }
 
     /**
@@ -425,7 +444,10 @@ public final class ClassDefinitionGenerator {
                     def = getDefinitionString(def, holder);
                     return def + SPACE + IMPLEMENTS + SPACE
                             + yangName + SPACE + OPEN_CURLY_BRACKET + NEW_LINE;
-
+                case LIST_EXTENDED_CLASS_MASK:
+                    def = def + CLASS + SPACE + yangName + SPACE + EXTEND + SPACE;
+                    def = getDefinitionString(def, holder);
+                    return def + SPACE + OPEN_CURLY_BRACKET + NEW_LINE;
                 case OPERATION_CLASS_MASK:
                     def = def + CLASS + SPACE + yangName + OPERATION + SPACE + EXTEND + SPACE;
                     def = getDefinitionString(def, holder);
