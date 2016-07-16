@@ -67,6 +67,7 @@ import static org.onosproject.yangutils.utils.UtilConstants.PERIOD;
 import static org.onosproject.yangutils.utils.UtilConstants.QUEUE;
 import static org.onosproject.yangutils.utils.UtilConstants.RPC_INPUT_STRING;
 import static org.onosproject.yangutils.utils.UtilConstants.RPC_OUTPUT_STRING;
+import static org.onosproject.yangutils.utils.UtilConstants.SET;
 import static org.onosproject.yangutils.utils.UtilConstants.SPACE;
 import static org.onosproject.yangutils.utils.UtilConstants.STRING_DATA_TYPE;
 import static org.onosproject.yangutils.utils.UtilConstants.VALUE;
@@ -293,6 +294,10 @@ public final class JavaDocGen {
                         attrParam = QUEUE.toLowerCase() + SPACE + OF + SPACE;
                         break;
                     }
+                    case SET: {
+                        attrParam = SET.toLowerCase() + SPACE + OF + SPACE;
+                        break;
+                    }
                     case LIST: {
                         attrParam = LIST.toLowerCase() + SPACE + OF + SPACE;
                         break;
@@ -333,6 +338,11 @@ public final class JavaDocGen {
             switch (compilerAnnotation.getYangAppDataStructure().getDataStructure()) {
                 case QUEUE: {
                     attributeParam = QUEUE.toLowerCase() + SPACE + OF + SPACE;
+                    setter = setter + attributeParam;
+                    break;
+                }
+                case SET: {
+                    attributeParam = SET.toLowerCase() + SPACE + OF + SPACE;
                     setter = setter + attributeParam;
                     break;
                 }
@@ -377,6 +387,11 @@ public final class JavaDocGen {
             switch (compilerAnnotation.getYangAppDataStructure().getDataStructure()) {
                 case QUEUE: {
                     attributeParam = QUEUE.toLowerCase() + SPACE + OF + SPACE;
+                    setter = setter + attributeParam;
+                    break;
+                }
+                case SET: {
+                    attributeParam = SET.toLowerCase() + SPACE + OF + SPACE;
                     setter = setter + attributeParam;
                     break;
                 }

@@ -537,6 +537,12 @@ public class TempJavaFragmentFiles {
                     case QUEUE: {
                         parentImportData.setQueueToImport(true);
                         collectionSetFlag = true;
+                        break;
+                    }
+                    case SET: {
+                        parentImportData.setSetToImport(true);
+                        collectionSetFlag = true;
+                        break;
                     }
                     default: {
 

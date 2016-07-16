@@ -173,6 +173,7 @@ import static org.onosproject.yangutils.utils.UtilConstants.RPC_INPUT_VAR_NAME;
 import static org.onosproject.yangutils.utils.UtilConstants.SELECT_LEAF;
 import static org.onosproject.yangutils.utils.UtilConstants.SELECT_LEAF_LIST;
 import static org.onosproject.yangutils.utils.UtilConstants.SEMI_COLAN;
+import static org.onosproject.yangutils.utils.UtilConstants.SET;
 import static org.onosproject.yangutils.utils.UtilConstants.SET_METHOD_PREFIX;
 import static org.onosproject.yangutils.utils.UtilConstants.SET_OPERATION_TYPE;
 import static org.onosproject.yangutils.utils.UtilConstants.SHORT;
@@ -363,6 +364,10 @@ public final class MethodsGenerator {
                     attrParam = QUEUE + DIAMOND_OPEN_BRACKET + attrQuaifiedType + DIAMOND_CLOSE_BRACKET;
                     break;
                 }
+                case SET: {
+                    attrParam = SET + DIAMOND_OPEN_BRACKET + attrQuaifiedType + DIAMOND_CLOSE_BRACKET;
+                    break;
+                }
                 case LIST: {
                     attrParam = getListString() + attrQuaifiedType + DIAMOND_CLOSE_BRACKET;
                     break;
@@ -437,6 +442,10 @@ public final class MethodsGenerator {
             switch (attr.getCompilerAnnotation().getYangAppDataStructure().getDataStructure()) {
                 case QUEUE: {
                     attrParam = QUEUE + DIAMOND_OPEN_BRACKET + attrQualifiedType + DIAMOND_CLOSE_BRACKET;
+                    break;
+                }
+                case SET: {
+                    attrParam = SET + DIAMOND_OPEN_BRACKET + attrQualifiedType + DIAMOND_CLOSE_BRACKET;
                     break;
                 }
                 case LIST: {
@@ -540,6 +549,10 @@ public final class MethodsGenerator {
                     listAttr = QUEUE + DIAMOND_OPEN_BRACKET + returnType + DIAMOND_CLOSE_BRACKET;
                     break;
                 }
+                case SET: {
+                    listAttr = SET + DIAMOND_OPEN_BRACKET + returnType + DIAMOND_CLOSE_BRACKET;
+                    break;
+                }
                 default: {
                     listAttr = getListString() + returnType + DIAMOND_CLOSE_BRACKET;
                 }
@@ -580,7 +593,8 @@ public final class MethodsGenerator {
      * @return setter method for interface
      */
     public static String getSetterForInterface(String attrName, String attrType, String className,
-            boolean isList, int generatedJavaFiles, YangCompilerAnnotation compilerAnnotation) {
+                                               boolean isList, int generatedJavaFiles,
+                                               YangCompilerAnnotation compilerAnnotation) {
 
         if (!isList) {
             return getSetterInterfaceString(className, attrName, attrType, generatedJavaFiles);
@@ -591,6 +605,10 @@ public final class MethodsGenerator {
             switch (compilerAnnotation.getYangAppDataStructure().getDataStructure()) {
                 case QUEUE: {
                     listAttr = QUEUE + DIAMOND_OPEN_BRACKET + attrType + DIAMOND_CLOSE_BRACKET;
+                    break;
+                }
+                case SET: {
+                    listAttr = SET + DIAMOND_OPEN_BRACKET + attrType + DIAMOND_CLOSE_BRACKET;
                     break;
                 }
                 case LIST: {

@@ -64,6 +64,7 @@ import static org.onosproject.yangutils.utils.UtilConstants.QUEUE;
 import static org.onosproject.yangutils.utils.UtilConstants.SEMI_COLAN;
 import static org.onosproject.yangutils.utils.UtilConstants.SERVICE_ANNOTATION;
 import static org.onosproject.yangutils.utils.UtilConstants.SERVICE_ANNOTATION_IMPORT;
+import static org.onosproject.yangutils.utils.UtilConstants.SET;
 import static org.onosproject.yangutils.utils.UtilConstants.SPACE;
 import static org.onosproject.yangutils.utils.UtilConstants.TRUE;
 import static org.onosproject.yangutils.utils.UtilConstants.TYPE;
@@ -123,8 +124,9 @@ public final class JavaCodeSnippetGen {
      * @return the textual java code for attribute definition in class
      */
     public static String getJavaAttributeDefination(String javaAttributeTypePkg, String javaAttributeType,
-            String javaAttributeName, boolean isList, String attributeAccessType,
-            YangCompilerAnnotation compilerAnnotation) {
+                                                    String javaAttributeName, boolean isList,
+                                                    String attributeAccessType,
+                                                    YangCompilerAnnotation compilerAnnotation) {
 
         String attributeDefination = attributeAccessType + SPACE;
 
@@ -140,6 +142,10 @@ public final class JavaCodeSnippetGen {
                 switch (compilerAnnotation.getYangAppDataStructure().getDataStructure()) {
                     case QUEUE: {
                         attributeDefination = attributeDefination + QUEUE + DIAMOND_OPEN_BRACKET;
+                        break;
+                    }
+                    case SET: {
+                        attributeDefination = attributeDefination + SET + DIAMOND_OPEN_BRACKET;
                         break;
                     }
                     default: {

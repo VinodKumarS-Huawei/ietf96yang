@@ -41,6 +41,7 @@ import static org.onosproject.yangutils.utils.UtilConstants.ONOS_EVENT_PKG;
 import static org.onosproject.yangutils.utils.UtilConstants.PERIOD;
 import static org.onosproject.yangutils.utils.UtilConstants.QUEUE;
 import static org.onosproject.yangutils.utils.UtilConstants.SEMI_COLAN;
+import static org.onosproject.yangutils.utils.UtilConstants.SET;
 import static org.onosproject.yangutils.utils.UtilConstants.YANG_AUGMENTED_INFO_CLASS_IMPORT_CLASS;
 import static org.onosproject.yangutils.utils.UtilConstants.YANG_AUGMENTED_INFO_CLASS_IMPORT_PKG;
 import static org.onosproject.yangutils.utils.UtilConstants.YANG_AUGMENTED_OP_PARAM_INFO_CLASS;
@@ -61,6 +62,11 @@ public class JavaImportData {
      * Flag to denote if any queue is imported dud to compiler annotation.
      */
     private boolean isQueueToImport;
+
+    /**
+     * Flag to denote if any set is imported dud to compiler annotation.
+     */
+    private boolean isSetToImport;
 
     /**
      * Sorted set of import info, to be used to maintain the set of classes to
@@ -103,12 +109,30 @@ public class JavaImportData {
     }
 
     /**
+     * Is Set to be imported due to compiler annotations.
+     *
+     * @return status of set import
+     */
+    public boolean isSetToImport() {
+        return isSetToImport;
+    }
+
+    /**
      * Set the status of the queue to be imported due to compiler annotations.
      *
      * @param queueToImport status of queue to import
      */
     public void setQueueToImport(boolean queueToImport) {
         isQueueToImport = queueToImport;
+    }
+
+    /**
+     * Set the status of the set to be imported due to compiler annotations.
+     *
+     * @param setToImport status of set to import
+     */
+    public void setSetToImport(boolean setToImport) {
+        isSetToImport = setToImport;
     }
 
     /**
@@ -217,6 +241,10 @@ public class JavaImportData {
             imports.add(getImportForQueue());
         }
 
+        if (isSetToImport()) {
+            imports.add(getImportForSet());
+        }
+
         sort(imports);
         return imports;
     }
@@ -264,6 +292,15 @@ public class JavaImportData {
      */
     public String getImportForQueue() {
         return IMPORT + COLLECTION_IMPORTS + PERIOD + QUEUE + SEMI_COLAN + NEW_LINE;
+    }
+
+    /**
+     * Returns import for set attribute.
+     *
+     * @return import for set attribute
+     */
+    public String getImportForSet() {
+        return IMPORT + COLLECTION_IMPORTS + PERIOD + SET + SEMI_COLAN + NEW_LINE;
     }
 
     /**
